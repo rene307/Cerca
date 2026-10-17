@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cerca
+      POSTGRES_USER: cerca
+      POSTGRES_PASSWORD: cerca_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - cerca_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cerca -d cerca"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  cerca_pgdata:

@@ -1,0 +1,422 @@
+<header class="header">
+  <div class="layout header-content">
+    <a class="logo" href="#inicio" (click)="cerrarMenu()" aria-label="Ir al inicio de Cerca">cerca<span>.</span></a>
+
+    <nav class="main-nav" [class.open]="menuAbierto" aria-label="Navegación principal">
+      <a href="#explorar" (click)="cerrarMenu()">Explorar</a>
+      <a href="#categorias" (click)="cerrarMenu()">Categorías</a>
+      <a href="#mapa" (click)="cerrarMenu()">Mapa</a>
+      <a href="#negocios" (click)="cerrarMenu()">Para negocios</a>
+    </nav>
+
+    <div class="nav-actions">
+      <span class="nav-city">⌖ Santiago, Chile</span>
+      <button type="button" class="nav-favorite" (click)="alternarVistaFavoritos()"
+              [class.active]="mostrarSoloFavoritos" aria-label="Ver favoritos">
+        <span aria-hidden="true">♡</span> {{ cantidadFavoritos }}
+      </button>
+      <button type="button" class="publish-button" (click)="abrirPublicacion()">
+        Publica tu negocio <span aria-hidden="true">↗</span>
+      </button>
+    </div>
+
+    <button type="button" class="mobile-toggle" (click)="menuAbierto = !menuAbierto"
+            [attr.aria-expanded]="menuAbierto" aria-label="Abrir o cerrar menú">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="inicio">
+    <div class="hero-shade"></div>
+    <div class="layout hero-inner">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-dot"></span> TU BARRIO MÁS CERCA</div>
+        <h1>Todo lo que tu barrio ofrece,<br><span>en un solo lugar.</span></h1>
+        <p>Descubre cafeterías, bares, panaderías, peluquerías, vulcanizaciones y servicios cerca de ti.</p>
+
+        <form class="search-bar" (ngSubmit)="buscar()">
+          <div class="search-input-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input type="search" name="busqueda" [(ngModel)]="busqueda"
+                   placeholder="¿Qué estás buscando?" aria-label="Buscar negocios" />
+          </div>
+          <div class="search-separator"></div>
+          <div class="commune-wrap">
+            <span class="pin-icon" aria-hidden="true">⌖</span>
+            <select name="comuna" [(ngModel)]="comuna" aria-label="Seleccionar comuna">
+              <option *ngFor="let item of comunas" [value]="item">{{ item }}</option>
+            </select>
+          </div>
+          <button type="submit" class="search-submit">Buscar <span aria-hidden="true">→</span></button>
+        </form>
+
+        <div class="hero-categories" id="categorias" aria-label="Filtrar por categoría">
+          <button *ngFor="let item of categorias" type="button" class="hero-category"
+                  [class.selected]="categoriaActiva === item.nombre"
+                  (click)="seleccionarCategoria(item.nombre)">
+            <span class="category-circle" aria-hidden="true">{{ item.icono }}</span>
+            <span class="category-label">{{ item.nombre }}</span>
+          </button>
+        </div>
+      </div>
+      <div class="hero-quote">Santiago también se vive<br><span>en sus barrios.</span></div>
+    </div>
+  </section>
+
+  <section class="results-section" id="explorar">
+    <div class="layout">
+      <div class="results-header">
+        <div>
+          <h2>Destacados de tu barrio <span>✦</span></h2>
+          <p>Negocios de las capturas que compartiste, con fotos ilustrativas y las tarjetas de siempre.</p>
+        </div>
+        <div class="results-controls">
+          <label class="distance-control">
+            <span>Distancia</span>
+            <select name="distancia" [(ngModel)]="distanciaMaxima" aria-label="Filtrar por distancia">
+              <option [ngValue]="2">Hasta 2 km*</option>
+              <option [ngValue]="5">Hasta 5 km*</option>
+              <option [ngValue]="10">Hasta 10 km*</option>
+              <option [ngValue]="999">Todas</option>
+            </select>
+          </label>
+          <button class="clear-filters" type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
+        </div>
+      </div>
+
+      <div class="results-layout">
+        <div class="results-main">
+          <div class="results-meta">
+            <strong>{{ negociosFiltrados.length }} {{ negociosFiltrados.length === 1 ? 'negocio encontrado' : 'negocios encontrados' }}</strong>
+            <span>{{ comuna }} <span *ngIf="mostrarSoloFavoritos">· Mis favoritos</span></span>
+          </div>
+
+          <div *ngIf="negociosFiltrados.length > 0; else sinResultados" class="business-grid">
+            <article class="business-card" [class.cerca-destacado]="esDestacadoEnComuna(negocio)" *ngFor="let negocio of negociosFiltrados; trackBy: trackById">
+              <div class="card-image">
+                <img [src]="negocio.foto" [alt]="'Imagen ilustrativa: ' + negocio.categoria" loading="lazy" />
+                <span class="photo-category">{{ negocio.categoria }}</span>
+                <span *ngIf="esDestacadoEnComuna(negocio)" class="cerca-badge-destacado">★ Destacado</span>
+                <button type="button" class="favorite-button" [class.saved]="esFavorito(negocio.id)"
+                        (click)="alternarFavorito(negocio.id)"
+                        [attr.aria-label]="esFavorito(negocio.id) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+                        [attr.aria-pressed]="esFavorito(negocio.id)">
+                  {{ esFavorito(negocio.id) ? '♥' : '♡' }}
+                </button>
+                <div class="photo-meta" *ngIf="negocio.calificacion != null || negocio.distancia != null"><span *ngIf="negocio.calificacion != null">★ {{ negocio.calificacion }} ({{ negocio.opiniones }})</span><small *ngIf="negocio.distancia != null">{{ negocio.distancia.toLocaleString('es-CL') }} km*</small></div>
+              </div>
+              <div class="card-content">
+                <h3>{{ negocio.nombre }}</h3>
+                <div class="card-subtitle">{{ negocio.categoria }} · {{ negocio.comuna }}</div>
+                <p *ngIf="negocio.direccion" class="card-address">⌖ {{ negocio.direccion }}</p>
+                <p *ngIf="!negocio.direccion">{{ negocio.descripcion }}</p>
+                <a *ngIf="negocio.origen" class="card-maps" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Buscar ubicación en Google Maps ↗</a>
+                <button class="card-link" type="button" (click)="abrirDetalle(negocio)">
+                  Ver negocio <span aria-hidden="true">↗</span>
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #sinResultados>
+            <div class="empty-state">
+              <span aria-hidden="true">⌕</span>
+              <h3>No encontramos negocios con esos filtros</h3>
+              <p>Prueba otra categoría, comuna o distancia.</p>
+              <button type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
+            </div>
+          </ng-template>
+        </div>
+
+        <aside class="map-card" id="mapa" aria-label="Mapa ilustrativo de negocios">
+          <div class="map-heading">
+            <div><h3>Explora en el mapa</h3><p>Encuentra negocios de ejemplo en tu zona</p></div>
+            <button type="button" (click)="irA('explorar')" aria-label="Ir a los resultados">↗</button>
+          </div>
+          <div class="fake-map">
+            <div class="map-grid"></div>
+            <div class="map-park park-one"></div>
+            <div class="map-park park-two"></div>
+            <div class="street diagonal-a"></div>
+            <div class="street diagonal-b"></div>
+            <div class="street vertical-a"></div>
+            <div class="street horizontal-a"></div>
+            <span class="map-label label-one">PROVIDENCIA</span>
+            <span class="map-label label-two">SANTIAGO</span>
+            <span class="map-label label-three">ÑUÑOA</span>
+            <span class="map-label label-four">LA FLORIDA</span>
+            <button *ngFor="let negocio of negociosConPinDemo; trackBy: trackById" type="button"
+                    class="map-pin" [style.left.%]="negocio.pinX" [style.top.%]="negocio.pinY"
+                    (click)="abrirDetalle(negocio)" [attr.aria-label]="'Ver ' + negocio.nombre"
+                    [title]="negocio.nombre">
+              <span>{{ negocio.icono }}</span>
+            </button>
+          </div>
+          <div class="map-footer"><small>Mapa ilustrativo · Pines solo de demostración</small><button type="button" (click)="abrirPublicacion()">Ver información ↗</button></div>
+        </aside>
+      </div>
+      <p class="demo-disclaimer">Los negocios nuevos se incorporaron desde tus capturas y usan fotos genéricas, no fotos de los locales. Confirma sus datos antes de publicarlos. El mapa conserva los pines ficticios originales.</p>
+
+      <!-- Franja de beneficios presente en la maqueta elegida -->
+      <div class="benefits" id="como-funciona">
+        <div class="benefit"><span class="benefit-icon">⌖</span><div><strong>Descubre</strong><small>Negocios únicos en tu barrio.</small></div></div>
+        <div class="benefit"><span class="benefit-icon">▣</span><div><strong>Apoya</strong><small>Comercios locales y emprendedores.</small></div></div>
+        <div class="benefit"><span class="benefit-icon">♧</span><div><strong>Conecta</strong><small>Servicios cerca de ti.</small></div></div>
+        <div class="benefit"><span class="benefit-icon">♡</span><div><strong>Vive tu barrio</strong><small>Una ciudad más conectada.</small></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="negocios" class="business-cta">
+    <div class="layout cta-content">
+      <div><span>PARA EMPRENDEDORES</span><h2>Que tu barrio te encuentre.</h2><p>Presenta tu negocio y conecta con personas que buscan lo que ofreces.</p></div>
+      <button type="button" (click)="abrirPublicacion()">Quiero publicar mi negocio ↗</button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="layout footer-content"><a class="logo" href="#inicio">cerca<span>.</span></a><span>Prototipo visual 2026 · Datos y distancias ficticios · Santiago, Chile</span></div>
+  <!-- Acceso de edición local, separado del diseño público original -->
+  <div class="layout admin-footer-access">
+    <a href="#admin" (click)="entrarAdministracion()">Administración de anuncios</a>
+  </div>
+</footer>
+
+<div *ngIf="negocioSeleccionado || mostrarPublicacion" class="modal-backdrop" (click)="cerrarModal()">
+  <section class="info-modal" role="dialog" aria-modal="true" aria-label="Información de Cerca" (click)="$event.stopPropagation()">
+    <button class="modal-close" type="button" (click)="cerrarModal()" aria-label="Cerrar">✕</button>
+    <ng-container *ngIf="negocioSeleccionado as negocio; else modalPublicar">
+      <span class="modal-kicker">{{ negocio.categoria }}</span>
+      <h2>{{ negocio.nombre }}</h2>
+      <p>{{ negocio.descripcion }}</p>
+      <div class="modal-data">
+        <div><strong>Comuna</strong><span>{{ negocio.comuna }}</span></div>
+        <div *ngIf="negocio.direccion"><strong>Dirección por verificar</strong><span>{{ negocio.direccion }}</span></div>
+        <div *ngIf="negocio.distancia != null"><strong>Distancia*</strong><span>{{ negocio.distancia }} km</span></div>
+        <div *ngIf="negocio.calificacion != null"><strong>Valoración*</strong><span>★ {{ negocio.calificacion }}</span></div>
+      </div>
+      <a class="card-maps" *ngIf="negocio.origen" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Buscar en Google Maps ↗</a>
+      <p class="modal-note">Datos por verificar: esta ficha es demostrativa y la fotografía representa el rubro, no necesariamente el negocio.</p>
+    </ng-container>
+    <ng-template #modalPublicar>
+      <span class="modal-kicker">PARA NEGOCIOS</span>
+      <h2>Tu negocio en Cerca</h2>
+      <p>Próximamente podrás crear una cuenta, registrar tu local y administrar su información.</p>
+      <div class="modal-data"><span>Esta versión es solo una demostración visual: no guarda registros ni procesa pagos.</span></div>
+    </ng-template>
+    <button type="button" class="modal-action" (click)="cerrarModal()">Entendido</button>
+  </section>
+</div>
+
+<!-- Panel de edición local. Se abre con http://localhost:4200/#admin -->
+<div class="admin-cover" *ngIf="mostrarAdministracion" role="region" aria-label="Editor de anuncios de Cerca">
+  <div class="admin-topbar">
+    <div><strong class="admin-brand">cerca<span>.</span></strong><span class="admin-top-title">Panel de anuncios</span></div>
+    <button type="button" class="admin-exit" (click)="salirAdministracion()">← Volver a CERCA</button>
+  </div>
+  <div class="admin-body">
+    <div class="cerca-admin-tabs" role="tablist" aria-label="Secciones del administrador">
+      <button type="button" role="tab" [attr.aria-selected]="pestanaAdmin === 'anuncios'"
+              [class.active]="pestanaAdmin === 'anuncios'" (click)="pestanaAdmin = 'anuncios'">Anuncios</button>
+      <button type="button" role="tab" [attr.aria-selected]="pestanaAdmin === 'campanas'"
+              [class.active]="pestanaAdmin === 'campanas'" (click)="pestanaAdmin = 'campanas'">Programación de campañas</button>
+    </div>
+    <ng-container *ngIf="pestanaAdmin === 'anuncios'">
+    <div class="admin-head">
+      <div>
+        <span class="admin-kicker">EDICIÓN LOCAL DE PRUEBA</span>
+        <h1>Administrar anuncios</h1>
+        <p>Agrega negocios, cambia sus fotos, modifica sus datos y controla cuáles se muestran en la página.</p>
+      </div>
+      <button type="button" class="admin-primary" (click)="nuevoAnuncio()">+ Nuevo anuncio</button>
+    </div>
+
+    <div class="admin-warning">
+      <strong>Versión local, todavía sin acceso seguro.</strong>
+      Estos cambios se guardan únicamente en este navegador. Para publicar anuncios a todos los visitantes
+      y proteger esta entrada con contraseña, falta conectar una API y una base de datos con roles.
+    </div>
+    <div *ngIf="avisoAdministracion" class="admin-message" role="status">{{ avisoAdministracion }}</div>
+
+    <div class="admin-stats">
+      <div><strong>{{ negocios.length }}</strong><span>Anuncios totales</span></div>
+      <div><strong>{{ publicados }}</strong><span>Visibles</span></div>
+      <div><strong>{{ borradores }}</strong><span>Ocultos</span></div>
+    </div>
+
+    <div class="admin-toolbar">
+      <label class="admin-search"><span>Buscar anuncio</span><input type="search" name="buscar-admin" [(ngModel)]="busquedaAdministracion" placeholder="Nombre, categoría o comuna" /></label>
+      <button type="button" class="admin-secondary" (click)="exportarAnuncios()">Descargar respaldo JSON</button>
+    </div>
+
+    <div class="admin-list" *ngIf="!formularioAbierto">
+      <div class="admin-list-item" *ngFor="let n of anunciosAdministracion; trackBy: trackById">
+        <img [src]="n.foto" [alt]="'Foto de ' + n.nombre" loading="lazy" />
+        <div class="admin-list-details">
+          <strong>{{ n.nombre }}</strong>
+          <span>{{ n.categoria }} · {{ n.comuna }} <span *ngIf="n.direccion"> · {{ n.direccion }}</span></span>
+          <small [class.admin-inactive]="n.publicado === false">{{ n.publicado === false ? 'Oculto al público' : 'Visible al público' }} <span *ngIf="n.destacado" class="admin-featured-text">· ★ Destacado, orden {{ n.prioridadDestacado || 100 }}</span></small>
+        </div>
+        <div class="admin-list-actions">
+          <button type="button" (click)="editarAnuncio(n)">Editar</button>
+          <button type="button" (click)="alternarDestacado(n)">{{ n.destacado ? 'Quitar destacado' : 'Destacar' }}</button>
+          <button type="button" (click)="cambiarPublicacion(n)">{{ n.publicado === false ? 'Publicar' : 'Ocultar' }}</button>
+          <button type="button" class="admin-delete" (click)="eliminarAnuncio(n)">Eliminar</button>
+        </div>
+      </div>
+      <p *ngIf="anunciosAdministracion.length === 0" class="admin-no-results">No hay anuncios con esa búsqueda.</p>
+    </div>
+
+    <section class="admin-form" *ngIf="formularioAbierto" aria-label="Formulario de anuncio">
+      <div class="admin-form-title"><h2>{{ anuncioEditor.id === 0 ? 'Nuevo anuncio' : 'Editar anuncio' }}</h2><button type="button" (click)="cancelarEdicion()">Cerrar ×</button></div>
+      <form (ngSubmit)="guardarAnuncio()">
+        <div class="admin-fields">
+          <label>Nombre del negocio *<input type="text" name="nombreAdmin" [(ngModel)]="anuncioEditor.nombre" maxlength="120" required placeholder="Ej.: Café del Barrio" /></label>
+          <label>Rubro *<select name="categoriaAdmin" [(ngModel)]="anuncioEditor.categoria">
+            <option *ngFor="let c of categorias" [value]="c.nombre" [disabled]="c.nombre === 'Todos'">{{ c.nombre }}</option>
+          </select></label>
+          <label>Comuna *<input type="text" name="comunaAdmin" [(ngModel)]="anuncioEditor.comuna" maxlength="100" required /></label>
+          <label>Dirección<input type="text" name="direccionAdmin" [(ngModel)]="anuncioEditor.direccion" maxlength="180" placeholder="Calle y número" /></label>
+          <label class="admin-full">Descripción<textarea name="descripcionAdmin" [(ngModel)]="anuncioEditor.descripcion" maxlength="700" rows="3" placeholder="Qué ofrece el negocio"></textarea></label>
+          <label class="admin-full">URL de la fotografía (HTTPS)<input type="text" name="fotoAdmin" [(ngModel)]="anuncioEditor.foto" placeholder="https://..." /></label>
+          <div class="admin-photo-field admin-full">
+            <div><img [src]="anuncioEditor.foto" alt="Vista previa del anuncio" /><small>Vista previa de la imagen</small></div>
+            <div>
+              <label class="admin-upload">Subir una fotografía desde el computador<input type="file" accept="image/jpeg,image/png,image/webp" (change)="cargarFoto($event)" /></label>
+              <button type="button" class="admin-secondary" (click)="seleccionarFotoGenerica()">Usar foto genérica del rubro</button>
+              <small>La fotografía se comprime antes de guardarse. Evita subir archivos muy grandes.</small>
+            </div>
+          </div>
+          <label class="admin-check admin-full"><input type="checkbox" name="destacadoAdmin" [(ngModel)]="anuncioEditor.destacado" /> Destacar este negocio en su comuna</label>
+          <label *ngIf="anuncioEditor.destacado">Orden del destacado (1 primero)
+            <input type="number" name="prioridadDestacadoAdmin" min="1" max="999" step="1" [(ngModel)]="anuncioEditor.prioridadDestacado" />
+          </label>
+          <label class="admin-check admin-full"><input type="checkbox" name="publicadoAdmin" [(ngModel)]="anuncioEditor.publicado" /> Publicado (visible para visitantes de este navegador)</label>
+        </div>
+        <p *ngIf="errorFormulario" class="admin-error" role="alert">{{ errorFormulario }}</p>
+        <div class="admin-form-actions">
+          <button type="button" class="admin-secondary" (click)="cancelarEdicion()">Cancelar</button>
+          <button type="submit" class="admin-primary" [disabled]="guardandoFoto">{{ guardandoFoto ? 'Procesando imagen…' : 'Guardar anuncio' }}</button>
+        </div>
+      </form>
+    </section>
+    </ng-container>
+
+    <section *ngIf="pestanaAdmin === 'campanas'" class="cerca-campanas" aria-label="Programación de campañas">
+      <div class="admin-head">
+        <div>
+          <span class="admin-kicker">GESTIÓN DE COMUNICACIONES</span>
+          <h1>Programación de campañas</h1>
+          <p>Configura una sola vez cada horario. Después prepara el contenido y el servidor aplicará el filtro de suscripción correspondiente.</p>
+        </div>
+        <button type="button" class="admin-secondary" (click)="exportarCampanas()">Exportar programación JSON</button>
+      </div>
+      <div class="admin-warning" role="note">
+        <strong>Configurador local de prueba: sin envíos reales.</strong>
+        Todavía no hay suscriptores en PostgreSQL ni servicio de correo o WhatsApp conectado.
+        El botón «Enviar» está desactivado deliberadamente. Los horarios guardados no ejecutan procesos automáticos.
+      </div>
+      <div *ngIf="mensajeCampanas" role="status" class="admin-message">{{ mensajeCampanas }}</div>
+
+      <div class="cerca-frecuencias" role="tablist" aria-label="Frecuencia de envío">
+        <button type="button" *ngFor="let f of frecuenciasCampana"
+          [class.active]="frecuenciaSeleccionada === f"
+          [attr.aria-selected]="frecuenciaSeleccionada === f"
+          (click)="frecuenciaSeleccionada = f; mensajeCampanas = ''">
+          {{ f === 'diaria' ? 'Diaria' : f === 'semanal' ? 'Semanal' : f === 'mensual' ? 'Mensual' : 'Anual' }}
+          <small>{{ configuracionCampanas[f].activa ? 'Configurada' : 'Desactivada' }}</small>
+        </button>
+      </div>
+
+      <div class="cerca-campana-grid">
+        <div class="cerca-campana-form">
+          <h2>1. Horario</h2>
+          <p class="cerca-campana-note">Zona horaria: <strong>Chile (America/Santiago)</strong></p>
+          <div class="cerca-campana-fields">
+            <label *ngIf="frecuenciaSeleccionada === 'semanal'">Día de la semana
+              <select name="diaSemanaCampana" [(ngModel)]="programacionActual.diaSemana">
+                <option *ngFor="let d of nombreDia; let i = index" [ngValue]="i">{{ d }}</option>
+              </select>
+            </label>
+            <label *ngIf="frecuenciaSeleccionada === 'mensual'">Día del mes
+              <select name="diaMesCampana" [(ngModel)]="programacionActual.diaMes">
+                <option *ngFor="let d of diasMensuales" [ngValue]="d">{{ d }}</option>
+              </select>
+            </label>
+            <label *ngIf="frecuenciaSeleccionada === 'anual'">Mes
+              <select name="mesAnualCampana" [(ngModel)]="programacionActual.mesAnual">
+                <option *ngFor="let mes of nombreMes; let i = index" [ngValue]="i+1">{{ mes }}</option>
+              </select>
+            </label>
+            <label *ngIf="frecuenciaSeleccionada === 'anual'">Día del mes
+              <input type="number" min="1" max="31" name="diaAnualCampana" [(ngModel)]="programacionActual.diaAnual" />
+            </label>
+            <label>Hora
+              <input type="time" name="horaCampana" [(ngModel)]="programacionActual.hora" required />
+            </label>
+          </div>
+          <h2>2. Destinatarios</h2>
+          <p class="cerca-campana-note">La frecuencia elegida actúa como filtro obligatorio de destinatarios. Nunca se mezclan los suscritos diarios con los semanales, mensuales o anuales.</p>
+          <div class="cerca-campana-fields">
+            <label>Canal de envío
+              <select name="canalCampana" [(ngModel)]="programacionActual.canal">
+                <option value="email">Correo electrónico</option>
+                <option value="whatsapp">WhatsApp (requiere API oficial)</option>
+              </select>
+            </label>
+            <label>Contenido
+              <select name="contenidoCampana" [(ngModel)]="programacionActual.contenido">
+                <option value="promociones">Solo promociones</option>
+                <option value="actualizaciones">Solo actualizaciones</option>
+                <option value="ambas">Ambas</option>
+              </select>
+            </label>
+            <label>Comuna
+              <select name="comunaCampana" [(ngModel)]="programacionActual.comuna">
+                <option value="Todas">Todas</option>
+                <option *ngFor="let c of comunas" [value]="c">{{ c }}</option>
+              </select>
+            </label>
+            <label>Rubro de interés
+              <select name="categoriaCampana" [(ngModel)]="programacionActual.categoria">
+                <option value="Todas">Todos los rubros</option>
+                <option *ngFor="let c of categorias" [value]="c.nombre" [disabled]="c.nombre === 'Todos'">{{ c.nombre }}</option>
+              </select>
+            </label>
+          </div>
+          <h2>3. Mensaje</h2>
+          <div class="cerca-campana-fields">
+            <label class="cerca-full">Asunto / título
+              <input name="asuntoCampana" [(ngModel)]="programacionActual.asunto" maxlength="120" placeholder="Ofertas de tu barrio" />
+            </label>
+            <label class="cerca-full">Texto de la campaña
+              <textarea name="mensajeCampana" [(ngModel)]="programacionActual.mensaje" maxlength="2000" rows="5" placeholder="Escribe aquí las promociones o novedades que vas a enviar"></textarea>
+            </label>
+          </div>
+          <label class="cerca-campana-check">
+            <input type="checkbox" name="activoCampana" [(ngModel)]="programacionActual.activa" />
+            Mantener esta configuración activa (al conectar el servidor)
+          </label>
+          <div class="cerca-campana-buttons">
+            <button class="admin-primary" type="button" (click)="guardarCampana()">Guardar configuración</button>
+            <button class="admin-secondary" type="button" disabled title="Falta conectar la base de suscriptores y proveedor de envío">Enviar ahora (no disponible)</button>
+          </div>
+        </div>
+        <aside class="cerca-campana-preview">
+          <span class="admin-kicker">RESUMEN Y FILTROS</span>
+          <h2>{{ horarioCampana }}</h2>
+          <div class="cerca-preview-row"><span>Frecuencia</span><strong>{{ frecuenciaSeleccionada }}</strong></div>
+          <div class="cerca-preview-row"><span>Destino</span><strong>{{ programacionActual.canal === 'email' ? 'Email' : 'WhatsApp' }}</strong></div>
+          <div class="cerca-preview-row"><span>Contenido</span><strong>{{ programacionActual.contenido }}</strong></div>
+          <div class="cerca-preview-row"><span>Comuna</span><strong>{{ programacionActual.comuna }}</strong></div>
+          <div class="cerca-preview-row"><span>Rubro</span><strong>{{ programacionActual.categoria }}</strong></div>
+          <h3>Filtro automático futuro</h3>
+          <p>{{ filtroCampana }}</p>
+          <div class="cerca-no-subscribers"><strong>Destinatarios: sin datos</strong><span>No existe una base de suscriptores conectada. No se simulan contactos ni envíos.</span></div>
+          <p class="cerca-campana-note">Cuando exista el backend, el botón Enviar deberá consultar destinatarios autorizados, respetar la fecha/hora, evitar duplicados y registrar cada envío.</p>
+        </aside>
+      </div>
+    </section>
+  </div>
+</div>
