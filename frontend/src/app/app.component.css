@@ -379,3 +379,141 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .business-card.cerca-destacado { border-color: #ffb08a; box-shadow: 0 10px 26px rgba(255,96,30,.13); }
 .card-image .cerca-badge-destacado { position: absolute; z-index: 3; left: 12px; top: 45px; background: #ff601e; color: white; border-radius: 7px; padding: 6px 9px; font: 800 10px 'DM Sans', Arial, sans-serif; }
 .admin-featured-text { color: #d5531d; }
+
+/* Logo CERCA seleccionado: tres comercios conectados. No cambia el layout. */
+.header .logo, .footer .logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 184px;
+  line-height: 1;
+  letter-spacing: normal;
+}
+.header .logo img, .footer .logo img, .admin-brand img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.footer .logo { width: 150px; }
+.admin-brand { display: inline-flex; align-items: center; width: 178px; flex: 0 0 auto; }
+@media (max-width: 720px) {
+  .header .logo { width: 155px; }
+  .footer .logo { width: 145px; }
+  .admin-brand { width: 155px; }
+}
+@media (max-width: 380px) {
+  .header .logo { width: 137px; }
+}
+
+
+/* CERCA fichas compactas: se agrandan hacia abajo, sin cambiar las columnas ni la portada. */
+.business-card .card-content { display: flex; flex-direction: column; min-height: 330px; }
+.business-card .card-content > .card-link { margin-top: auto; }
+.cerca-card-facts { border-top: 1px solid #f0e9e0; padding: 10px 0; margin-top: auto; display: grid; gap: 6px; }
+.cerca-card-fact { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; font-size: 10px; line-height: 1.5; }
+.cerca-card-fact span { color: #77736f; min-width: 68px; }
+.cerca-card-fact strong, .cerca-card-fact a { color: #282420; font-weight: 750; text-align: right; overflow-wrap: anywhere; }
+.cerca-card-fact a { color: #f45d21; }
+.cerca-card-contact { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-top: 6px; flex-wrap: wrap; }
+.cerca-whatsapp, .cerca-card-directions { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; text-decoration: none; border: 0; border-radius: 7px; padding: 7px 9px; }
+.cerca-whatsapp { background: #e4f8ec; color: #087b35; }
+.cerca-whatsapp img { width: 18px; height: 18px; display: block; }
+.cerca-whatsapp-off { background: #f1efeb; color: #78746e; cursor: default; }
+.cerca-whatsapp-off img { opacity: .45; }
+.cerca-card-directions { background: #fff3ed; color: #df541e; }
+.cerca-gps-toggle { border: 1px solid #f1d5c8; color: #e2551e; background: #fff; border-radius: 12px; font-size: 11px; padding: 12px; font-weight: 800; }
+.cerca-gps-status { color: #91877f; font-size: 10px; margin: 0 0 12px; }
+.cerca-modal-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.modal-data a { color: #f45d21; text-decoration: underline; }
+.info-modal { max-height: min(90vh, 780px); overflow-y: auto; }
+.admin-form input[type=number], .admin-form input[type=tel], .admin-form input[type=url] { width: 100%; }
+@media (max-width: 720px) { .results-controls { flex-wrap: wrap; } .cerca-gps-toggle { flex: 1 1 auto; } }
+
+
+/* Suscripción opcional: nueva sección bajo los resultados, sin alterar la maqueta anterior. */
+.cerca-suscripcion-cta { background:#fff; border-top:1px solid #efe9e3; border-bottom:1px solid #efe9e3; }
+.cerca-suscripcion-cta-inner { display:flex; align-items:center; justify-content:space-between; gap:24px; padding-top:32px; padding-bottom:32px; }
+.cerca-optin-kicker { font-size:10px; font-weight:900; letter-spacing:2px; color:#ff601e; }
+.cerca-suscripcion-cta h2 { margin:6px 0; font:900 clamp(20px,2.7vw,30px) 'Outfit', sans-serif; }
+.cerca-suscripcion-cta p { margin:0; font-size:13px; color:#837971; }
+.cerca-suscripcion-cta button { cursor:pointer; background:#ff601e; color:#fff; padding:15px 22px; border:0; border-radius:14px; font-weight:800; white-space:nowrap; }
+.cerca-suscripcion-modal { max-width:650px; width:min(94vw,650px); max-height:90vh; overflow:auto; }
+.cerca-suscripcion-form { display:grid; gap:16px; }
+.cerca-suscripcion-form fieldset { border:1px solid #eee5dd; border-radius:10px; padding:14px 15px; display:flex; flex-wrap:wrap; gap:10px 19px; }
+.cerca-suscripcion-form legend { font-size:13px; font-weight:800; padding:0 5px; }
+.cerca-suscripcion-form fieldset label { font-size:12px; display:flex; align-items:center; gap:7px; }
+.cerca-suscripcion-form input[type=radio],.cerca-suscripcion-form input[type=checkbox] { accent-color:#ff601e; width:16px; height:16px; }
+.cerca-suscripcion-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.cerca-suscripcion-fields label { display:grid; gap:7px; font-size:12px; font-weight:800; }
+.cerca-suscripcion-fields input,.cerca-suscripcion-fields select { font:500 13px 'DM Sans',sans-serif; width:100%; min-width:0; border:1px solid #dcd5d0; border-radius:9px; padding:11px; background:#fff; }
+.cerca-suscripcion-consent { display:flex; align-items:flex-start; gap:10px; color:#4f4640; font-size:12px; line-height:1.5; }
+.cerca-suscripcion-consent input { flex-shrink:0; margin-top:2px; }
+.cerca-suscripcion-demo { background:#fff7f1; border-radius:8px; padding:10px; color:#705f55; font-size:11px; line-height:1.6; margin:0; }
+.cerca-suscripcion-error { color:#ba2b22; font-size:12px; font-weight:800; margin:0; }
+.cerca-suscripcion-ok { color:#086b35; font-size:12px; line-height:1.6; font-weight:700; margin:0; }
+.cerca-suscripcion-actions { display:flex; justify-content:flex-end; gap:10px; }
+.cerca-suscripcion-actions button { border:1px solid #e5d8ce; border-radius:8px; padding:11px 15px; font-size:12px; font-weight:800; background:#fff; cursor:pointer; }
+.cerca-suscripcion-actions button[type=submit] { background:#ff601e; border-color:#ff601e; color:white; }
+@media(max-width:680px) { .cerca-suscripcion-cta-inner{align-items:flex-start;flex-direction:column;padding-top:25px;padding-bottom:25px;}.cerca-suscripcion-fields{grid-template-columns:1fr;} }
+
+
+/* CERCA: burbuja fija de suscripción; conserva la maqueta pública. */
+body:has(.cerca-acceso-bloqueo) { overflow: hidden !important; }
+.cerca-acceso-bloqueo { position:fixed; inset:0; z-index:990; background:rgba(16,19,24,.66); }
+.cerca-acceso-mensaje {
+ position:fixed; z-index:991; top:44%; left:50%; transform:translate(-50%,-50%);
+ width:min(540px,calc(100vw - 34px)); box-sizing:border-box;
+ text-align:center; color:#fff; display:grid; gap:10px;
+ pointer-events:none; padding:20px; text-shadow:0 1px 6px #0009;
+}
+.cerca-acceso-mensaje strong { font:900 clamp(20px,5vw,32px) 'Outfit',sans-serif; }
+.cerca-acceso-mensaje span { font:500 13px/1.6 'DM Sans',sans-serif; }
+.cerca-burbuja-suscripcion {
+ position:fixed; bottom:20px; right:20px; z-index:995;
+ display:flex; align-items:center; gap:9px;
+ padding:14px 19px; background:#ff601e; color:#fff; border:0;
+ box-shadow:0 9px 32px #30130550; border-radius:999px;
+ cursor:pointer; font:800 13px 'DM Sans',sans-serif;
+}
+.cerca-burbuja-suscripcion > span:first-child { font-size:19px; line-height:1; }
+.cerca-burbuja-suscripcion:focus-visible,.cerca-suscripcion-burbuja-panel button:focus-visible { outline:3px solid #081622; outline-offset:3px; }
+.cerca-suscripcion-burbuja-panel {
+ position:fixed; z-index:996; bottom:83px; right:20px;
+ width:min(430px,calc(100vw - 28px)); max-height:min(80dvh,700px);
+ box-sizing:border-box; padding:20px; overflow-y:auto; overscroll-behavior:contain;
+ background:#fff; border:1px solid #f1ded2; border-radius:18px;
+ box-shadow:0 16px 55px #0004;
+ color:#13151b;
+}
+.cerca-burbuja-cabecera { display:flex; align-items:start; justify-content:space-between; gap:10px; }
+.cerca-burbuja-cabecera h2 { font:900 22px 'Outfit',sans-serif; margin:6px 0 8px; }
+.cerca-burbuja-cerrar { background:#f7f3ef; border:0; border-radius:9px; cursor:pointer; min-width:30px; min-height:30px; }
+.cerca-burbuja-pregunta { font-size:13px; font-weight:700; line-height:1.5; margin:4px 0 12px; }
+.cerca-burbuja-respuestas { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:13px; }
+.cerca-burbuja-respuestas button { padding:11px 7px; font-size:13px; font-weight:800; border:1px solid #e8dcd2; background:#fff; border-radius:10px; cursor:pointer; }
+.cerca-burbuja-respuestas button.elegido { color:#fff; background:#ff601e; border-color:#ff601e; }
+.cerca-burbuja-aviso { font-size:11px; line-height:1.6; color:#7f685b; margin:0; }
+.cerca-suscripcion-burbuja-panel .cerca-suscripcion-form { gap:12px; }
+.cerca-suscripcion-burbuja-panel .cerca-suscripcion-form fieldset { padding:10px; gap:9px; }
+.cerca-suscripcion-burbuja-panel .cerca-suscripcion-fields { gap:9px; }
+.cerca-burbuja-continuar { padding:13px; background:#ff601e; color:white; border:0; border-radius:10px; cursor:pointer; font:800 13px 'DM Sans',sans-serif; width:100%; }
+@media(max-width:680px) {
+ .cerca-burbuja-suscripcion { bottom:calc(12px + env(safe-area-inset-bottom)); right:12px; padding:13px 16px; }
+ .cerca-suscripcion-burbuja-panel {
+  bottom:calc(73px + env(safe-area-inset-bottom)); right:12px;
+  width:calc(100vw - 24px); max-height:calc(100dvh - 105px); padding:16px;
+ }
+ .cerca-acceso-mensaje { top:40%; }
+ .cerca-burbuja-cabecera h2 { font-size:20px; }
+ .cerca-suscripcion-burbuja-panel .cerca-suscripcion-fields { grid-template-columns:1fr; }
+}
+
+/* Integración de información pública, manteniendo el diseño de tarjetas CERCA. */
+.cerca-revision-resumen { min-height: 0 !important; margin: 1px 0 9px !important;
+  font-size: 9px !important; line-height: 1.4 !important; color: #827970; }
+.cerca-admin-fuente { padding: 10px 12px; border: 1px solid #f4e6dc;
+  background: #fff9f5; border-radius: 10px; font-size: 12px; line-height: 1.5; }
+.cerca-admin-fuente a { color: #ff601e; margin-left: 8px; text-decoration: underline; }
+.cerca-admin-fuente p { margin: 6px 0 0; color: #6f625c; }

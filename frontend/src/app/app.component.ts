@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, ViewEncapsulation } from '@angular/core';
+import { Component, HostListener, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 type Categoria =
@@ -57,6 +57,17 @@ interface Negocio {
   publicado?: boolean;
   destacado?: boolean;
   prioridadDestacado?: number;
+  whatsapp?: string;       // +569XXXXXXXX; only configured numbers activate contact.
+  telefono?: string;       // Teléfono público. No implica que tenga WhatsApp.
+  fuenteRevision?: string; // Origen público de la actualización.
+  fechaRevision?: string;  // Fecha de consulta, no fecha de confirmación por el comercio.
+  observacionRevision?: string; // Discrepancias o limitaciones de la fuente.
+  sitioWeb?: string;       // only HTTPS links are offered.
+  horario?: string;        // confirmed textual opening hours.
+  latitud?: number;       // real latitude confirmed by administrator.
+  longitud?: number;      // real longitude confirmed by administrator.
+  datosVerificados?: boolean;
+
 }
 
 @Component({
@@ -67,7 +78,7 @@ interface Negocio {
   styleUrls: ['./app.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   readonly categorias: { nombre: Categoria; icono: string }[] = [
     { nombre: 'Todos', icono: '✦' },
     { nombre: 'Cafés', icono: '☕' },
@@ -100,25 +111,41 @@ export class AppComponent {
       id: 10, nombre: "Café del Jardín", categoria: "Cafés", comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: "Parque Las Mercedes 3298",
-      foto: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&q=85&fit=crop", icono: "☕", origen: 'captura'
+      foto: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&q=85&fit=crop", icono: "☕", origen: 'captura',
+      horario: "Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)",
+      telefono: "+56 9 5879 0169",
+      fuenteRevision: "https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2",
+      observacionRevision: "Teléfono y horario coinciden con directorios independientes.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 11, nombre: "KABI Pastelería y Cafetería", categoria: "Cafés", comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: "Av. La Florida 8791",
-      foto: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&q=85&fit=crop", icono: "☕", origen: 'captura'
+      foto: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&q=85&fit=crop", icono: "☕", origen: 'captura',
+      telefono: "+56 9 3647 0275",
+      fuenteRevision: "Ficha pública del negocio en resultados de mapas",
+      observacionRevision: "Horarios inconsistentes entre fuentes; no rellenar.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 12, nombre: "La Duquesa Bakery", categoria: "Cafés", comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: "Walker Martínez",
-      foto: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=900&q=85&fit=crop", icono: "☕", origen: 'captura'
+      foto: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=900&q=85&fit=crop", icono: "☕", origen: 'captura',
+      telefono: "+56 9 6130 1176",
+      fuenteRevision: "Ficha pública del negocio en resultados de mapas",
+      observacionRevision: "Horario sin confirmar por el local.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 13, nombre: "Cafetería del Rey Brujo", categoria: "Cafés", comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: "Escuadrón 2058",
-      foto: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&q=85&fit=crop", icono: "☕", origen: 'captura'
+      foto: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=900&q=85&fit=crop", icono: "☕", origen: 'captura',
+      fuenteRevision: "Ficha pública del negocio en resultados de mapas",
+      observacionRevision: "Horario por confirmar en el local.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 14, nombre: "Cafetería Robusta", categoria: "Cafés", comuna: 'La Florida',
@@ -289,32 +316,47 @@ export class AppComponent {
       id: 43, nombre: 'Farmacia Arapharma', categoria: 'Farmacias', comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: 'Av. La Florida 7034',
-      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop', icono: '💊', origen: 'captura'
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop', icono: '💊', origen: 'captura',
+      horario: "Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 44, nombre: 'Farmacias Económicas', categoria: 'Farmacias', comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: 'Av. Vicuña Mackenna 8188',
-      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop', icono: '💊', origen: 'captura'
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop', icono: '💊', origen: 'captura',
+      horario: "Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 45, nombre: 'Farmacia Vecinal', categoria: 'Farmacias', comuna: 'La Florida',
       destacado: true, prioridadDestacado: 1,
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: 'Av. Vicuña Mackenna Poniente 6690, Local 12',
-      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop', icono: '💊', origen: 'captura'
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop', icono: '💊', origen: 'captura',
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      observacionRevision: "Hay discrepancias de horarios y teléfonos entre directorios. No actualizar automáticamente esos campos.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 46, nombre: 'Farmacia El Químico', categoria: 'Farmacias', comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: 'Enrique Olivares 1278',
-      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop', icono: '💊', origen: 'captura'
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop', icono: '💊', origen: 'captura',
+      horario: "Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)",
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 47, nombre: 'Farmacia BarrioFlorida', categoria: 'Farmacias', comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
       direccion: 'Rojas Magallanes 94, local B',
-      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop', icono: '💊', origen: 'captura'
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop', icono: '💊', origen: 'captura',
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      observacionRevision: "En el registro público se llama BARRIO FARMA en Rojas Magallanes 94 B. Confirmar identidad antes de cambiar nombre u horario.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 48, nombre: 'Farmacia Ciudadana La Florida', categoria: 'Farmacias', comuna: 'La Florida',
@@ -331,8 +373,12 @@ export class AppComponent {
     {
       id: 50, nombre: 'Eco Farmacias', categoria: 'Farmacias', comuna: 'La Florida',
       descripcion: 'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.',
-      direccion: 'Sargento Zamora 29, local 19',
-      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop', icono: '💊', origen: 'captura'
+      direccion: 'Serafín Zamora 29, Local 19',
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop', icono: '💊', origen: 'captura',
+      horario: "Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      observacionRevision: "Nombre de calle corregido usando registro público; solo cambia la dirección si aún es la anterior.",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 51, nombre: 'Farmacenter', categoria: 'Farmacias', comuna: 'La Florida',
@@ -340,7 +386,125 @@ export class AppComponent {
       descripcion: 'Farmacia de Vicuña Mackenna. Foto genérica ilustrativa; verificar información antes de publicar.',
       direccion: 'Av. Vicuña Mackenna 6650, Local 2',
       foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
-      icono: '💊', origen: 'captura'
+      icono: '💊', origen: 'captura',
+      fuenteRevision: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      observacionRevision: "Los horarios se contradicen entre directorios públicos. No asignar un horario definitivo.",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 52, nombre: 'Farmacias Titán 24/7', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. Concha y Toro 2757', horario: '24 horas (por verificar)',
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      observacionRevision: "La condición 24/7/urgencia puede variar. Confirmar el régimen permanente y turnos.",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 53, nombre: 'Farmacia Dalem', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. Concha y Toro 2097', 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true },
+    { id: 54, nombre: 'Farmacia Solidaria', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Balmaceda 265', 
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 55, nombre: 'Farmacia Roubillard S.A.', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Balmaceda 267', 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 56, nombre: 'Farma Ulloa', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. Gabriela Poniente 835', 
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 57, nombre: 'Farmacia San Carlos', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. San Carlos 0581', 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 58, nombre: 'Farmacia de lo Alto', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Omar Herrera Gutiérrez 1815', 
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true },
+    { id: 59, nombre: 'Farmacias Ahumada', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'La Florida (ubicación exacta por verificar)', 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true },
+    { id: 60, nombre: 'Farmacia Netfarma', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. Ejército Libertador 1139', 
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 61, nombre: 'Farmacias La Botika', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. El Peñón 1467', 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 62, nombre: 'Farmacias Olímpica - Puente Alto', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Av. Concha y Toro 1184, Local 3', 
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 63, nombre: 'Farmacias Cruz Verde', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Strip Center, Av. Concha y Toro 3955', 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      observacionRevision: "Sólo la sucursal Av. Concha y Toro 3955, no generalizar a toda la cadena.",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 64, nombre: 'Farmacia Novasalud - Puente Alto', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: 'Balmaceda 371, locales 101-102', 
+      foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
+    },
+    { id: 65, nombre: 'Farmacia Macarena', categoria: 'Farmacias', comuna: 'Puente Alto',
+      descripcion: 'Comercio identificado en las capturas. Datos pendientes de confirmación por el local.',
+      direccion: "Nonato Coo 3923", 
+      foto: 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=900&q=85&fit=crop',
+      icono: '💊', origen: 'captura', publicado: true,
+      horario: "Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
+      fuenteRevision: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      fechaRevision: "2026-10-18",
     },
     {
       id: 1, nombre: 'Café Macondo', categoria: 'Cafés', comuna: 'La Florida',
@@ -410,12 +574,114 @@ export class AppComponent {
   busqueda = '';
   comuna = 'La Florida';
   categoriaActiva: Categoria = 'Todos';
-  distanciaMaxima = 5;
+  distanciaMaxima = 999;
+  gpsHabilitado = false;
+  estadoGPS = 'Activa tu ubicación para calcular kilómetros reales.';
+  private posicionActual: { lat: number; lon: number } | null = null;
+  private gpsWatchId: number | null = null;
   menuAbierto = false;
   mostrarSoloFavoritos = false;
   negocioSeleccionado: Negocio | null = null;
   mostrarPublicacion = false;
   readonly favoritos = new Set<number>();
+
+  // DEMO: guardamos solo la decisión local para reconocer este navegador.
+  // No se guardan teléfonos/correos ni se envían mensajes sin API/consentimiento verificable.
+  mostrarSuscripcion = false;
+  accesoConcedido = false;
+  accesoRechazado = false;
+  decisionSuscripcion: 'pendiente' | 'si' | 'no' = 'pendiente';
+  private readonly claveDecisionVisitante = 'cerca_visitante_optin_v1';
+
+  frecuenciaSuscripcion: Exclude<FrecuenciaCampana, 'anual'> = 'semanal';
+  tipoPromociones = true;
+  tipoActualizaciones = true;
+  canalSuscripcion: CanalCampana = 'email';
+  comunaSuscripcion = 'La Florida';
+  rubroSuscripcion = 'Todos';
+  contactoSuscripcion = '';
+  consentimientoSuscripcion = false;
+  errorSuscripcion = '';
+  avisoSuscripcion = '';
+
+  abrirSuscripcion(): void {
+    this.mostrarSuscripcion = true;
+    this.comunaSuscripcion = this.comuna;
+    this.errorSuscripcion = '';
+    this.avisoSuscripcion = '';
+    // Una visita posterior puede consultar las preferencias sin registrar de nuevo.
+    this.decisionSuscripcion = this.accesoConcedido ? 'si' : 'pendiente';
+  }
+
+  cerrarSuscripcion(): void {
+    this.mostrarSuscripcion = false;
+    this.errorSuscripcion = '';
+    this.avisoSuscripcion = '';
+    this.contactoSuscripcion = ''; // No conservar contacto si cierra la ventana.
+    this.consentimientoSuscripcion = false;
+  }
+
+  elegirSuscripcion(decision: 'si' | 'no'): void {
+    this.decisionSuscripcion = decision;
+    this.errorSuscripcion = '';
+    if (decision === 'no') {
+      this.accesoConcedido = false;
+      this.accesoRechazado = true;
+      this.contactoSuscripcion = '';
+      this.consentimientoSuscripcion = false;
+      this.guardarDecisionLocal('no');
+      this.mostrarSuscripcion = false;
+    }
+  }
+
+  private guardarDecisionLocal(estado: 'si' | 'no'): void {
+    // Esto identifica únicamente este navegador, NO una persona en otros equipos.
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(this.claveDecisionVisitante, JSON.stringify({
+        estado, version: 1, fecha: new Date().toISOString()
+      }));
+    } catch {
+      // Si el usuario bloqueó almacenamiento, la decisión dura solo esta sesión.
+    }
+  }
+
+  validarSuscripcion(): void {
+    this.errorSuscripcion = '';
+    this.avisoSuscripcion = '';
+    if (this.decisionSuscripcion !== 'si') {
+      this.errorSuscripcion = 'Selecciona Sí para continuar.';
+      return;
+    }
+    if (!this.tipoPromociones && !this.tipoActualizaciones) {
+      this.errorSuscripcion = 'Selecciona promociones, actualizaciones o ambas.';
+      return;
+    }
+    if (!this.consentimientoSuscripcion) {
+      this.errorSuscripcion = 'Debes aceptar recibir las comunicaciones seleccionadas.';
+      return;
+    }
+    const contacto = this.contactoSuscripcion.trim();
+    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto);
+    const numero = contacto.replace(/[^0-9]/g, '');
+    const whatsappValido = /^56[0-9]{9}$/.test(numero);
+    if (this.canalSuscripcion === 'email' ? !correoValido : !whatsappValido) {
+      this.errorSuscripcion = this.canalSuscripcion === 'email'
+        ? 'Ingresa un correo electrónico válido.'
+        : 'Ingresa WhatsApp con código de Chile: +56 9 XXXX XXXX.';
+      return;
+    }
+    // DEMO SIN BACKEND: habilita navegación en este navegador, pero NO da de alta
+    // al usuario en una lista de envío ni guarda su número/correo personal.
+    this.accesoConcedido = true;
+    this.accesoRechazado = false;
+    this.guardarDecisionLocal('si');
+    this.mostrarSuscripcion = false;
+    this.contactoSuscripcion = '';
+    this.consentimientoSuscripcion = false;
+    this.avisoSuscripcion = '';
+  }
+
 
   // Modo de edición local: no es un sistema de autenticación.
   // Se necesita API y control de roles en el servidor antes de ponerlo en producción.
@@ -521,10 +787,31 @@ export class AppComponent {
   }
 
   constructor() {
+    if (typeof document !== 'undefined') {
+      let favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+      if (!favicon) {
+        favicon = document.createElement('link');
+        favicon.rel = 'icon';
+        document.head.appendChild(favicon);
+      }
+      favicon.type = 'image/png';
+      favicon.href = 'assets/cerca-favicon.png';
+    }
     if (typeof window === 'undefined') return;
     this.mostrarAdministracion = window.location.hash === '#admin';
+    try {
+      const decisionGuardada = JSON.parse(window.localStorage.getItem(this.claveDecisionVisitante) || 'null');
+      if (decisionGuardada?.version === 1 && decisionGuardada?.estado === 'si') {
+        this.accesoConcedido = true;
+      } else if (decisionGuardada?.version === 1 && decisionGuardada?.estado === 'no') {
+        this.accesoRechazado = true;
+      }
+    } catch {
+      // Mostrar la burbuja si el navegador no permite leer el almacenamiento.
+    }
     // Guarda las semillas nuevas antes de cargar los anuncios editados.
     // Así se incorporan los viveros y mecánicos sin perder cambios previos.
+    const localesPuente = this.negocios.filter(n => n.id >= 52 && n.id <= 65);
     const nuevosLocales = this.negocios.filter(n => n.id >= 34 && n.id <= 50);
     const claveMigracion = 'cerca_nuevos_locales_34_50_v1';
     try {
@@ -544,6 +831,22 @@ export class AppComponent {
           window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
         }
         window.localStorage.setItem(claveMigracion, '1');
+      }
+      // Incorporación única de farmacias de Puente Alto a navegadores con anuncios guardados.
+      const clavePuente = 'cerca_farmacias_puente_alto_v1';
+      if (!window.localStorage.getItem(clavePuente)) {
+        const fuentesPuente = localesPuente;
+        const actuales = new Set(this.negocios.map(n =>
+          n.nombre.trim().toLocaleLowerCase('es') + '|' + n.comuna.trim().toLocaleLowerCase('es')));
+        let nuevoId = Math.max(51, ...this.negocios.map(n => n.id));
+        const faltantes = fuentesPuente.filter(n =>
+          !actuales.has(n.nombre.trim().toLocaleLowerCase('es') + '|' + n.comuna.trim().toLocaleLowerCase('es')))
+          .map(n => ({ ...n, id: ++nuevoId }));
+        if (faltantes.length) {
+          this.negocios = [...this.negocios, ...faltantes];
+          window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
+        }
+        window.localStorage.setItem(clavePuente, '1');
       }
       // Actualización de destacados, una vez por navegador sin sobrescribir cambios posteriores.
       const claveDestacados = 'cerca_farmacias_destacadas_v1';
@@ -580,8 +883,222 @@ export class AppComponent {
         if (actualizar) window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
         window.localStorage.setItem(claveDestacados, '1');
       }
+      // Actualización masiva parcial del catálogo desde fuentes públicas, 18-10-2026.
+      // Nunca activa WhatsApp desde un teléfono genérico ni sobrescribe horarios editados.
+      const claveRevision = 'cerca_fuentes_publicas_20261018_v1';
+      if (!window.localStorage.getItem(claveRevision)) {
+        const actualizaciones: { nombre: string; comuna: string; horario?: string; telefono?: string; direccion?: string; fuente: string }[] = [
+          { nombre: "Café del Jardín", comuna: "La Florida", horario: "Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)", telefono: "+56 9 5879 0169", fuente: "https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2" },
+          { nombre: "KABI Pastelería y Cafetería", comuna: "La Florida", telefono: "+56 9 3647 0275", fuente: "Ficha pública del negocio en resultados de mapas" },
+          { nombre: "La Duquesa Bakery", comuna: "La Florida", telefono: "+56 9 6130 1176", fuente: "Ficha pública del negocio en resultados de mapas" },
+          { nombre: "Cafetería del Rey Brujo", comuna: "La Florida", fuente: "Ficha pública del negocio en resultados de mapas" },
+          { nombre: "Farmacia Arapharma", comuna: "La Florida", horario: "Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Farmacias Económicas", comuna: "La Florida", horario: "Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Farmacia Vecinal", comuna: "La Florida", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Farmacenter", comuna: "La Florida", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Farmacia El Químico", comuna: "La Florida", horario: "Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Farmacia BarrioFlorida", comuna: "La Florida", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Eco Farmacias", comuna: "La Florida", horario: "Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)", direccion: "Serafín Zamora 29, Local 19", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
+          { nombre: "Farmacias Titán 24/7", comuna: "Puente Alto", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacia Solidaria", comuna: "Puente Alto", horario: "Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacia Roubillard S.A.", comuna: "Puente Alto", horario: "Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farma Ulloa", comuna: "Puente Alto", horario: "Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacia San Carlos", comuna: "Puente Alto", horario: "Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacia Netfarma", comuna: "Puente Alto", horario: "Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacias La Botika", comuna: "Puente Alto", horario: "Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacias Olímpica - Puente Alto", comuna: "Puente Alto", horario: "Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacias Cruz Verde", comuna: "Puente Alto", horario: "Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacia Novasalud - Puente Alto", comuna: "Puente Alto", horario: "Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+          { nombre: "Farmacia Macarena", comuna: "Puente Alto", horario: "Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)", direccion: "Nonato Coo 3923", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
+        ];
+        let modificados = false;
+        const normal = (v: string): string => v.trim().toLocaleLowerCase('es');
+        for (const cambio of actualizaciones) {
+          const n = this.negocios.find(b => normal(b.nombre) === normal(cambio.nombre) && normal(b.comuna) === normal(cambio.comuna));
+          if (!n || n.origen === 'manual') continue;
+          let tocado = false;
+          if (cambio.horario && !n.horario) { n.horario = cambio.horario; tocado = true; }
+          if (cambio.telefono && !n.telefono) { n.telefono = cambio.telefono; tocado = true; }
+          if (cambio.direccion && (n.direccion || '').toLowerCase().includes('por verificar')) { n.direccion = cambio.direccion; tocado = true; }
+          if (cambio.direccion && n.nombre === 'Eco Farmacias' && n.direccion === 'Sargento Zamora 29, local 19') { n.direccion = cambio.direccion; tocado = true; }
+          if (tocado) { n.fuenteRevision = cambio.fuente; n.fechaRevision = '2026-10-18'; modificados = true; }
+        }
+        if (modificados) window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
+        window.localStorage.setItem(claveRevision, '1');
+      }
     } catch {
       this.avisoAdministracion = 'No se pudieron cargar o actualizar los anuncios guardados en el navegador.';
+    }
+    // Migración pública adicional, solo una vez, para anuncios locales de versiones anteriores.
+    // Conserva los datos editados por el administrador y no reactiva registros eliminados.
+    try {
+      const claveFichas = 'cerca_integracion_fichas_publicas_20261018_v2';
+      if (!window.localStorage.getItem(claveFichas)) {
+        const cambiosPublicos: Array<{nombre:string; comuna:string; horario?:string;
+          telefono?:string; direccion?:string; fuente?:string; nota?:string}> = [
+    {
+        "nombre": "Café del Jardín",
+        "comuna": "La Florida",
+        "horario": "Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)",
+        "telefono": "+56 9 5879 0169",
+        "fuente": "https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2",
+        "nota": "Teléfono y horario coinciden con directorios independientes."
+    },
+    {
+        "nombre": "KABI Pastelería y Cafetería",
+        "comuna": "La Florida",
+        "telefono": "+56 9 3647 0275",
+        "fuente": "Ficha pública del negocio en resultados de mapas",
+        "nota": "Horarios inconsistentes entre fuentes; no rellenar."
+    },
+    {
+        "nombre": "La Duquesa Bakery",
+        "comuna": "La Florida",
+        "telefono": "+56 9 6130 1176",
+        "fuente": "Ficha pública del negocio en resultados de mapas",
+        "nota": "Horario sin confirmar por el local."
+    },
+    {
+        "nombre": "Cafetería del Rey Brujo",
+        "comuna": "La Florida",
+        "fuente": "Ficha pública del negocio en resultados de mapas",
+        "nota": "Horario por confirmar en el local."
+    },
+    {
+        "nombre": "Farmacia Arapharma",
+        "comuna": "La Florida",
+        "horario": "Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
+    },
+    {
+        "nombre": "Farmacias Económicas",
+        "comuna": "La Florida",
+        "horario": "Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
+    },
+    {
+        "nombre": "Farmacia Vecinal",
+        "comuna": "La Florida",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+        "nota": "Hay discrepancias de horarios y teléfonos entre directorios. No actualizar automáticamente esos campos."
+    },
+    {
+        "nombre": "Farmacenter",
+        "comuna": "La Florida",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+        "nota": "Los horarios se contradicen entre directorios públicos. No asignar un horario definitivo."
+    },
+    {
+        "nombre": "Farmacia El Químico",
+        "comuna": "La Florida",
+        "horario": "Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
+    },
+    {
+        "nombre": "Farmacia BarrioFlorida",
+        "comuna": "La Florida",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+        "nota": "En el registro público se llama BARRIO FARMA en Rojas Magallanes 94 B. Confirmar identidad antes de cambiar nombre u horario."
+    },
+    {
+        "nombre": "Eco Farmacias",
+        "comuna": "La Florida",
+        "horario": "Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
+        "direccion": "Serafín Zamora 29, Local 19",
+        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+        "nota": "Nombre de calle corregido usando registro público; solo cambia la dirección si aún es la anterior."
+    },
+    {
+        "nombre": "Farmacias Titán 24/7",
+        "comuna": "Puente Alto",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+        "nota": "La condición 24/7/urgencia puede variar. Confirmar el régimen permanente y turnos."
+    },
+    {
+        "nombre": "Farmacia Solidaria",
+        "comuna": "Puente Alto",
+        "horario": "Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacia Roubillard S.A.",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farma Ulloa",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacia San Carlos",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacia Netfarma",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacias La Botika",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacias Olímpica - Puente Alto",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacias Cruz Verde",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+        "nota": "Sólo la sucursal Av. Concha y Toro 3955, no generalizar a toda la cadena."
+    },
+    {
+        "nombre": "Farmacia Novasalud - Puente Alto",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+        "nombre": "Farmacia Macarena",
+        "comuna": "Puente Alto",
+        "horario": "Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
+        "direccion": "Nonato Coo 3923",
+        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    }
+];
+        let huboCambios = false;
+        const normalizar = (v: string) => v.trim().toLocaleLowerCase('es');
+        for (const cambio of cambiosPublicos) {
+          const n = this.negocios.find(item => normalizar(item.nombre) === normalizar(cambio.nombre) &&
+            normalizar(item.comuna) === normalizar(cambio.comuna) && item.origen !== 'manual');
+          if (!n) continue;
+          if (cambio.horario && !n.horario) { n.horario = cambio.horario; huboCambios = true; }
+          if (cambio.telefono && !n.telefono) { n.telefono = cambio.telefono; huboCambios = true; }
+          if (cambio.direccion &&
+              ((n.nombre === 'Eco Farmacias' && normalizar(n.direccion || '') === normalizar('Sargento Zamora 29, local 19')) ||
+              (n.direccion || '').toLowerCase().includes('por verificar'))) {
+            n.direccion = cambio.direccion; huboCambios = true;
+          }
+          if (cambio.fuente && !n.fuenteRevision) { n.fuenteRevision = cambio.fuente; huboCambios = true; }
+          if (cambio.nota && !n.observacionRevision) { n.observacionRevision = cambio.nota; huboCambios = true; }
+          if (!n.fechaRevision) { n.fechaRevision = '2026-10-18'; huboCambios = true; }
+        }
+        if (huboCambios) window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
+        window.localStorage.setItem(claveFichas, '1');
+      }
+    } catch {
+      this.avisoAdministracion = 'No se pudieron incorporar todos los datos públicos al navegador.';
     }
     try {
       const datos = window.localStorage.getItem(this.claveCampanas);
@@ -662,7 +1179,7 @@ export class AppComponent {
     return {
       id: 0, nombre: '', categoria: 'Cafés', comuna: 'La Florida', direccion: '',
       descripcion: '', foto: this.fotoPorCategoria('Cafés'), icono: '☕', publicado: true,
-      destacado: false, prioridadDestacado: 100
+      destacado: false, prioridadDestacado: 100, whatsapp: '', sitioWeb: '', horario: ''
     };
   }
 
@@ -729,6 +1246,28 @@ export class AppComponent {
     n.descripcion = (n.descripcion || '').trim();
     n.direccion = (n.direccion || '').trim();
     n.foto = (n.foto || '').trim() || this.fotoPorCategoria(n.categoria);
+    n.telefono = (n.telefono || '').trim();
+    n.whatsapp = (n.whatsapp || '').trim();
+    n.sitioWeb = (n.sitioWeb || '').trim();
+    n.horario = (n.horario || '').trim();
+    if (n.whatsapp && !/^\+?[0-9\s()\-]{9,22}$/.test(n.whatsapp)) {
+      this.errorFormulario = 'WhatsApp: ingresa un número válido con código de país, ejemplo +569...';
+      return;
+    }
+    if (n.sitioWeb && !this.webUrl(n)) {
+      this.errorFormulario = 'La página web debe comenzar con https:// y ser válida.';
+      return;
+    }
+    const tieneLat = n.latitud !== undefined && n.latitud !== null && String(n.latitud) !== '';
+    const tieneLon = n.longitud !== undefined && n.longitud !== null && String(n.longitud) !== '';
+    if (tieneLat !== tieneLon || (tieneLat && (
+      !Number.isFinite(Number(n.latitud)) || !Number.isFinite(Number(n.longitud)) ||
+      Math.abs(Number(n.latitud)) > 90 || Math.abs(Number(n.longitud)) > 180))) {
+      this.errorFormulario = 'Indica latitud y longitud válidas juntas, o deja ambas vacías.';
+      return;
+    }
+    if (tieneLat) { n.latitud = Number(n.latitud); n.longitud = Number(n.longitud); }
+    else { delete n.latitud; delete n.longitud; }
     n.icono = this.iconoPorCategoria(n.categoria);
     n.prioridadDestacado = Number(n.prioridadDestacado ?? 100);
     if (!Number.isInteger(n.prioridadDestacado) || n.prioridadDestacado < 1 || n.prioridadDestacado > 999) {
@@ -830,13 +1369,111 @@ export class AppComponent {
     input.value = '';
   }
 
+
+  // Geolocalización voluntaria, actualizada cuando la persona se desplaza.
+  activarGPS(): void {
+    if (typeof navigator === 'undefined' || !('geolocation' in navigator)) {
+      this.estadoGPS = 'Este navegador no permite ubicación.';
+      return;
+    }
+    if (this.gpsWatchId !== null) return;
+    this.estadoGPS = 'Solicitando permiso de ubicación…';
+    this.gpsWatchId = navigator.geolocation.watchPosition(
+      posicion => {
+        this.posicionActual = {
+          lat: posicion.coords.latitude,
+          lon: posicion.coords.longitude
+        };
+        this.gpsHabilitado = true;
+        this.estadoGPS = 'Ubicación activa · distancias actualizadas al desplazarte.';
+      },
+      error => {
+        this.estadoGPS = error.code === 1
+          ? 'Ubicación no autorizada. Puedes seguir buscando por comuna.'
+          : 'No se pudo obtener tu ubicación. Puedes seguir buscando por comuna.';
+        this.detenerGPS();
+      },
+      { enableHighAccuracy: false, maximumAge: 20000, timeout: 15000 }
+    );
+  }
+
+  detenerGPS(): void {
+    if (this.gpsWatchId !== null && typeof navigator !== 'undefined') {
+      navigator.geolocation.clearWatch(this.gpsWatchId);
+    }
+    this.gpsWatchId = null;
+    this.gpsHabilitado = false;
+    this.posicionActual = null;
+  }
+
+  ngOnDestroy(): void { this.detenerGPS(); }
+
+  distanciaReal(n: Negocio): number | null {
+    if (!this.posicionActual || typeof n.latitud !== 'number' || typeof n.longitud !== 'number' ||
+      !Number.isFinite(n.latitud) || !Number.isFinite(n.longitud) ||
+      Math.abs(n.latitud) > 90 || Math.abs(n.longitud) > 180) return null;
+    const rad = Math.PI / 180;
+    const lat1 = this.posicionActual.lat * rad;
+    const lat2 = n.latitud * rad;
+    const dLat = (n.latitud - this.posicionActual.lat) * rad;
+    const dLon = (n.longitud - this.posicionActual.lon) * rad;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  distanciaTexto(n: Negocio): string {
+    const km = this.distanciaReal(n);
+    return km === null ? 'Km por confirmar' : `${km.toLocaleString('es-CL', { maximumFractionDigits: 1 })} km aprox.`;
+  }
+
+  whatsappUrl(n: Negocio): string | null {
+    const digitos = (n.whatsapp || '').replace(/\D/g, '');
+    // No se inventan números ni se genera un vínculo inválido.
+    if (digitos.length < 9 || digitos.length > 15) return null;
+    return `https://wa.me/${digitos}?text=${encodeURIComponent('Hola, encontré tu negocio en CERCA.cl y quisiera consultar.')}`;
+  }
+
+  webUrl(n: Negocio): string | null {
+    const url = (n.sitioWeb || '').trim();
+    if (!/^https:\/\//i.test(url)) return null;
+    try {
+      const valida = new URL(url);
+      if (valida.protocol !== 'https:') return null;
+      return valida.toString();
+    } catch { return null; }
+  }
+
+  telefonoUrl(n: Negocio): string | null {
+    const original = (n.telefono || '').trim();
+    const digitos = original.replace(/\D/g, '');
+    return digitos.length >= 8 && digitos.length <= 15
+      ? 'tel:' + (original.startsWith('+') ? '+' : '') + digitos
+      : null;
+  }
+
+  fuentePublicaUrl(n: Negocio): string | null {
+    const fuente = (n.fuenteRevision || '').trim();
+    if (!/^https:\/\//i.test(fuente)) return null;
+    try {
+      const u = new URL(fuente);
+      return u.protocol === 'https:' ? u.toString() : null;
+    } catch { return null; }
+  }
+
+  puntuacionTexto(n: Negocio): string {
+    return typeof n.calificacion === 'number' && n.calificacion >= 0 && n.calificacion <= 5
+      ? `${n.calificacion.toLocaleString('es-CL', { maximumFractionDigits: 1 })}/5${n.datosVerificados === true ? '' : ' · muestra'}`
+      : 'Sin calificación';
+  }
+
   get negociosFiltrados(): Negocio[] {
     const texto = this.busqueda.trim().toLocaleLowerCase('es');
     return this.negocios.filter((negocio) => {
       if (negocio.publicado === false) return false;
       const coincideCategoria = this.categoriaActiva === 'Todos' || negocio.categoria === this.categoriaActiva;
       const coincideComuna = negocio.comuna === this.comuna;
-      const coincideDistancia = negocio.distancia == null || negocio.distancia <= this.distanciaMaxima;
+      const km = this.distanciaReal(negocio);
+      const coincideDistancia = this.distanciaMaxima === 999 || km === null || km <= this.distanciaMaxima;
       const coincideTexto = [negocio.nombre, negocio.categoria, negocio.descripcion, negocio.comuna, negocio.direccion || '']
         .join(' ').toLocaleLowerCase('es').includes(texto);
       const coincideFavorito = !this.mostrarSoloFavoritos || this.favoritos.has(negocio.id);
@@ -847,6 +1484,9 @@ export class AppComponent {
       if (this.esDestacadoEnComuna(a) && this.esDestacadoEnComuna(b)) {
         return (a.prioridadDestacado ?? 100) - (b.prioridadDestacado ?? 100);
       }
+      const distA = this.distanciaReal(a);
+      const distB = this.distanciaReal(b);
+      if (distA !== null && distB !== null) return distA - distB;
       return 0;
     });
   }
@@ -913,7 +1553,7 @@ export class AppComponent {
     this.busqueda = '';
     this.comuna = 'La Florida';
     this.categoriaActiva = 'Todos';
-    this.distanciaMaxima = 5;
+    this.distanciaMaxima = 999;
     this.mostrarSoloFavoritos = false;
   }
 

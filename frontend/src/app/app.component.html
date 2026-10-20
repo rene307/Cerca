@@ -1,6 +1,6 @@
 <header class="header">
   <div class="layout header-content">
-    <a class="logo" href="#inicio" (click)="cerrarMenu()" aria-label="Ir al inicio de Cerca">cerca<span>.</span></a>
+    <a class="logo" href="#inicio" (click)="cerrarMenu()" aria-label="Ir al inicio de Cerca"><img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" /></a>
 
     <nav class="main-nav" [class.open]="menuAbierto" aria-label="Navegación principal">
       <a href="#explorar" (click)="cerrarMenu()">Explorar</a>
@@ -74,18 +74,20 @@
           <label class="distance-control">
             <span>Distancia</span>
             <select name="distancia" [(ngModel)]="distanciaMaxima" aria-label="Filtrar por distancia">
-              <option [ngValue]="2">Hasta 2 km*</option>
-              <option [ngValue]="5">Hasta 5 km*</option>
-              <option [ngValue]="10">Hasta 10 km*</option>
+              <option [ngValue]="2">Hasta 2 km</option>
+              <option [ngValue]="5">Hasta 5 km</option>
+              <option [ngValue]="10">Hasta 10 km</option>
               <option [ngValue]="999">Todas</option>
             </select>
           </label>
+          <button type="button" class="cerca-gps-toggle" (click)="gpsHabilitado ? detenerGPS() : activarGPS()">{{ gpsHabilitado ? 'Detener GPS' : '⌖ Usar mi ubicación' }}</button>
           <button class="clear-filters" type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
         </div>
       </div>
 
       <div class="results-layout">
         <div class="results-main">
+          <p class="cerca-gps-status" role="status">{{ estadoGPS }}</p>
           <div class="results-meta">
             <strong>{{ negociosFiltrados.length }} {{ negociosFiltrados.length === 1 ? 'negocio encontrado' : 'negocios encontrados' }}</strong>
             <span>{{ comuna }} <span *ngIf="mostrarSoloFavoritos">· Mis favoritos</span></span>
@@ -103,14 +105,31 @@
                         [attr.aria-pressed]="esFavorito(negocio.id)">
                   {{ esFavorito(negocio.id) ? '♥' : '♡' }}
                 </button>
-                <div class="photo-meta" *ngIf="negocio.calificacion != null || negocio.distancia != null"><span *ngIf="negocio.calificacion != null">★ {{ negocio.calificacion }} ({{ negocio.opiniones }})</span><small *ngIf="negocio.distancia != null">{{ negocio.distancia.toLocaleString('es-CL') }} km*</small></div>
+                <div class="photo-meta" *ngIf="negocio.calificacion != null"><span>★ {{ puntuacionTexto(negocio) }}</span></div>
               </div>
               <div class="card-content">
                 <h3>{{ negocio.nombre }}</h3>
                 <div class="card-subtitle">{{ negocio.categoria }} · {{ negocio.comuna }}</div>
                 <p *ngIf="negocio.direccion" class="card-address">⌖ {{ negocio.direccion }}</p>
                 <p *ngIf="!negocio.direccion">{{ negocio.descripcion }}</p>
-                <a *ngIf="negocio.origen" class="card-maps" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Buscar ubicación en Google Maps ↗</a>
+                <div class="cerca-card-facts" aria-label="Información del comercio">
+                  <div class="cerca-card-fact"><span>◷ Horario</span><strong>{{ negocio.horario || 'Por confirmar' }}</strong></div>
+                  <div class="cerca-card-fact"><span>★ Puntuación</span><strong>{{ puntuacionTexto(negocio) }}</strong></div>
+                  <div class="cerca-card-fact"><span>⌖ Distancia</span><strong>{{ distanciaTexto(negocio) }}</strong></div>
+                  <div class="cerca-card-fact" *ngIf="telefonoUrl(negocio) as telefono"><span>☎ Teléfono</span><a [href]="telefono">{{ negocio.telefono }}</a></div>
+                  <div class="cerca-card-fact"><span>⌕ Sitio web</span>
+                    <a *ngIf="webUrl(negocio) as sitio; else sinSitio" [href]="sitio" target="_blank" rel="noopener noreferrer">Abrir web ↗</a>
+                    <ng-template #sinSitio><strong>No posee</strong></ng-template>
+                  </div>
+                  <div class="cerca-card-contact">
+                    <a *ngIf="whatsappUrl(negocio) as wa; else whatsappPendiente" class="cerca-whatsapp" [href]="wa" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Contactar por WhatsApp a ' + negocio.nombre">
+                      <img src="assets/whatsapp-cerca.svg" alt="" aria-hidden="true" /> WhatsApp
+                    </a>
+                    <ng-template #whatsappPendiente><span class="cerca-whatsapp cerca-whatsapp-off"><img src="assets/whatsapp-cerca.svg" alt="" aria-hidden="true" /> No informado</span></ng-template>
+                    <a class="cerca-card-directions" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Cómo llegar ↗</a>
+                  </div>
+                </div>
+                <p *ngIf="negocio.fechaRevision" class="cerca-revision-resumen">Información pública consultada el {{ negocio.fechaRevision }} · confirmar vigencia</p>
                 <button class="card-link" type="button" (click)="abrirDetalle(negocio)">
                   Ver negocio <span aria-hidden="true">↗</span>
                 </button>
@@ -176,12 +195,83 @@
 </main>
 
 <footer class="footer">
-  <div class="layout footer-content"><a class="logo" href="#inicio">cerca<span>.</span></a><span>Prototipo visual 2026 · Datos y distancias ficticios · Santiago, Chile</span></div>
+  <div class="layout footer-content"><a class="logo" href="#inicio" aria-label="Ir al inicio de Cerca"><img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" /></a><span>Prototipo visual 2026 · Datos y distancias ficticios · Santiago, Chile</span></div>
   <!-- Acceso de edición local, separado del diseño público original -->
   <div class="layout admin-footer-access">
     <a href="#admin" (click)="entrarAdministracion()">Administración de anuncios</a>
   </div>
 </footer>
+
+<!-- Control de acceso de demostración: no sirve como autenticación segura. -->
+<div *ngIf="!accesoConcedido && !mostrarAdministracion" class="cerca-acceso-bloqueo" aria-hidden="true"></div>
+<div *ngIf="!accesoConcedido && !mostrarAdministracion" class="cerca-acceso-mensaje" role="status">
+  <strong>{{ accesoRechazado ? 'Acceso no disponible' : 'Bienvenido a CERCA' }}</strong>
+  <span>{{ accesoRechazado ? 'Elegiste no recibir promociones. Puedes cambiar tu respuesta desde la burbuja naranja.' : 'Para continuar, responde desde la burbuja naranja de la esquina inferior derecha.' }}</span>
+</div>
+
+<button *ngIf="!mostrarAdministracion" type="button" class="cerca-burbuja-suscripcion"
+        (click)="mostrarSuscripcion ? cerrarSuscripcion() : abrirSuscripcion()"
+        [attr.aria-expanded]="mostrarSuscripcion" aria-controls="cerca-suscripcion-panel"
+        [attr.aria-label]="accesoConcedido ? 'Configurar promociones de CERCA' : 'Responder y acceder a CERCA'">
+  <span aria-hidden="true">✉</span>
+  <span>{{ accesoConcedido ? 'Promociones' : 'Entrar a CERCA' }}</span>
+</button>
+
+<section *ngIf="mostrarSuscripcion && !mostrarAdministracion" id="cerca-suscripcion-panel" class="cerca-suscripcion-burbuja-panel"
+         role="dialog" aria-modal="true" aria-label="Acceso y promociones de CERCA">
+  <div class="cerca-burbuja-cabecera">
+    <div><span class="cerca-optin-kicker">CERCA TE AVISA</span><h2>Promociones de tu barrio</h2></div>
+    <button type="button" class="cerca-burbuja-cerrar" (click)="cerrarSuscripcion()" aria-label="Cerrar">✕</button>
+  </div>
+  <p class="cerca-burbuja-pregunta">¿Quieres recibir promociones o actualizaciones de los negocios de tu barrio?</p>
+  <div class="cerca-burbuja-respuestas" role="group" aria-label="¿Quieres recibir promociones?">
+    <button type="button" [class.elegido]="decisionSuscripcion === 'si'" (click)="elegirSuscripcion('si')">Sí, quiero</button>
+    <button type="button" [class.elegido]="decisionSuscripcion === 'no'" (click)="elegirSuscripcion('no')">No, gracias</button>
+  </div>
+  <p *ngIf="decisionSuscripcion !== 'si'" class="cerca-burbuja-aviso">Si eliges No, esta versión bloqueará el acceso hasta que cambies tu respuesta.</p>
+  <form *ngIf="decisionSuscripcion === 'si'" class="cerca-suscripcion-form" (ngSubmit)="validarSuscripcion()">
+    <fieldset>
+      <legend>¿Cada cuánto quieres recibirlas?</legend>
+      <label><input type="radio" name="frecSuscripcion" [(ngModel)]="frecuenciaSuscripcion" value="diaria" /> Diariamente</label>
+      <label><input type="radio" name="frecSuscripcion" [(ngModel)]="frecuenciaSuscripcion" value="semanal" /> Semanalmente</label>
+      <label><input type="radio" name="frecSuscripcion" [(ngModel)]="frecuenciaSuscripcion" value="mensual" /> Mensualmente</label>
+    </fieldset>
+    <fieldset>
+      <legend>¿Qué quieres recibir?</legend>
+      <label><input type="checkbox" name="promosSuscripcion" [(ngModel)]="tipoPromociones" /> Promociones y descuentos</label>
+      <label><input type="checkbox" name="novedadesSuscripcion" [(ngModel)]="tipoActualizaciones" /> Actualizaciones y nuevos negocios</label>
+    </fieldset>
+    <div class="cerca-suscripcion-fields">
+      <label>Comuna
+        <select name="comunaSuscripcion" [(ngModel)]="comunaSuscripcion">
+          <option *ngFor="let c of comunas" [value]="c">{{ c }}</option>
+        </select>
+      </label>
+      <label>Rubro
+        <select name="rubroSuscripcion" [(ngModel)]="rubroSuscripcion">
+          <option value="Todos">Todos los negocios</option>
+          <option *ngFor="let c of categorias" [value]="c.nombre" [disabled]="c.nombre === 'Todos'">{{ c.nombre }}</option>
+        </select>
+      </label>
+      <label>Recibir por
+        <select name="canalSuscripcion" [(ngModel)]="canalSuscripcion" (ngModelChange)="contactoSuscripcion = ''">
+          <option value="email">Correo electrónico</option>
+          <option value="whatsapp">WhatsApp</option>
+        </select>
+      </label>
+      <label>{{ canalSuscripcion === 'email' ? 'Correo electrónico' : 'Número WhatsApp' }}
+        <input [type]="canalSuscripcion === 'email' ? 'email' : 'tel'" name="contactoSuscripcion" [(ngModel)]="contactoSuscripcion"
+               autocomplete="off" required [placeholder]="canalSuscripcion === 'email' ? 'ejemplo@correo.cl' : '+56 9 1234 5678'" />
+      </label>
+    </div>
+    <label class="cerca-suscripcion-consent"><input type="checkbox" name="consentimientoSuscripcion" [(ngModel)]="consentimientoSuscripcion" />
+      Acepto recibir estas comunicaciones y entiendo que podré cancelar mi suscripción cuando se habilite el servicio.
+    </label>
+    <p class="cerca-suscripcion-demo">Demo: esta pantalla NO guarda correo ni WhatsApp y NO envía promociones. Solo guarda la decisión de acceso en este navegador.</p>
+    <p *ngIf="errorSuscripcion" role="alert" class="cerca-suscripcion-error">{{ errorSuscripcion }}</p>
+    <button type="submit" class="cerca-burbuja-continuar">Continuar a CERCA →</button>
+  </form>
+</section>
 
 <div *ngIf="negocioSeleccionado || mostrarPublicacion" class="modal-backdrop" (click)="cerrarModal()">
   <section class="info-modal" role="dialog" aria-modal="true" aria-label="Información de Cerca" (click)="$event.stopPropagation()">
@@ -193,11 +283,23 @@
       <div class="modal-data">
         <div><strong>Comuna</strong><span>{{ negocio.comuna }}</span></div>
         <div *ngIf="negocio.direccion"><strong>Dirección por verificar</strong><span>{{ negocio.direccion }}</span></div>
-        <div *ngIf="negocio.distancia != null"><strong>Distancia*</strong><span>{{ negocio.distancia }} km</span></div>
-        <div *ngIf="negocio.calificacion != null"><strong>Valoración*</strong><span>★ {{ negocio.calificacion }}</span></div>
+        <div><strong>Horario</strong><span>{{ negocio.horario || 'Por confirmar' }}</span></div>
+        <div><strong>Puntuación</strong><span>★ {{ puntuacionTexto(negocio) }} <ng-container *ngIf="negocio.opiniones != null"> ({{ negocio.opiniones }} opiniones)</ng-container></span></div>
+        <div><strong>Distancia actual</strong><span>{{ distanciaTexto(negocio) }}</span></div>
+        <div *ngIf="negocio.telefono"><strong>Teléfono</strong><span>{{ negocio.telefono }}</span></div>
+        <div><strong>WhatsApp</strong><span>{{ whatsappUrl(negocio) ? 'Disponible' : 'No informado' }}</span></div>
+        <div><strong>Sitio web</strong><a *ngIf="webUrl(negocio) as url; else sitioAusente" [href]="url" target="_blank" rel="noopener noreferrer">Visitar sitio ↗</a><ng-template #sitioAusente><span>No posee</span></ng-template></div>
       </div>
-      <a class="card-maps" *ngIf="negocio.origen" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Buscar en Google Maps ↗</a>
-      <p class="modal-note">Datos por verificar: esta ficha es demostrativa y la fotografía representa el rubro, no necesariamente el negocio.</p>
+      <div class="cerca-modal-actions">
+        <a *ngIf="whatsappUrl(negocio) as wa; else sinWhatsappModal" class="cerca-whatsapp" [href]="wa" target="_blank" rel="noopener noreferrer"><img src="assets/whatsapp-cerca.svg" alt="" /> Contactar por WhatsApp</a>
+        <ng-template #sinWhatsappModal><span class="cerca-whatsapp cerca-whatsapp-off"><img src="assets/whatsapp-cerca.svg" alt="" /> WhatsApp no informado</span></ng-template>
+        <a class="cerca-card-directions" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Cómo llegar ↗</a>
+      </div>
+      <p *ngIf="negocio.fechaRevision" class="modal-note">Información pública consultada el {{ negocio.fechaRevision }}; los horarios pueden cambiar. Confirma con el negocio.</p>
+      <p *ngIf="negocio.observacionRevision" class="modal-note"><strong>Observación:</strong> {{ negocio.observacionRevision }}</p>
+      <p *ngIf="fuentePublicaUrl(negocio) as fuente" class="modal-note"><a [href]="fuente" target="_blank" rel="noopener noreferrer">Consultar fuente pública ↗</a></p>
+      <p *ngIf="negocio.origen === 'captura'" class="modal-note">Fotografía genérica del rubro. Datos públicos referenciales: confirma información, horarios y disponibilidad con el comercio.</p>
+      <p *ngIf="negocio.origen !== 'captura'" class="modal-note">Ficha de demostración o creada manualmente. Verifica los datos antes de publicarla.</p>
     </ng-container>
     <ng-template #modalPublicar>
       <span class="modal-kicker">PARA NEGOCIOS</span>
@@ -212,7 +314,7 @@
 <!-- Panel de edición local. Se abre con http://localhost:4200/#admin -->
 <div class="admin-cover" *ngIf="mostrarAdministracion" role="region" aria-label="Editor de anuncios de Cerca">
   <div class="admin-topbar">
-    <div><strong class="admin-brand">cerca<span>.</span></strong><span class="admin-top-title">Panel de anuncios</span></div>
+    <div><strong class="admin-brand"><img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" /></strong><span class="admin-top-title">Panel de anuncios</span></div>
     <button type="button" class="admin-exit" (click)="salirAdministracion()">← Volver a CERCA</button>
   </div>
   <div class="admin-body">
@@ -278,6 +380,20 @@
           </select></label>
           <label>Comuna *<input type="text" name="comunaAdmin" [(ngModel)]="anuncioEditor.comuna" maxlength="100" required /></label>
           <label>Dirección<input type="text" name="direccionAdmin" [(ngModel)]="anuncioEditor.direccion" maxlength="180" placeholder="Calle y número" /></label>
+          <label>Teléfono público (no equivale a WhatsApp)<input type="tel" name="telefonoAdmin" [(ngModel)]="anuncioEditor.telefono" placeholder="+56 ..." /></label>
+          <label>WhatsApp (con código del país)<input type="tel" name="whatsappAdmin" [(ngModel)]="anuncioEditor.whatsapp" placeholder="+56912345678" /></label>
+          <label>Sitio web (HTTPS)<input type="url" name="sitioWebAdmin" [(ngModel)]="anuncioEditor.sitioWeb" placeholder="https://www.ejemplo.cl" /></label>
+          <label class="admin-full">Horario informado (confirmar vigencia)<input type="text" name="horarioAdmin" [(ngModel)]="anuncioEditor.horario" placeholder="Ej. Lun–Vie 09:00–18:00" maxlength="180" /></label>
+          <label>Latitud verificada<input type="number" name="latitudAdmin" [(ngModel)]="anuncioEditor.latitud" step="any" min="-90" max="90" placeholder="−33.…" /></label>
+          <label>Longitud verificada<input type="number" name="longitudAdmin" [(ngModel)]="anuncioEditor.longitud" step="any" min="-180" max="180" placeholder="−70.…" /></label>
+          <label>Calificación verificada (0–5)<input type="number" name="calificacionAdmin" [(ngModel)]="anuncioEditor.calificacion" step="0.1" min="0" max="5" placeholder="Sin calificación" /></label>
+          <label>Opiniones verificadas<input type="number" name="opinionesAdmin" [(ngModel)]="anuncioEditor.opiniones" min="0" step="1" placeholder="0" /></label>
+          <label class="admin-check admin-full"><input type="checkbox" name="datosVerificadosAdmin" [(ngModel)]="anuncioEditor.datosVerificados" /> Confirmo haber verificado los datos y la puntuación</label>
+          <div class="admin-full cerca-admin-fuente" *ngIf="anuncioEditor.fuenteRevision">
+            <strong>Última fuente pública consultada:</strong> {{ anuncioEditor.fechaRevision || 'Sin fecha' }}
+            <a *ngIf="fuentePublicaUrl(anuncioEditor) as fuente" [href]="fuente" target="_blank" rel="noopener noreferrer">Ver fuente ↗</a>
+            <p *ngIf="anuncioEditor.observacionRevision">{{ anuncioEditor.observacionRevision }}</p>
+          </div>
           <label class="admin-full">Descripción<textarea name="descripcionAdmin" [(ngModel)]="anuncioEditor.descripcion" maxlength="700" rows="3" placeholder="Qué ofrece el negocio"></textarea></label>
           <label class="admin-full">URL de la fotografía (HTTPS)<input type="text" name="fotoAdmin" [(ngModel)]="anuncioEditor.foto" placeholder="https://..." /></label>
           <div class="admin-photo-field admin-full">
