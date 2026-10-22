@@ -56,6 +56,7 @@ interface Negocio {
   origen?: 'captura' | 'manual';
   publicado?: boolean;
   destacado?: boolean;
+  recomendacionEditorial?: boolean; // 5.0 recomendado por una persona; NO promedio de reseñas.
   prioridadDestacado?: number;
   whatsapp?: string;       // +569XXXXXXXX; only configured numbers activate contact.
   telefono?: string;       // Teléfono público. No implica que tenga WhatsApp.
@@ -69,6 +70,31 @@ interface Negocio {
   datosVerificados?: boolean;
 
 }
+
+
+// Telemetría de prueba, local y sin datos personales. Requiere API para uso global.
+type TipoEventoCerca = 'visita' | 'busqueda' | 'categoria' | 'ficha' | 'whatsapp' |
+  'web' | 'ruta' | 'telefono' | 'favorito' | 'suscripcion' | 'gps' | 'campana';
+interface EventoCerca {
+  fecha: string;
+  tipo: TipoEventoCerca;
+  negocioId?: number;
+  comuna?: string;
+  categoria?: string;
+}
+interface OpinionCerca {
+  id: string;
+  negocioId: number;
+  dispositivo: string;
+  estrellas: number;
+  motivos: string[];
+  comentario: string;
+  fecha: string;
+  estado: 'pendiente' | 'resuelto';
+  respuesta: string;
+}
+interface FilaMetrica { nombre: string; valor: number; porcentaje: number; }
+interface BarraMetrica { etiqueta: string; valor: number; alto: number; }
 
 @Component({
   selector: 'app-root',
@@ -94,6 +120,66 @@ export class AppComponent implements OnDestroy {
     { nombre: 'Tiendas', icono: '▣' },
     { nombre: 'Servicios', icono: '⚒' }
   ];
+
+  // Catálogo interno del círculo "Oficios y Profesiones".
+  mostrarPanelOficios = false;
+  oficioSeleccionado: string | null = null;
+  readonly oficiosYProfesiones: { nombre: string; icono: string; palabras: string[] }[] = [
+    { nombre: 'Mecánicos', icono: '🚗', palabras: ['mecanic', 'automotriz'] },
+    { nombre: 'Gasfíteres', icono: '🚰', palabras: ['gasfiter', 'plomer', 'fontaner'] },
+    { nombre: 'Electricistas', icono: '💡', palabras: ['electricist', 'electricidad'] },
+    { nombre: 'Cerrajeros', icono: '🔑', palabras: ['cerrajer', 'cerradur'] },
+    { nombre: 'Carpinteros', icono: '🪚', palabras: ['carpinter'] },
+    { nombre: 'Pintores', icono: '🖌️', palabras: ['pintor', 'pintura de casas'] },
+    { nombre: 'Jardineros', icono: '🌱', palabras: ['jardiner', 'paisajism'] },
+    { nombre: 'Maestros', icono: '🔨', palabras: ['maestro', 'albanil', 'construccion'] },
+    { nombre: 'Veterinarios', icono: '🐾', palabras: ['veterinari'] },
+    { nombre: 'Contadores', icono: '🧮', palabras: ['contador', 'contabil', 'contable'] },
+    { nombre: 'Abogados', icono: '⚖️', palabras: ['abogad', 'asesoria legal'] },
+    { nombre: 'Arquitectos', icono: '📐', palabras: ['arquitect'] },
+    { nombre: 'Psicólogos', icono: '🧠', palabras: ['psicolog'] },
+    { nombre: 'Profesores particulares', icono: '🎓', palabras: ['profesor particular', 'clases particulares', 'tutorias'] },
+    { nombre: 'Técnicos informáticos', icono: '💻', palabras: ['informatic', 'computacion', 'computador', 'soporte tecnico'] },
+    { nombre: 'Soldadores', icono: '🔥', palabras: ['soldador', 'soldadura'] },
+    { nombre: 'Refrigeración', icono: '❄️', palabras: ['refrigeracion', 'aire acondicionado'] },
+    { nombre: 'Técnicos en celulares', icono: '📱', palabras: ['celular', 'smartphone'] },
+    { nombre: 'Fotógrafos', icono: '📷', palabras: ['fotograf'] },
+    { nombre: 'Diseñadores gráficos', icono: '🎨', palabras: ['disenador grafico', 'diseno grafico'] },
+    { nombre: 'Kinesiólogos', icono: '🦴', palabras: ['kinesiolog'] },
+    { nombre: 'Nutricionistas', icono: '🥑', palabras: ['nutricionist'] },
+    { nombre: 'Fletes y mudanzas', icono: '🚚', palabras: ['flete', 'mudanza', 'transportista'] },
+    { nombre: 'Costureras y sastres', icono: '🧵', palabras: ['costurer', 'sastrer', 'modist'] },
+    { nombre: 'Cuidadores', icono: '🤝', palabras: ['cuidador', 'cuidado domiciliario'] }
+  ];
+
+  abrirPanelOficios(): void {
+    this.mostrarPanelOficios = true;
+    this.oficioSeleccionado = null;
+  }
+
+  cerrarPanelOficios(): void {
+    this.mostrarPanelOficios = false;
+    this.oficioSeleccionado = null;
+  }
+
+  filtrarOficio(nombre: string): void {
+    this.oficioSeleccionado = nombre;
+    this.categoriaActiva = 'Todos';
+    this.categoriasIntencion = null;
+    this.consultaActiva = '';
+    this.busqueda = '';
+    this.mostrarSoloFavoritos = false;
+    this.registrarEvento('categoria');
+    this.irA('explorar');
+  }
+
+  private negocioDeOficio(negocio: Negocio, nombre: string): boolean {
+    const oficio = this.oficiosYProfesiones.find(item => item.nombre === nombre);
+    if (!oficio) return false;
+    const texto = [negocio.nombre, negocio.categoria, negocio.descripcion]
+      .filter(Boolean).join(' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return oficio.palabras.some(palabra => texto.includes(palabra));
+  }
 
   readonly comunas = [
     'La Florida',
@@ -571,6 +657,28 @@ export class AppComponent implements OnDestroy {
     }
   ];
 
+  // Entrada centrada en necesidad y descubrimiento. No envía WhatsApp ni publica solicitudes.
+  modoEntrada: 'necesito' | 'descubrir' = 'necesito';
+  entradaTexto = '';
+  errorEntrada = '';
+  consultaActiva = '';
+  categoriasIntencion: Categoria[] | null = null;
+  readonly sugerenciasNecesito = [
+    { icono: '🥖', etiqueta: 'Comprar pan', texto: 'Necesito comprar pan' },
+    { icono: '🚗', etiqueta: 'Cambiar una rueda', texto: 'Necesito cambiar una rueda' },
+    { icono: '📚', etiqueta: 'Papel lustre', texto: 'Necesito papel lustre' },
+    { icono: '🔧', etiqueta: 'Reparación del hogar', texto: 'Necesito un gasfíter' }
+  ];
+  readonly sugerenciasDescubrir = [
+    { icono: '☕', etiqueta: 'Tomar un café', texto: 'Quiero tomar un café' },
+    { icono: '🍰', etiqueta: 'Algo dulce', texto: 'Se me antoja algo dulce' },
+    { icono: '🍔', etiqueta: 'Tengo hambre', texto: 'Tengo hambre' },
+    { icono: '🎵', etiqueta: 'Salir un rato', texto: 'Quiero salir un rato' }
+  ];
+  get sugerenciasEntrada() {
+    return this.modoEntrada === 'necesito' ? this.sugerenciasNecesito : this.sugerenciasDescubrir;
+  }
+
   busqueda = '';
   comuna = 'La Florida';
   categoriaActiva: Categoria = 'Todos';
@@ -588,7 +696,7 @@ export class AppComponent implements OnDestroy {
   // DEMO: guardamos solo la decisión local para reconocer este navegador.
   // No se guardan teléfonos/correos ni se envían mensajes sin API/consentimiento verificable.
   mostrarSuscripcion = false;
-  accesoConcedido = false;
+  accesoConcedido = true; // El directorio es público: no condicionar acceso a recibir publicidad.
   accesoRechazado = false;
   decisionSuscripcion: 'pendiente' | 'si' | 'no' = 'pendiente';
   private readonly claveDecisionVisitante = 'cerca_visitante_optin_v1';
@@ -598,11 +706,115 @@ export class AppComponent implements OnDestroy {
   tipoActualizaciones = true;
   canalSuscripcion: CanalCampana = 'email';
   comunaSuscripcion = 'La Florida';
-  rubroSuscripcion = 'Todos';
+  nombreSuscripcion = '';
   contactoSuscripcion = '';
   consentimientoSuscripcion = false;
   errorSuscripcion = '';
   avisoSuscripcion = '';
+  intencionSuscripcion: 'ahora' | 'pronto' | 'explorando' = 'pronto';
+  interesesSuscripcion: string[] = ['Cafés'];
+  procesandoSuscripcion = false;
+  tokenBajaSuscripcion = '';
+  reputacionPorNegocio:Record<number,{promedio:number;total:number}> = {};
+  apiDisponible = false;
+  apiError = 'Conectando CERCA con PostgreSQL…';
+  accesoAdmin = false;
+  adminPassword = '';
+  adminToken = '';
+  errorAdminLogin = '';
+  resumenGlobal: {negocios:number;eventos:Record<string,number>;suscripciones:Record<string,number>;reputacion:any}|null=null;
+  suscriptoresAdmin: Array<{id:number;nombre:string;canal:string;contacto:string;comuna:string;intereses:string[];intencion:string;frecuencia:string;estado:string;contenido:string;consentimiento_en:string}> = [];
+  filtroInteresAdmin = '';
+  filtroIntencionAdmin = '';
+  filtroEstadoAdmin = '';
+  filtroComunaAdmin = '';
+  filtroFrecuenciaAdmin = '';
+  cargandoAdmin = false;
+  alternarInteres(rubro:string):void {
+    this.interesesSuscripcion = this.interesesSuscripcion.includes(rubro) ?
+      this.interesesSuscripcion.filter(x=>x!==rubro) : [...this.interesesSuscripcion,rubro];
+  }
+
+  private async api<T>(ruta:string, opciones:RequestInit={}):Promise<T> {
+    const headers=new Headers(opciones.headers||{});
+    headers.set('Content-Type','application/json');
+    if(this.adminToken)headers.set('Authorization','Bearer '+this.adminToken);
+    let res:Response;
+    try {res=await fetch('/api'+ruta,{...opciones,headers,cache:'no-store'});}
+    catch {throw Error('No se puede conectar con el servidor CERCA. Inicia PostgreSQL y la API.');}
+    if(!res.ok){
+      let msg='Error del servidor '+res.status;
+      try{const body=await res.json();msg=body.error||msg;}catch{}
+      if(res.status===401){this.accesoAdmin=false;this.adminToken='';}
+      throw Error(msg);
+    }
+    return res.json() as Promise<T>;
+  }
+  private async iniciarServidor():Promise<void> {
+    try {
+      const negocios=await this.api<Negocio[]>('/negocios');
+      this.negocios=negocios;
+      const [opiniones,reputacion]=await Promise.all([
+        this.api<OpinionCerca[]>('/reputacion'),
+        this.api<Record<number,{promedio:number;total:number}>>('/reputacion/resumen')]);
+      this.opinionesCerca=opiniones;this.reputacionPorNegocio=reputacion;
+      this.apiDisponible=true;this.apiError='';
+      if(this.visitaPendiente){this.visitaPendiente=false;this.registrarEvento('visita');}
+    }catch(e){this.apiDisponible=false;this.apiError=(e as Error).message;}
+  }
+  async loginAdmin():Promise<void> {
+    this.errorAdminLogin='';
+    try {
+      const sesion=await this.api<{token:string}>('/admin/login',{method:'POST',body:JSON.stringify({password:this.adminPassword})});
+      this.adminPassword='';this.adminToken=sesion.token;this.accesoAdmin=true;
+      await this.cargarAdmin();
+    }catch(e){this.errorAdminLogin=(e as Error).message;}
+  }
+  salirSesionAdmin():void {this.adminToken='';this.accesoAdmin=false;this.resumenGlobal=null;this.suscriptoresAdmin=[];}
+  async cargarAdmin():Promise<void> {
+    if(!this.accesoAdmin)return;
+    this.cargandoAdmin=true;
+    try {
+      const [negocios,eventos,opiniones,resumen,campanas,suscriptores]=await Promise.all([
+        this.api<Negocio[]>('/admin/negocios'),
+        this.api<EventoCerca[]>('/admin/eventos?limit=5000'),
+        this.api<OpinionCerca[]>('/admin/opiniones'),
+        this.api<any>('/admin/resumen?periodo='+this.periodoTablero+'&comuna='+encodeURIComponent(this.comunaTablero)+'&categoria='+encodeURIComponent(this.categoriaTablero)),
+        this.api<Record<string,ProgramacionCampana>>('/admin/campanas'),
+        this.api<typeof this.suscriptoresAdmin>('/admin/suscriptores')]);
+      this.negocios=negocios;this.eventos=eventos;this.opinionesCerca=opiniones;
+      this.resumenGlobal=resumen;
+      this.suscriptoresAdmin=suscriptores;
+      for(const f of this.frecuenciasCampana){if(campanas[f]&&this.programacionValida(campanas[f],f))this.configuracionCampanas[f]=campanas[f];}
+      this.apiDisponible=true;this.apiError='';
+    }catch(e){this.avisoAdministracion=(e as Error).message;}
+    finally{this.cargandoAdmin=false;}
+  }
+  async actualizarResumen():Promise<void> {
+    if(!this.accesoAdmin)return;
+    try{this.resumenGlobal=await this.api<any>('/admin/resumen?periodo='+this.periodoTablero+
+      '&comuna='+encodeURIComponent(this.comunaTablero)+'&categoria='+encodeURIComponent(this.categoriaTablero));}
+    catch(e){this.avisoAdministracion=(e as Error).message;}
+  }
+  get suscriptoresFiltrados(): typeof this.suscriptoresAdmin {
+    return this.suscriptoresAdmin.filter(s=>(!this.filtroInteresAdmin||s.intereses.includes(this.filtroInteresAdmin))&&
+    (!this.filtroIntencionAdmin||s.intencion===this.filtroIntencionAdmin)&&
+    (!this.filtroEstadoAdmin||s.estado===this.filtroEstadoAdmin)&&
+    (!this.filtroComunaAdmin||s.comuna===this.filtroComunaAdmin)&&
+    (!this.filtroFrecuenciaAdmin||s.frecuencia===this.filtroFrecuenciaAdmin));
+  }
+  get suscriptoresConfirmados():number{return Number(this.resumenGlobal?.suscripciones?.['confirmado']||0);}
+  async importarDatosLocales():Promise<void> {
+    if(typeof window==='undefined'||!this.accesoAdmin)return;
+    const bruto=window.localStorage.getItem(this.claveEdicion);
+    if(!bruto){this.avisoAdministracion='No hay anuncios antiguos en este navegador para importar.';return;}
+    if(!window.confirm('Esto reemplazará fichas del mismo ID en PostgreSQL con tus datos antiguos de ESTE navegador. Haz antes una copia de seguridad. ¿Continuar?'))return;
+    try{const lista=JSON.parse(bruto);if(!Array.isArray(lista))throw Error('Datos inválidos.');
+      const resultado=await this.api<{importados:number}>('/admin/importar',{method:'POST',body:JSON.stringify({negocios:lista})});
+      await this.cargarAdmin();this.avisoAdministracion=resultado.importados+' fichas importadas al servidor.';
+    }catch(e){this.avisoAdministracion=(e as Error).message;}
+  }
+
 
   abrirSuscripcion(): void {
     this.mostrarSuscripcion = true;
@@ -610,7 +822,8 @@ export class AppComponent implements OnDestroy {
     this.errorSuscripcion = '';
     this.avisoSuscripcion = '';
     // Una visita posterior puede consultar las preferencias sin registrar de nuevo.
-    this.decisionSuscripcion = this.accesoConcedido ? 'si' : 'pendiente';
+    // Respeta la decisión previa; a un nuevo visitante le pregunta Sí o No.
+    // Nunca bloquea la navegación pública.
   }
 
   cerrarSuscripcion(): void {
@@ -625,7 +838,7 @@ export class AppComponent implements OnDestroy {
     this.decisionSuscripcion = decision;
     this.errorSuscripcion = '';
     if (decision === 'no') {
-      this.accesoConcedido = false;
+      this.accesoConcedido = true;
       this.accesoRechazado = true;
       this.contactoSuscripcion = '';
       this.consentimientoSuscripcion = false;
@@ -646,40 +859,40 @@ export class AppComponent implements OnDestroy {
     }
   }
 
-  validarSuscripcion(): void {
-    this.errorSuscripcion = '';
-    this.avisoSuscripcion = '';
-    if (this.decisionSuscripcion !== 'si') {
-      this.errorSuscripcion = 'Selecciona Sí para continuar.';
-      return;
+  async validarSuscripcion(): Promise<void> {
+    this.errorSuscripcion = '';this.avisoSuscripcion = '';
+    if (this.decisionSuscripcion !== 'si')return;
+    if (!this.tipoPromociones&&!this.tipoActualizaciones){this.errorSuscripcion='Selecciona qué deseas recibir.';return;}
+    if (!this.interesesSuscripcion.length){this.errorSuscripcion='Elige al menos un rubro que te interese.';return;}
+    if (!this.consentimientoSuscripcion){this.errorSuscripcion='Para suscribirte debes aceptar recibir estas comunicaciones.';return;}
+    const contacto=this.contactoSuscripcion.trim(),num=contacto.replace(/\D/g,'');
+    if(this.nombreSuscripcion.trim().length<2){this.errorSuscripcion='Ingresa tu nombre.';return;}
+    if(this.canalSuscripcion==='email'?!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto):!/^569\d{8}$/.test(num)){
+      this.errorSuscripcion='Ingresa un correo o WhatsApp válido (+56 9 XXXX XXXX).';return;
     }
-    if (!this.tipoPromociones && !this.tipoActualizaciones) {
-      this.errorSuscripcion = 'Selecciona promociones, actualizaciones o ambas.';
-      return;
-    }
-    if (!this.consentimientoSuscripcion) {
-      this.errorSuscripcion = 'Debes aceptar recibir las comunicaciones seleccionadas.';
-      return;
-    }
-    const contacto = this.contactoSuscripcion.trim();
-    const correoValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto);
-    const numero = contacto.replace(/[^0-9]/g, '');
-    const whatsappValido = /^56[0-9]{9}$/.test(numero);
-    if (this.canalSuscripcion === 'email' ? !correoValido : !whatsappValido) {
-      this.errorSuscripcion = this.canalSuscripcion === 'email'
-        ? 'Ingresa un correo electrónico válido.'
-        : 'Ingresa WhatsApp con código de Chile: +56 9 XXXX XXXX.';
-      return;
-    }
-    // DEMO SIN BACKEND: habilita navegación en este navegador, pero NO da de alta
-    // al usuario en una lista de envío ni guarda su número/correo personal.
-    this.accesoConcedido = true;
-    this.accesoRechazado = false;
-    this.guardarDecisionLocal('si');
-    this.mostrarSuscripcion = false;
-    this.contactoSuscripcion = '';
-    this.consentimientoSuscripcion = false;
-    this.avisoSuscripcion = '';
+    this.procesandoSuscripcion=true;
+    try {
+      const datos={nombre:this.nombreSuscripcion.trim(),canal:this.canalSuscripcion,contacto,comuna:this.comunaSuscripcion,
+        intereses:this.interesesSuscripcion,intencion:this.intencionSuscripcion,frecuencia:this.frecuenciaSuscripcion,
+        contenido:this.tipoPromociones&&this.tipoActualizaciones?'ambas':this.tipoPromociones?'promociones':'actualizaciones',
+        consentimiento:true,sitio_web_oculto:''};
+      const resultado=await this.api<{estado:string;mensaje:string;tokenBaja:string}>('/suscripciones',{method:'POST',body:JSON.stringify(datos)});
+      this.tokenBajaSuscripcion=resultado.tokenBaja;
+      if(typeof window!=='undefined')window.localStorage.setItem('cerca_token_baja_v1',resultado.tokenBaja);
+      this.accesoConcedido=true;this.accesoRechazado=false;this.guardarDecisionLocal('si');
+      this.mostrarSuscripcion=false;this.nombreSuscripcion='';this.contactoSuscripcion='';this.consentimientoSuscripcion=false;
+      this.avisoSuscripcion=resultado.mensaje;
+      this.registrarEvento('suscripcion');
+    }catch(e){this.errorSuscripcion=(e as Error).message;}
+    finally{this.procesandoSuscripcion=false;}
+  }
+  async solicitarBaja():Promise<void> {
+    const token=this.tokenBajaSuscripcion||(typeof window!=='undefined'?window.localStorage.getItem('cerca_token_baja_v1')||'':'');
+    if(!token){this.errorSuscripcion='No existe un token de baja en este dispositivo. Contacta al administrador.';return;}
+    try{await this.api('/suscripciones/baja',{method:'POST',body:JSON.stringify({token})});
+      if(typeof window!=='undefined')window.localStorage.removeItem('cerca_token_baja_v1');
+      this.tokenBajaSuscripcion='';this.avisoSuscripcion='La baja quedó registrada.';
+    }catch(e){this.errorSuscripcion=(e as Error).message;}
   }
 
 
@@ -696,7 +909,7 @@ export class AppComponent implements OnDestroy {
 
 
   // Configuración local del administrador de campañas. No almacena suscriptores.
-  pestanaAdmin: 'anuncios' | 'campanas' = 'anuncios';
+  pestanaAdmin: 'tablero' | 'anuncios' | 'campanas' | 'suscriptores' = 'tablero';
   readonly nombreDia = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   readonly diasMensuales = Array.from({ length: 28 }, (_, i) => i + 1);
   readonly nombreMes = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -758,20 +971,13 @@ export class AppComponent implements OnDestroy {
       typeof v.activa === 'boolean';
   }
 
-  guardarCampana(): void {
-    const p = this.programacionActual;
-    this.mensajeCampanas = '';
-    if (!this.programacionValida(p, this.frecuenciaSeleccionada)) {
-      this.mensajeCampanas = 'Revisa día, fecha y hora: la programación no es válida.';
-      return;
-    }
-    if (typeof window === 'undefined') return;
-    try {
-      window.localStorage.setItem(this.claveCampanas, JSON.stringify(this.configuracionCampanas));
-      this.mensajeCampanas = 'Programación guardada en este navegador. No se ha realizado ningún envío.';
-    } catch {
-      this.mensajeCampanas = 'No fue posible guardar la programación en este navegador.';
-    }
+  async guardarCampana():Promise<void> {
+    const p=this.programacionActual;this.mensajeCampanas='';
+    if(!this.programacionValida(p,this.frecuenciaSeleccionada)){this.mensajeCampanas='Revisa fecha, día y hora.';return;}
+    try{await this.api('/admin/campanas/'+this.frecuenciaSeleccionada,{method:'PUT',body:JSON.stringify(p)});
+      this.mensajeCampanas='Programación guardada en PostgreSQL. Sin envío automático todavía.';
+      await this.cargarAdmin();
+    }catch(e){this.mensajeCampanas=(e as Error).message;}
   }
 
   exportarCampanas(): void {
@@ -784,6 +990,244 @@ export class AppComponent implements OnDestroy {
     enlace.click();
     URL.revokeObjectURL(url);
     this.mensajeCampanas = 'Configuración exportada. Esto no envía mensajes.';
+  }
+
+
+  // Esta etapa SOLO mide actividad de este navegador. No hay backend, usuarios
+  // compartidos, facturación ni Google Search Console conectados.
+  private readonly claveEventos = 'cerca_eventos_locales_v1';
+  private readonly claveOpiniones = 'cerca_opiniones_locales_v1';
+  private readonly claveDispositivo = 'cerca_dispositivo_local_v1';
+  eventos: EventoCerca[] = [];
+  opinionesCerca: OpinionCerca[] = [];
+  periodoTablero: 'hoy' | 'semana' | 'mes' | 'anio' = 'mes';
+  comunaTablero = 'Todas';
+  categoriaTablero = 'Todas';
+  dispositivoLocal = '';
+  estrellasEditor = 0;
+  motivosEditor: string[] = [];
+  comentarioEditor = '';
+  avisoOpinion = '';
+  errorOpinion = '';
+  readonly motivosPositivos = ['Buena atención', 'Atención rápida', 'Trato respetuoso', 'Recibí lo que pedí', 'Resolvieron mi problema', 'Superó mis expectativas'];
+  readonly motivosNeutros = ['Atención aceptable', 'Podrían mejorar', 'Servicio incompleto'];
+  readonly motivosNegativos = ['Mala atención', 'Atención lenta', 'Trato irrespetuoso', 'No recibí lo que pedí', 'No era lo que esperaba', 'No resolvieron mi problema'];
+
+  private iniciarMetricas():void {
+    if(typeof window==='undefined')return;
+    try {
+      this.dispositivoLocal=window.localStorage.getItem(this.claveDispositivo)||'';
+      if(!this.dispositivoLocal){this.dispositivoLocal='cerca-'+(window.crypto?.randomUUID?.()||Math.random().toString(36).slice(2)+Date.now());
+        window.localStorage.setItem(this.claveDispositivo,this.dispositivoLocal);}
+      if(!this.mostrarAdministracion&&!window.sessionStorage.getItem('cerca_visita_sesion_v1')){
+        window.sessionStorage.setItem('cerca_visita_sesion_v1','1');
+        // registrar la visita después de establecer la conexión a API
+        this.visitaPendiente=true;
+      }
+    }catch{}
+  }
+  private visitaPendiente=false;
+
+  registrarEvento(tipo: TipoEventoCerca,n?: Negocio):void {
+    if(typeof window==='undefined'||this.mostrarAdministracion)return;
+    const evento:EventoCerca={fecha:new Date().toISOString(),tipo,
+      comuna:n?.comuna??this.comuna,
+      categoria:n?.categoria??(this.categoriaActiva!=='Todos'?this.categoriaActiva:undefined),
+      negocioId:n?.id};
+    if(!this.apiDisponible)return;
+    void this.api('/eventos',{method:'POST',body:JSON.stringify(evento)}).catch(()=>{});
+  }
+
+  // Un voto por negocio Y navegador, editable. No equivale a compra verificada.
+  get razonesDisponibles(): string[] {
+    return this.estrellasEditor >= 4 ? this.motivosPositivos :
+      this.estrellasEditor === 3 ? this.motivosNeutros : this.motivosNegativos;
+  }
+  elegirEstrellas(valor: number): void {
+    this.estrellasEditor = valor;
+    this.motivosEditor = [];
+    this.errorOpinion = '';
+    this.avisoOpinion = '';
+  }
+  alternarMotivo(motivo: string): void {
+    this.motivosEditor = this.motivosEditor.includes(motivo) ?
+      this.motivosEditor.filter(m => m !== motivo) : [...this.motivosEditor, motivo];
+  }
+  get opinionPropia(): OpinionCerca | undefined {
+    if (!this.negocioSeleccionado) return undefined;
+    return this.opinionesCerca.find(o => o.negocioId === this.negocioSeleccionado?.id && o.dispositivo === this.dispositivoLocal);
+  }
+  async enviarOpinion():Promise<void> {
+    const n=this.negocioSeleccionado;
+    this.errorOpinion='';this.avisoOpinion='';if(!n)return;
+    if(this.estrellasEditor<1||this.estrellasEditor>5||!this.motivosEditor.length){this.errorOpinion='Selecciona estrellas y al menos un motivo.';return;}
+    if(!this.dispositivoLocal){this.errorOpinion='El dispositivo no puede identificarse para evitar duplicados.';return;}
+    try{
+      await this.api('/opiniones',{method:'POST',body:JSON.stringify({negocioId:n.id,
+        dispositivo:this.dispositivoLocal,estrellas:this.estrellasEditor,motivos:this.motivosEditor,comentario:this.comentarioEditor.trim()})});
+      const [opiniones,reputacion]=await Promise.all([
+        this.api<OpinionCerca[]>('/reputacion'),
+        this.api<Record<number,{promedio:number;total:number}>>('/reputacion/resumen')]);
+      this.opinionesCerca=opiniones;this.reputacionPorNegocio=reputacion;
+      this.avisoOpinion='Evaluación registrada en CERCA (experiencia no verificada).';
+    }catch(e){this.errorOpinion=(e as Error).message;}
+  }
+  calificacionCerca(n: Negocio): { promedio: number; total: number } | null {
+    if(this.apiDisponible)return this.reputacionPorNegocio[n.id]||null;
+    const opiniones = this.opinionesCerca.filter(o => o.negocioId === n.id);
+    if (!opiniones.length) return null;
+    return { promedio: opiniones.reduce((acc, o) => acc + o.estrellas, 0) / opiniones.length, total: opiniones.length };
+  }
+  obtenerNegocio(id: number): Negocio | undefined { return this.negocios.find(n => n.id === id); }
+  async gestionarReclamo(opinion:OpinionCerca,estado:'pendiente'|'resuelto'):Promise<void> {
+    try{await this.api('/admin/opiniones/'+opinion.id,{method:'PUT',body:JSON.stringify({estado,respuesta:opinion.respuesta||''})});
+      opinion.estado=estado;this.avisoAdministracion='Estado actualizado en PostgreSQL.';
+    }catch(e){this.avisoAdministracion=(e as Error).message;}
+  }
+  async guardarRespuesta(opinion:OpinionCerca):Promise<void> {
+    await this.gestionarReclamo(opinion,opinion.estado);
+  }
+
+  private desdePeriodo(fecha: string): boolean {
+    const valor = Date.parse(fecha);
+    if (!Number.isFinite(valor)) return false;
+    const ahora = new Date();
+    const inicio = new Date(ahora);
+    if (this.periodoTablero === 'hoy') inicio.setHours(0, 0, 0, 0);
+    if (this.periodoTablero === 'semana') inicio.setDate(inicio.getDate() - 6), inicio.setHours(0,0,0,0);
+    if (this.periodoTablero === 'mes') inicio.setDate(inicio.getDate() - 29), inicio.setHours(0,0,0,0);
+    if (this.periodoTablero === 'anio') inicio.setMonth(inicio.getMonth() - 11), inicio.setDate(1), inicio.setHours(0,0,0,0);
+    return valor >= inicio.getTime() && valor <= ahora.getTime();
+  }
+  get eventosTablero(): EventoCerca[] {
+    return this.eventos.filter(e => this.desdePeriodo(e.fecha) &&
+      (this.comunaTablero === 'Todas' || e.comuna === this.comunaTablero) &&
+      (this.categoriaTablero === 'Todas' || e.categoria === this.categoriaTablero));
+  }
+  get negociosTablero(): Negocio[] {
+    return this.negocios.filter(n =>
+      (this.comunaTablero === 'Todas' || n.comuna === this.comunaTablero) &&
+      (this.categoriaTablero === 'Todas' || n.categoria === this.categoriaTablero));
+  }
+  get opinionesTablero(): OpinionCerca[] {
+    const ids = new Set(this.negociosTablero.map(n => n.id));
+    return this.opinionesCerca.filter(o => ids.has(o.negocioId) && this.desdePeriodo(o.fecha));
+  }
+  totalEvento(tipo: TipoEventoCerca): number {
+    if(this.resumenGlobal)return this.resumenGlobal.eventos[tipo]||0;
+    return this.eventosTablero.filter(e => e.tipo === tipo).length;
+  }
+  get accionesContacto(): number {
+    return this.totalEvento('whatsapp') + this.totalEvento('web') + this.totalEvento('ruta') + this.totalEvento('telefono');
+  }
+  get tasaInteraccion(): number | null {
+    const fichas = this.totalEvento('ficha');
+    return fichas ? Math.round(1000 * this.accionesContacto / fichas) / 10 : null;
+  }
+  get promedioReputacion(): number | null {
+    if(this.resumenGlobal)return this.resumenGlobal.reputacion?.promedio==null?null:Number(this.resumenGlobal.reputacion.promedio);
+    if (!this.opinionesTablero.length) return null;
+    return this.opinionesTablero.reduce((t, o) => t + o.estrellas, 0) / this.opinionesTablero.length;
+  }
+  get reclamosTablero(): OpinionCerca[] {
+    return this.opinionesTablero.filter(o => o.estrellas <= 2).sort((a,b) => b.fecha.localeCompare(a.fecha));
+  }
+  get reclamosPendientes(): number { return this.resumenGlobal?Number(this.resumenGlobal.reputacion?.pendientes||0):this.reclamosTablero.filter(o => o.estado !== 'resuelto').length; }
+  get felicitacionesTablero(): number { return this.resumenGlobal?Number(this.resumenGlobal.reputacion?.felicitaciones||0):this.opinionesTablero.filter(o => o.estrellas >= 4).length; }
+  get horarioPendiente(): number { return this.negociosTablero.filter(n => !n.horario).length; }
+  get webPendiente(): number { return this.negociosTablero.filter(n => !this.webUrl(n)).length; }
+  get whatsappPendiente(): number { return this.negociosTablero.filter(n => !this.whatsappUrl(n)).length; }
+  get fichaSinRevision(): number { return this.negociosTablero.filter(n => !n.fechaRevision && !n.datosVerificados).length; }
+  get campanasProgramadas(): number { return Object.values(this.configuracionCampanas).filter(c => c.activa).length; }
+  private agruparEventos(tipo: TipoEventoCerca | null, campo: 'comuna' | 'categoria' | 'negocioId', limite = 6): FilaMetrica[] {
+    const cuentas = new Map<string,number>();
+    for (const e of this.eventosTablero) {
+      if (tipo && e.tipo !== tipo) continue;
+      const clave = e[campo];
+      if (clave === undefined || clave === null || clave === '') continue;
+      const texto = campo === 'negocioId' ? (this.obtenerNegocio(Number(clave))?.nombre || ('Negocio #' + clave)) : String(clave);
+      cuentas.set(texto, (cuentas.get(texto) || 0) + 1);
+    }
+    const filas = [...cuentas.entries()].sort((a,b) => b[1] - a[1]).slice(0, limite);
+    const maximo = filas[0]?.[1] || 1;
+    return filas.map(([nombre,valor]) => ({nombre,valor,porcentaje:100*valor/maximo}));
+  }
+  get comunasMasBuscadas(): FilaMetrica[] { return this.agruparEventos('busqueda','comuna'); }
+  get negociosMasVistos(): FilaMetrica[] { return this.agruparEventos('ficha','negocioId',5); }
+  get rendimientoNegocios(): Array<{ negocio: Negocio; vistas: number; whatsapp: number; rutas: number; web: number; telefono: number; promedio: number | null; evaluaciones: number }> {
+    const actividad = new Map<number, {vistas:number;whatsapp:number;rutas:number;web:number;telefono:number}>();
+    for (const e of this.eventosTablero) {
+      if (e.negocioId === undefined) continue;
+      const dato = actividad.get(e.negocioId) || { vistas:0, whatsapp:0, rutas:0, web:0, telefono:0 };
+      if (e.tipo === 'ficha') dato.vistas++;
+      if (e.tipo === 'whatsapp') dato.whatsapp++;
+      if (e.tipo === 'ruta') dato.rutas++;
+      if (e.tipo === 'web') dato.web++;
+      if (e.tipo === 'telefono') dato.telefono++;
+      actividad.set(e.negocioId,dato);
+    }
+    return this.negociosTablero.map(negocio => {
+      const a = actividad.get(negocio.id) || { vistas:0, whatsapp:0, rutas:0, web:0, telefono:0 };
+      const ops=this.opinionesTablero.filter(o=>o.negocioId===negocio.id);
+      return { negocio, ...a, promedio:ops.length?ops.reduce((s,o)=>s+o.estrellas,0)/ops.length:null, evaluaciones:ops.length };
+    }).sort((a,b) => (b.vistas+b.whatsapp+b.web+b.rutas+b.telefono)-(a.vistas+a.whatsapp+a.web+a.rutas+a.telefono));
+  }
+  get categoriasMasConsultadas(): FilaMetrica[] { return this.agruparEventos('categoria','categoria'); }
+  get motivosFrecuentes(): FilaMetrica[] {
+    const datos = new Map<string, number>();
+    for (const o of this.opinionesTablero) for (const m of o.motivos) datos.set(m, (datos.get(m) || 0) + 1);
+    const filas = [...datos.entries()].sort((a,b) => b[1]-a[1]).slice(0,6);
+    const maximo = filas[0]?.[1] || 1;
+    return filas.map(([nombre,valor]) => ({nombre,valor,porcentaje:100*valor/maximo}));
+  }
+  get serieVisitas(): BarraMetrica[] {
+    const ahora = new Date();
+    const total = this.periodoTablero === 'hoy' ? 12 : this.periodoTablero === 'semana' ? 7 :
+      this.periodoTablero === 'mes' ? 15 : 12;
+    const grupos: { clave:string; etiqueta:string; valor:number }[]=[];
+    const fechaLocal = (d:Date) => d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    for (let i=total-1;i>=0;i--) {
+      const d = new Date(ahora);
+      if (this.periodoTablero==='hoy') d.setHours((total-1-i)*2,0,0,0);
+      else if(this.periodoTablero==='anio') d.setMonth(d.getMonth()-i,1),d.setHours(0,0,0,0);
+      else d.setDate(d.getDate()-i*(this.periodoTablero==='mes'?2:1)),d.setHours(0,0,0,0);
+      const clave=this.periodoTablero==='hoy'? 'h'+d.getHours():
+        this.periodoTablero==='anio'? 'm'+d.getFullYear()+'-'+d.getMonth():fechaLocal(d);
+      const etiqueta=this.periodoTablero==='hoy'? d.getHours()+'h':
+        this.periodoTablero==='anio'?d.toLocaleDateString('es-CL',{month:'short'}):
+        d.toLocaleDateString('es-CL',{day:'numeric',month:'short'});
+      grupos.push({clave,etiqueta,valor:0});
+    }
+    for(const evento of this.eventosTablero){
+      if(evento.tipo!=='visita')continue;
+      const d=new Date(evento.fecha);
+      let clave='';
+      if(this.periodoTablero==='hoy')clave='h'+Math.floor(d.getHours()/2)*2;
+      else if(this.periodoTablero==='anio')clave='m'+d.getFullYear()+'-'+d.getMonth();
+      else if(this.periodoTablero==='mes'){
+        const dia = new Date(ahora.getFullYear(),ahora.getMonth(),ahora.getDate()).getTime();
+        const anterior = new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+        const diferencia = Math.round((dia-anterior)/86400000);
+        const base = new Date(ahora);base.setDate(base.getDate()-Math.floor(diferencia/2)*2);
+        clave=fechaLocal(base);
+      } else clave=fechaLocal(d);
+      const grupo=grupos.find(g=>g.clave===clave);if(grupo)grupo.valor++;
+    }
+    const maximo=Math.max(1,...grupos.map(g=>g.valor));
+    return grupos.map(g=>({etiqueta:g.etiqueta,valor:g.valor,alto:g.valor?Math.max(5,100*g.valor/maximo):3}));
+  }
+  exportarMetricas(): void {
+    if (typeof document === 'undefined') return;
+    const datos = {descripcion:'Datos locales de prueba de este navegador, NO métricas globales',
+      exportado: new Date().toISOString(), eventos:this.eventos,
+      opiniones:this.opinionesCerca.map(({dispositivo, ...resto})=>resto),
+      negocios:this.negocios.length};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(datos,null,2)],{type:'application/json'}));
+    const a=document.createElement('a'); a.href=url; a.download='cerca-metricas-locales.json'; a.click(); URL.revokeObjectURL(url);
+  }
+  irSeccionTablero(id:string):void {
+    if(typeof document==='undefined')return;
+    document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
   constructor() {
@@ -802,325 +1246,31 @@ export class AppComponent implements OnDestroy {
     try {
       const decisionGuardada = JSON.parse(window.localStorage.getItem(this.claveDecisionVisitante) || 'null');
       if (decisionGuardada?.version === 1 && decisionGuardada?.estado === 'si') {
-        this.accesoConcedido = true;
+        this.accesoConcedido = true;this.decisionSuscripcion='si';
       } else if (decisionGuardada?.version === 1 && decisionGuardada?.estado === 'no') {
-        this.accesoRechazado = true;
+        this.accesoRechazado = true;this.decisionSuscripcion='no';
       }
     } catch {
       // Mostrar la burbuja si el navegador no permite leer el almacenamiento.
     }
-    // Guarda las semillas nuevas antes de cargar los anuncios editados.
-    // Así se incorporan los viveros y mecánicos sin perder cambios previos.
-    const localesPuente = this.negocios.filter(n => n.id >= 52 && n.id <= 65);
-    const nuevosLocales = this.negocios.filter(n => n.id >= 34 && n.id <= 50);
-    const claveMigracion = 'cerca_nuevos_locales_34_50_v1';
-    try {
-      const guardado = window.localStorage.getItem(this.claveEdicion);
-      if (guardado) {
-        const datos: unknown = JSON.parse(guardado);
-        if (Array.isArray(datos) && datos.every((n: unknown) => this.negocioValido(n))) {
-          this.negocios = datos as Negocio[];
-        }
-      }
-      // Se ejecuta una sola vez: borrar un anuncio después no lo vuelve a crear.
-      if (!window.localStorage.getItem(claveMigracion)) {
-        const idsExistentes = new Set(this.negocios.map(n => n.id));
-        const faltantes = nuevosLocales.filter(n => !idsExistentes.has(n.id));
-        if (faltantes.length > 0) {
-          this.negocios = [...this.negocios, ...faltantes];
-          window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
-        }
-        window.localStorage.setItem(claveMigracion, '1');
-      }
-      // Incorporación única de farmacias de Puente Alto a navegadores con anuncios guardados.
-      const clavePuente = 'cerca_farmacias_puente_alto_v1';
-      if (!window.localStorage.getItem(clavePuente)) {
-        const fuentesPuente = localesPuente;
-        const actuales = new Set(this.negocios.map(n =>
-          n.nombre.trim().toLocaleLowerCase('es') + '|' + n.comuna.trim().toLocaleLowerCase('es')));
-        let nuevoId = Math.max(51, ...this.negocios.map(n => n.id));
-        const faltantes = fuentesPuente.filter(n =>
-          !actuales.has(n.nombre.trim().toLocaleLowerCase('es') + '|' + n.comuna.trim().toLocaleLowerCase('es')))
-          .map(n => ({ ...n, id: ++nuevoId }));
-        if (faltantes.length) {
-          this.negocios = [...this.negocios, ...faltantes];
-          window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
-        }
-        window.localStorage.setItem(clavePuente, '1');
-      }
-      // Actualización de destacados, una vez por navegador sin sobrescribir cambios posteriores.
-      const claveDestacados = 'cerca_farmacias_destacadas_v1';
-      if (!window.localStorage.getItem(claveDestacados)) {
-        let actualizar = false;
-        const normalizar = (s: string): string => s.trim().toLocaleLowerCase('es');
-        let farmacenter = this.negocios.find(n => normalizar(n.nombre) === 'farmacenter' && normalizar(n.comuna) === 'la florida');
-        if (!farmacenter) {
-          // Si ID 51 ya lo usa un anuncio creado por el usuario, asigna uno nuevo.
-          const nuevoId = this.negocios.some(n => n.id === 51)
-            ? Math.max(51, ...this.negocios.map(n => n.id)) + 1 : 51;
-          farmacenter = {
-            id: nuevoId, nombre: 'Farmacenter', categoria: 'Farmacias', comuna: 'La Florida',
-            descripcion: 'Farmacia de Vicuña Mackenna. Foto genérica ilustrativa; verificar datos antes de publicar.',
-            direccion: 'Av. Vicuña Mackenna 6650, Local 2',
-            foto: 'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=900&q=85&fit=crop',
-            icono: '💊', origen: 'captura', destacado: true, prioridadDestacado: 2
-          };
-          this.negocios.push(farmacenter);
-          actualizar = true;
-        }
-        for (const n of this.negocios) {
-          const vecinal = n.id === 45 && n.comuna === 'La Florida' && n.categoria === 'Farmacias';
-          const centro = normalizar(n.nombre) === 'farmacenter' && normalizar(n.comuna) === 'la florida';
-          if (!vecinal && !centro) continue;
-          if (n.destacado === undefined) { n.destacado = true; actualizar = true; }
-          if (n.prioridadDestacado === undefined) {
-            n.prioridadDestacado = vecinal ? 1 : 2; actualizar = true;
-          }
-          if (vecinal && n.direccion === 'Av. Vicuña Mackenna Poniente 6690') {
-            n.direccion = 'Av. Vicuña Mackenna Poniente 6690, Local 12'; actualizar = true;
-          }
-        }
-        if (actualizar) window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
-        window.localStorage.setItem(claveDestacados, '1');
-      }
-      // Actualización masiva parcial del catálogo desde fuentes públicas, 18-10-2026.
-      // Nunca activa WhatsApp desde un teléfono genérico ni sobrescribe horarios editados.
-      const claveRevision = 'cerca_fuentes_publicas_20261018_v1';
-      if (!window.localStorage.getItem(claveRevision)) {
-        const actualizaciones: { nombre: string; comuna: string; horario?: string; telefono?: string; direccion?: string; fuente: string }[] = [
-          { nombre: "Café del Jardín", comuna: "La Florida", horario: "Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)", telefono: "+56 9 5879 0169", fuente: "https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2" },
-          { nombre: "KABI Pastelería y Cafetería", comuna: "La Florida", telefono: "+56 9 3647 0275", fuente: "Ficha pública del negocio en resultados de mapas" },
-          { nombre: "La Duquesa Bakery", comuna: "La Florida", telefono: "+56 9 6130 1176", fuente: "Ficha pública del negocio en resultados de mapas" },
-          { nombre: "Cafetería del Rey Brujo", comuna: "La Florida", fuente: "Ficha pública del negocio en resultados de mapas" },
-          { nombre: "Farmacia Arapharma", comuna: "La Florida", horario: "Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Farmacias Económicas", comuna: "La Florida", horario: "Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Farmacia Vecinal", comuna: "La Florida", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Farmacenter", comuna: "La Florida", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Farmacia El Químico", comuna: "La Florida", horario: "Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Farmacia BarrioFlorida", comuna: "La Florida", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Eco Farmacias", comuna: "La Florida", horario: "Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)", direccion: "Serafín Zamora 29, Local 19", fuente: "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida" },
-          { nombre: "Farmacias Titán 24/7", comuna: "Puente Alto", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacia Solidaria", comuna: "Puente Alto", horario: "Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacia Roubillard S.A.", comuna: "Puente Alto", horario: "Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farma Ulloa", comuna: "Puente Alto", horario: "Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacia San Carlos", comuna: "Puente Alto", horario: "Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacia Netfarma", comuna: "Puente Alto", horario: "Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacias La Botika", comuna: "Puente Alto", horario: "Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacias Olímpica - Puente Alto", comuna: "Puente Alto", horario: "Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacias Cruz Verde", comuna: "Puente Alto", horario: "Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacia Novasalud - Puente Alto", comuna: "Puente Alto", horario: "Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-          { nombre: "Farmacia Macarena", comuna: "Puente Alto", horario: "Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)", direccion: "Nonato Coo 3923", fuente: "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto" },
-        ];
-        let modificados = false;
-        const normal = (v: string): string => v.trim().toLocaleLowerCase('es');
-        for (const cambio of actualizaciones) {
-          const n = this.negocios.find(b => normal(b.nombre) === normal(cambio.nombre) && normal(b.comuna) === normal(cambio.comuna));
-          if (!n || n.origen === 'manual') continue;
-          let tocado = false;
-          if (cambio.horario && !n.horario) { n.horario = cambio.horario; tocado = true; }
-          if (cambio.telefono && !n.telefono) { n.telefono = cambio.telefono; tocado = true; }
-          if (cambio.direccion && (n.direccion || '').toLowerCase().includes('por verificar')) { n.direccion = cambio.direccion; tocado = true; }
-          if (cambio.direccion && n.nombre === 'Eco Farmacias' && n.direccion === 'Sargento Zamora 29, local 19') { n.direccion = cambio.direccion; tocado = true; }
-          if (tocado) { n.fuenteRevision = cambio.fuente; n.fechaRevision = '2026-10-18'; modificados = true; }
-        }
-        if (modificados) window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
-        window.localStorage.setItem(claveRevision, '1');
-      }
-    } catch {
-      this.avisoAdministracion = 'No se pudieron cargar o actualizar los anuncios guardados en el navegador.';
-    }
-    // Migración pública adicional, solo una vez, para anuncios locales de versiones anteriores.
-    // Conserva los datos editados por el administrador y no reactiva registros eliminados.
-    try {
-      const claveFichas = 'cerca_integracion_fichas_publicas_20261018_v2';
-      if (!window.localStorage.getItem(claveFichas)) {
-        const cambiosPublicos: Array<{nombre:string; comuna:string; horario?:string;
-          telefono?:string; direccion?:string; fuente?:string; nota?:string}> = [
-    {
-        "nombre": "Café del Jardín",
-        "comuna": "La Florida",
-        "horario": "Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)",
-        "telefono": "+56 9 5879 0169",
-        "fuente": "https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2",
-        "nota": "Teléfono y horario coinciden con directorios independientes."
-    },
-    {
-        "nombre": "KABI Pastelería y Cafetería",
-        "comuna": "La Florida",
-        "telefono": "+56 9 3647 0275",
-        "fuente": "Ficha pública del negocio en resultados de mapas",
-        "nota": "Horarios inconsistentes entre fuentes; no rellenar."
-    },
-    {
-        "nombre": "La Duquesa Bakery",
-        "comuna": "La Florida",
-        "telefono": "+56 9 6130 1176",
-        "fuente": "Ficha pública del negocio en resultados de mapas",
-        "nota": "Horario sin confirmar por el local."
-    },
-    {
-        "nombre": "Cafetería del Rey Brujo",
-        "comuna": "La Florida",
-        "fuente": "Ficha pública del negocio en resultados de mapas",
-        "nota": "Horario por confirmar en el local."
-    },
-    {
-        "nombre": "Farmacia Arapharma",
-        "comuna": "La Florida",
-        "horario": "Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
-    },
-    {
-        "nombre": "Farmacias Económicas",
-        "comuna": "La Florida",
-        "horario": "Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
-    },
-    {
-        "nombre": "Farmacia Vecinal",
-        "comuna": "La Florida",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
-        "nota": "Hay discrepancias de horarios y teléfonos entre directorios. No actualizar automáticamente esos campos."
-    },
-    {
-        "nombre": "Farmacenter",
-        "comuna": "La Florida",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
-        "nota": "Los horarios se contradicen entre directorios públicos. No asignar un horario definitivo."
-    },
-    {
-        "nombre": "Farmacia El Químico",
-        "comuna": "La Florida",
-        "horario": "Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
-    },
-    {
-        "nombre": "Farmacia BarrioFlorida",
-        "comuna": "La Florida",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
-        "nota": "En el registro público se llama BARRIO FARMA en Rojas Magallanes 94 B. Confirmar identidad antes de cambiar nombre u horario."
-    },
-    {
-        "nombre": "Eco Farmacias",
-        "comuna": "La Florida",
-        "horario": "Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
-        "direccion": "Serafín Zamora 29, Local 19",
-        "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
-        "nota": "Nombre de calle corregido usando registro público; solo cambia la dirección si aún es la anterior."
-    },
-    {
-        "nombre": "Farmacias Titán 24/7",
-        "comuna": "Puente Alto",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
-        "nota": "La condición 24/7/urgencia puede variar. Confirmar el régimen permanente y turnos."
-    },
-    {
-        "nombre": "Farmacia Solidaria",
-        "comuna": "Puente Alto",
-        "horario": "Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacia Roubillard S.A.",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farma Ulloa",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacia San Carlos",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacia Netfarma",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacias La Botika",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacias Olímpica - Puente Alto",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacias Cruz Verde",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
-        "nota": "Sólo la sucursal Av. Concha y Toro 3955, no generalizar a toda la cadena."
-    },
-    {
-        "nombre": "Farmacia Novasalud - Puente Alto",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    },
-    {
-        "nombre": "Farmacia Macarena",
-        "comuna": "Puente Alto",
-        "horario": "Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
-        "direccion": "Nonato Coo 3923",
-        "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
-    }
-];
-        let huboCambios = false;
-        const normalizar = (v: string) => v.trim().toLocaleLowerCase('es');
-        for (const cambio of cambiosPublicos) {
-          const n = this.negocios.find(item => normalizar(item.nombre) === normalizar(cambio.nombre) &&
-            normalizar(item.comuna) === normalizar(cambio.comuna) && item.origen !== 'manual');
-          if (!n) continue;
-          if (cambio.horario && !n.horario) { n.horario = cambio.horario; huboCambios = true; }
-          if (cambio.telefono && !n.telefono) { n.telefono = cambio.telefono; huboCambios = true; }
-          if (cambio.direccion &&
-              ((n.nombre === 'Eco Farmacias' && normalizar(n.direccion || '') === normalizar('Sargento Zamora 29, local 19')) ||
-              (n.direccion || '').toLowerCase().includes('por verificar'))) {
-            n.direccion = cambio.direccion; huboCambios = true;
-          }
-          if (cambio.fuente && !n.fuenteRevision) { n.fuenteRevision = cambio.fuente; huboCambios = true; }
-          if (cambio.nota && !n.observacionRevision) { n.observacionRevision = cambio.nota; huboCambios = true; }
-          if (!n.fechaRevision) { n.fechaRevision = '2026-10-18'; huboCambios = true; }
-        }
-        if (huboCambios) window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
-        window.localStorage.setItem(claveFichas, '1');
-      }
-    } catch {
-      this.avisoAdministracion = 'No se pudieron incorporar todos los datos públicos al navegador.';
-    }
-    try {
-      const datos = window.localStorage.getItem(this.claveCampanas);
-      if (datos) {
-        const configuracion: unknown = JSON.parse(datos);
-        if (configuracion && typeof configuracion === 'object') {
-          const p = configuracion as Record<string, unknown>;
-          for (const f of this.frecuenciasCampana) {
-            if (this.programacionValida(p[f], f)) this.configuracionCampanas[f] = {...p[f]};
-          }
-        }
-      }
-    } catch {
-      this.mensajeCampanas = 'No se pudo recuperar la configuración de campañas.';
-    }
+    // La fuente de verdad es PostgreSQL. Los anuncios locales antiguos solo se importan
+    // por elección explícita del administrador desde "Importar mis anuncios antiguos".
+    // No se sobrescribe la base central desde localStorage al abrir la página.
+    this.iniciarMetricas();
+    void this.iniciarServidor();
   }
 
   @HostListener('window:hashchange')
   sincronizarPantalla(): void {
     if (typeof window !== 'undefined') {
       this.mostrarAdministracion = window.location.hash === '#admin';
-      if (!this.mostrarAdministracion) this.formularioAbierto = false;
+      if (!this.mostrarAdministracion) {
+        this.formularioAbierto = false;
+        if (!window.sessionStorage.getItem('cerca_visita_sesion_v1')) {
+          try { window.sessionStorage.setItem('cerca_visita_sesion_v1', '1'); } catch { /* sesión no disponible */ }
+          this.registrarEvento('visita');
+        }
+      }
     }
   }
 
@@ -1136,12 +1286,10 @@ export class AppComponent implements OnDestroy {
     return n.destacado === true && n.comuna === this.comuna;
   }
 
-  alternarDestacado(negocio: Negocio): void {
-    const anterior = this.negocios;
-    this.negocios = this.negocios.map(n => n.id === negocio.id ? {
-      ...n, destacado: n.destacado !== true, prioridadDestacado: n.prioridadDestacado ?? 100
-    } : n);
-    if (!this.persistir()) this.negocios = anterior;
+  async alternarDestacado(negocio:Negocio):Promise<void> {
+    try{const nuevo=await this.guardarRemoto({...negocio,destacado:negocio.destacado!==true,prioridadDestacado:negocio.prioridadDestacado??100});
+      this.negocios=this.negocios.map(n=>n.id===negocio.id?nuevo:n);
+    }catch(e){this.avisoAdministracion=(e as Error).message;}
   }
 
   get publicados(): number {
@@ -1226,19 +1374,13 @@ export class AppComponent implements OnDestroy {
     this.errorFormulario = '';
   }
 
-  private persistir(): boolean {
-    if (typeof window === 'undefined') return false;
-    try {
-      window.localStorage.setItem(this.claveEdicion, JSON.stringify(this.negocios));
-      this.avisoAdministracion = 'Cambios guardados en este navegador.';
-      return true;
-    } catch {
-      this.avisoAdministracion = 'No se pudo guardar. Revisa el espacio disponible o el modo privado.';
-      return false;
-    }
+  private async guardarRemoto(n:Negocio):Promise<Negocio> {
+    const nuevo=n.id===0;
+    return this.api<Negocio>(nuevo?'/admin/negocios':'/admin/negocios/'+n.id,
+      {method:nuevo?'POST':'PUT',body:JSON.stringify(n)});
   }
 
-  guardarAnuncio(): void {
+  async guardarAnuncio():Promise<void> {
     this.errorFormulario = '';
     const n = { ...this.anuncioEditor };
     n.nombre = (n.nombre || '').trim();
@@ -1287,33 +1429,26 @@ export class AppComponent implements OnDestroy {
       this.errorFormulario = 'La imagen debe ser una URL HTTPS o una foto subida.';
       return;
     }
-    const anterior = this.negocios.slice();
-    if (n.id === 0) {
-      n.id = Math.max(0, ...this.negocios.map(item => item.id)) + 1;
-      n.origen = 'manual'; // Activa búsqueda por nombre sin inventar coordenadas.
-      this.negocios = [n, ...this.negocios];
-    } else {
-      this.negocios = this.negocios.map(item => item.id === n.id ? n : item);
-    }
-    if (this.persistir()) {
-      this.formularioAbierto = false;
-    } else {
-      this.negocios = anterior;
-      this.errorFormulario = 'No se aplicaron los cambios porque no se pudieron guardar.';
-    }
+    try{
+      const guardado=await this.guardarRemoto(n);
+      this.negocios=n.id===0?[guardado,...this.negocios]:this.negocios.map(x=>x.id===n.id?guardado:x);
+      this.avisoAdministracion='Negocio guardado para todos los visitantes en PostgreSQL.';
+      this.formularioAbierto=false;
+    }catch(e){this.errorFormulario=(e as Error).message;}
+
   }
 
-  cambiarPublicacion(negocio: Negocio): void {
-    const anterior = this.negocios.slice();
-    this.negocios = this.negocios.map(n => n.id === negocio.id ? { ...n, publicado: n.publicado === false } : n);
-    if (!this.persistir()) this.negocios = anterior;
+  async cambiarPublicacion(negocio:Negocio):Promise<void> {
+    try{const nuevo=await this.guardarRemoto({...negocio,publicado:negocio.publicado===false});
+      this.negocios=this.negocios.map(n=>n.id===negocio.id?nuevo:n);
+      this.avisoAdministracion='Publicación actualizada en el servidor.';
+    }catch(e){this.avisoAdministracion=(e as Error).message;}
   }
-
-  eliminarAnuncio(negocio: Negocio): void {
-    if (typeof window === 'undefined' || !window.confirm(`¿Eliminar el anuncio "${negocio.nombre}"?`)) return;
-    const anterior = this.negocios.slice();
-    this.negocios = this.negocios.filter(n => n.id !== negocio.id);
-    if (!this.persistir()) this.negocios = anterior;
+  async eliminarAnuncio(negocio:Negocio):Promise<void> {
+    if(typeof window==='undefined'||!window.confirm('¿Eliminar "'+negocio.nombre+'" del servidor para todos los visitantes?'))return;
+    try{await this.api('/admin/negocios/'+negocio.id,{method:'DELETE'});
+      this.negocios=this.negocios.filter(n=>n.id!==negocio.id);this.avisoAdministracion='Negocio eliminado del servidor.';
+    }catch(e){this.avisoAdministracion=(e as Error).message;}
   }
 
   exportarAnuncios(): void {
@@ -1384,8 +1519,11 @@ export class AppComponent implements OnDestroy {
           lat: posicion.coords.latitude,
           lon: posicion.coords.longitude
         };
+        const eraGpsActivo = this.gpsHabilitado;
         this.gpsHabilitado = true;
         this.estadoGPS = 'Ubicación activa · distancias actualizadas al desplazarte.';
+        // No se guarda la ubicación exacta: solo el acto de activarla.
+        if (!eraGpsActivo) this.registrarEvento('gps');
       },
       error => {
         this.estadoGPS = error.code === 1
@@ -1430,7 +1568,14 @@ export class AppComponent implements OnDestroy {
     const digitos = (n.whatsapp || '').replace(/\D/g, '');
     // No se inventan números ni se genera un vínculo inválido.
     if (digitos.length < 9 || digitos.length > 15) return null;
-    return `https://wa.me/${digitos}?text=${encodeURIComponent('Hola, encontré tu negocio en CERCA.cl y quisiera consultar.')}`;
+    const mensaje = [
+      `¡Hola, ${n.nombre}! 👋`,
+      'Encontré tu ficha en CERCA.cl, la app que conecta vecinos con negocios y profesionales de su barrio.',
+      'Me gustaría consultar por tus servicios.',
+      '🟠 Este contacto llegó desde CERCA.cl.'
+    ].join('\n\n');
+    // WhatsApp abre el borrador: el usuario decide si enviarlo.
+    return `https://wa.me/${digitos}?text=${encodeURIComponent(mensaje)}`;
   }
 
   webUrl(n: Negocio): string | null {
@@ -1461,6 +1606,9 @@ export class AppComponent implements OnDestroy {
   }
 
   puntuacionTexto(n: Negocio): string {
+    if (n.recomendacionEditorial && typeof n.calificacion === 'number') {
+      return `${n.calificacion.toFixed(1)}/5 · recomendación editorial`;
+    }
     return typeof n.calificacion === 'number' && n.calificacion >= 0 && n.calificacion <= 5
       ? `${n.calificacion.toLocaleString('es-CL', { maximumFractionDigits: 1 })}/5${n.datosVerificados === true ? '' : ' · muestra'}`
       : 'Sin calificación';
@@ -1470,14 +1618,15 @@ export class AppComponent implements OnDestroy {
     const texto = this.busqueda.trim().toLocaleLowerCase('es');
     return this.negocios.filter((negocio) => {
       if (negocio.publicado === false) return false;
-      const coincideCategoria = this.categoriaActiva === 'Todos' || negocio.categoria === this.categoriaActiva;
+      const coincideCategoria = this.categoriasIntencion ? this.categoriasIntencion.includes(negocio.categoria) : (this.categoriaActiva === 'Todos' || negocio.categoria === this.categoriaActiva);
+      const coincideOficio = !this.oficioSeleccionado || this.negocioDeOficio(negocio, this.oficioSeleccionado);
       const coincideComuna = negocio.comuna === this.comuna;
       const km = this.distanciaReal(negocio);
       const coincideDistancia = this.distanciaMaxima === 999 || km === null || km <= this.distanciaMaxima;
       const coincideTexto = [negocio.nombre, negocio.categoria, negocio.descripcion, negocio.comuna, negocio.direccion || '']
         .join(' ').toLocaleLowerCase('es').includes(texto);
       const coincideFavorito = !this.mostrarSoloFavoritos || this.favoritos.has(negocio.id);
-      return coincideCategoria && coincideComuna && coincideDistancia && coincideTexto && coincideFavorito;
+      return coincideCategoria && coincideOficio && coincideComuna && coincideDistancia && coincideTexto && coincideFavorito;
     }).sort((a, b) => {
       const primero = Number(this.esDestacadoEnComuna(b)) - Number(this.esDestacadoEnComuna(a));
       if (primero) return primero;
@@ -1506,17 +1655,91 @@ export class AppComponent implements OnDestroy {
     return this.favoritos.size;
   }
 
+  cambiarModoEntrada(modo: 'necesito' | 'descubrir'): void {
+    this.modoEntrada = modo;
+    this.entradaTexto = '';
+    this.errorEntrada = '';
+  }
+
+  usarSugerencia(texto: string): void {
+    this.entradaTexto = texto;
+    this.buscarPorIntencion();
+  }
+
+  private normalizarIntencion(texto: string): string {
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es-CL');
+  }
+
+  // Clasificación sencilla y explícita: no usa IA ni inventa stock o disponibilidad.
+  // Estas etiquetas deberán convertirse después en servicios/productos de PostgreSQL.
+  private rubrosParaIntencion(texto: string): Categoria[] {
+    const t = this.normalizarIntencion(texto);
+    const reglas: { patron: RegExp; categorias: Categoria[] }[] = [
+      { patron: /\b(pan|marraqueta|hallulla|amasanderia|panaderia|panaderias)\b/, categorias: ['Panaderías'] },
+      { patron: /\b(rueda|neumatico|neumaticos|pinchazo|vulcanizaci[oó]n|vulca|llanta)\b/, categorias: ['Vulcanización', 'Mecánicos'] },
+      { patron: /\b(mecanico|mecanica|auto|vehiculo|aceite|mantencion|bateria)\b/, categorias: ['Mecánicos', 'Vulcanización'] },
+      { patron: /\b(papel lustre|papeleria|libreria|cuaderno|utiles|lapices|bazar)\b/, categorias: ['Tiendas'] },
+      { patron: /\b(cafe|cafeteria|desayuno|once|capuchino)\b/, categorias: ['Cafés'] },
+      { patron: /\b(torta|pastel|dulce|pasteleria|reposteria)\b/, categorias: ['Panaderías', 'Cafés'] },
+      { patron: /\b(hambre|comer|almuerzo|almorzar|cena|cenar|hamburguesa|pizza|sushi)\b/, categorias: ['Cafés', 'Bares', 'Panaderías'] },
+      { patron: /\b(salir|carrete|panorama|musica|tragos|bar|pub)\b/, categorias: ['Bares', 'Cafés'] },
+      { patron: /\b(relajarme|descansar|pasear)\b/, categorias: ['Cafés', 'Viveros'] },
+      { patron: /\b(perro|gato|mascota|mascotas|veterinaria|alimento)\b/, categorias: ['Mascotas'] },
+      { patron: /\b(peluqueria|barberia|corte de pelo|manicure|belleza)\b/, categorias: ['Peluquería'] },
+      { patron: /\b(planta|plantas|jardin|jardineria|flores|vivero)\b/, categorias: ['Viveros'] },
+      { patron: /\b(remedio|remedios|medicamento|farmacia)\b/, categorias: ['Farmacias'] },
+      { patron: /\b(computador|notebook|computacion|pc|impresora)\b/, categorias: ['Computación'] },
+      { patron: /\b(gasfiter|gasfiteria|electricista|cerrajero|maestro|reparacion|delivery|repartidor|despacho)\b/, categorias: ['Servicios'] }
+    ];
+    const encontrados = new Set<Categoria>();
+    for (const regla of reglas) {
+      if (regla.patron.test(t)) regla.categorias.forEach(c => encontrados.add(c));
+    }
+    return [...encontrados];
+  }
+
+  buscarPorIntencion(): void {
+    const texto = this.entradaTexto.trim().replace(/\s+/g, ' ').slice(0, 180);
+    if (!texto) {
+      this.errorEntrada = 'Escribe lo que necesitas o selecciona una sugerencia.';
+      return;
+    }
+    this.errorEntrada = '';
+    this.consultaActiva = texto;
+    this.categoriaActiva = 'Todos';
+    this.mostrarSoloFavoritos = false;
+    const rubros = this.rubrosParaIntencion(texto);
+    this.categoriasIntencion = rubros.length ? rubros : null;
+    // Si entendimos la categoría, no buscamos literalmente «necesito pan».
+    // Si no la entendimos, buscamos las palabras clave en los nombres/descripciones.
+    this.busqueda = rubros.length ? '' : this.normalizarIntencion(texto)
+      .replace(/\b(necesito|quiero|busco|comprar|encontrar|un|una|unos|unas|el|la|los|las|de|para|por|favor|hoy)\b/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+    this.registrarEvento('busqueda');
+    this.irA('explorar');
+  }
+
   buscar(): void {
+    this.oficioSeleccionado = null;
+    this.categoriasIntencion = null;
+    this.consultaActiva = '';
+    this.registrarEvento('busqueda');
     this.irA('explorar');
   }
 
   seleccionarCategoria(categoria: Categoria): void {
+    this.cerrarPanelOficios();
+    this.categoriasIntencion = null;
+    this.consultaActiva = '';
+    this.busqueda = '';
     this.categoriaActiva = categoria;
+    this.registrarEvento('categoria');
     this.mostrarSoloFavoritos = false;
     this.irA('explorar');
   }
 
   alternarFavorito(id: number): void {
+    this.registrarEvento('favorito', this.obtenerNegocio(id));
     if (this.favoritos.has(id)) {
       this.favoritos.delete(id);
     } else {
@@ -1534,7 +1757,14 @@ export class AppComponent implements OnDestroy {
   }
 
   abrirDetalle(negocio: Negocio): void {
+    this.registrarEvento('ficha', negocio);
     this.negocioSeleccionado = negocio;
+    const anterior = this.opinionesCerca.find(o => o.negocioId === negocio.id && o.dispositivo === this.dispositivoLocal);
+    this.estrellasEditor = anterior?.estrellas || 0;
+    this.motivosEditor = [...(anterior?.motivos || [])];
+    this.comentarioEditor = anterior?.comentario || '';
+    this.errorOpinion = '';
+    this.avisoOpinion = '';
     this.mostrarPublicacion = false;
   }
 
@@ -1550,6 +1780,11 @@ export class AppComponent implements OnDestroy {
   }
 
   limpiarFiltros(): void {
+    this.cerrarPanelOficios();
+    this.categoriasIntencion = null;
+    this.consultaActiva = '';
+    this.entradaTexto = '';
+    this.errorEntrada = '';
     this.busqueda = '';
     this.comuna = 'La Florida';
     this.categoriaActiva = 'Todos';

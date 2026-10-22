@@ -50,13 +50,37 @@
           <button type="submit" class="search-submit">Buscar <span aria-hidden="true">→</span></button>
         </form>
 
-        <div class="hero-categories" id="categorias" aria-label="Filtrar por categoría">
-          <button *ngFor="let item of categorias" type="button" class="hero-category"
-                  [class.selected]="categoriaActiva === item.nombre"
-                  (click)="seleccionarCategoria(item.nombre)">
-            <span class="category-circle" aria-hidden="true">{{ item.icono }}</span>
-            <span class="category-label">{{ item.nombre }}</span>
-          </button>
+        <!-- Portada original: todos los círculos intactos y uno adicional. -->
+        <div id="categorias" class="cerca-oficios-seccion">
+          <div *ngIf="!mostrarPanelOficios" class="hero-categories" aria-label="Filtrar por categoría">
+            <button *ngFor="let item of categorias" type="button" class="hero-category"
+                    [class.selected]="categoriaActiva === item.nombre"
+                    (click)="seleccionarCategoria(item.nombre)">
+              <span class="category-circle" aria-hidden="true">{{ item.icono }}</span>
+              <span class="category-label">{{ item.nombre }}</span>
+            </button>
+            <button type="button" class="hero-category cerca-oficios-entrada"
+                    (click)="abrirPanelOficios()" aria-label="Ver Oficios y Profesiones">
+              <span class="category-circle" aria-hidden="true"><img src="assets/oficios-profesiones.svg" alt=""></span>
+              <span class="category-label">Oficios y Profesiones</span>
+            </button>
+          </div>
+
+          <!-- Solo los círculos son sustituidos, sin alterar el resto de la portada. -->
+          <div *ngIf="mostrarPanelOficios" class="cerca-oficios-panel">
+            <div class="cerca-oficios-panel-cabecera">
+              <button type="button" class="cerca-oficios-volver" (click)="cerrarPanelOficios()">← Volver a categorías</button>
+              <strong>Oficios y Profesiones</strong>
+            </div>
+            <div class="hero-categories cerca-oficios-opciones" aria-label="Especialidades">
+              <button *ngFor="let oficio of oficiosYProfesiones" type="button"
+                      class="hero-category" [class.selected]="oficioSeleccionado === oficio.nombre"
+                      (click)="filtrarOficio(oficio.nombre)">
+                <span class="category-circle" aria-hidden="true">{{ oficio.icono }}</span>
+                <span class="category-label">{{ oficio.nombre }}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="hero-quote">Santiago también se vive<br><span>en sus barrios.</span></div>
@@ -64,11 +88,13 @@
   </section>
 
   <section class="results-section" id="explorar">
+    <p *ngIf="!apiDisponible" class="cerca-api-aviso" role="alert">{{apiError}} · Para mostrar negocios reales se necesita la API CERCA.</p>
     <div class="layout">
       <div class="results-header">
         <div>
-          <h2>Destacados de tu barrio <span>✦</span></h2>
-          <p>Negocios de las capturas que compartiste, con fotos ilustrativas y las tarjetas de siempre.</p>
+          <h2>{{ consultaActiva ? 'Locales que podrían ayudarte' : 'Destacados de tu barrio' }} <span>✦</span></h2>
+          <p *ngIf="consultaActiva">Buscaste «{{ consultaActiva }}» en {{ comuna }}. Mostramos coincidencias por rubro; consulta disponibilidad directamente con cada negocio.</p>
+          <p *ngIf="!consultaActiva">Descubre negocios de tu zona, revisa sus fichas y comunícate directamente con ellos.</p>
         </div>
         <div class="results-controls">
           <label class="distance-control">
@@ -93,7 +119,7 @@
             <span>{{ comuna }} <span *ngIf="mostrarSoloFavoritos">· Mis favoritos</span></span>
           </div>
 
-          <div *ngIf="negociosFiltrados.length > 0; else sinResultados" class="business-grid">
+          <div *ngIf="apiDisponible && negociosFiltrados.length > 0; else sinResultados" class="business-grid">
             <article class="business-card" [class.cerca-destacado]="esDestacadoEnComuna(negocio)" *ngFor="let negocio of negociosFiltrados; trackBy: trackById">
               <div class="card-image">
                 <img [src]="negocio.foto" [alt]="'Imagen ilustrativa: ' + negocio.categoria" loading="lazy" />
@@ -110,23 +136,29 @@
               <div class="card-content">
                 <h3>{{ negocio.nombre }}</h3>
                 <div class="card-subtitle">{{ negocio.categoria }} · {{ negocio.comuna }}</div>
+                <div *ngIf="negocio.recomendacionEditorial && negocio.calificacion != null" class="cerca-editorial-destacada"
+                     aria-label="Valoración editorial, no promedio de reseñas">
+                  <strong>★ {{ negocio.calificacion | number:'1.1-1' }} / 5</strong>
+                  <span>Recomendación personal · No es promedio de reseñas</span>
+                </div>
                 <p *ngIf="negocio.direccion" class="card-address">⌖ {{ negocio.direccion }}</p>
                 <p *ngIf="!negocio.direccion">{{ negocio.descripcion }}</p>
                 <div class="cerca-card-facts" aria-label="Información del comercio">
                   <div class="cerca-card-fact"><span>◷ Horario</span><strong>{{ negocio.horario || 'Por confirmar' }}</strong></div>
-                  <div class="cerca-card-fact"><span>★ Puntuación</span><strong>{{ puntuacionTexto(negocio) }}</strong></div>
+                  <div class="cerca-card-fact"><span>★ Reputación CERCA</span><strong *ngIf="calificacionCerca(negocio) as rep; else sinRep">{{rep.promedio | number:'1.1-1'}} / 5 ({{rep.total}})</strong><ng-template #sinRep><strong>Sin evaluaciones CERCA</strong></ng-template></div>
+                  <div *ngIf="negocio.calificacion != null" class="cerca-card-fact"><span>Referencia previa</span><strong>{{ puntuacionTexto(negocio) }}</strong></div>
                   <div class="cerca-card-fact"><span>⌖ Distancia</span><strong>{{ distanciaTexto(negocio) }}</strong></div>
-                  <div class="cerca-card-fact" *ngIf="telefonoUrl(negocio) as telefono"><span>☎ Teléfono</span><a [href]="telefono">{{ negocio.telefono }}</a></div>
+                  <div class="cerca-card-fact" *ngIf="telefonoUrl(negocio) as telefono"><span>☎ Teléfono</span><a (click)="registrarEvento('telefono', negocio)" [href]="telefono">{{ negocio.telefono }}</a></div>
                   <div class="cerca-card-fact"><span>⌕ Sitio web</span>
-                    <a *ngIf="webUrl(negocio) as sitio; else sinSitio" [href]="sitio" target="_blank" rel="noopener noreferrer">Abrir web ↗</a>
+                    <a *ngIf="webUrl(negocio) as sitio; else sinSitio" (click)="registrarEvento('web', negocio)" [href]="sitio" target="_blank" rel="noopener noreferrer">Abrir web ↗</a>
                     <ng-template #sinSitio><strong>No posee</strong></ng-template>
                   </div>
                   <div class="cerca-card-contact">
-                    <a *ngIf="whatsappUrl(negocio) as wa; else whatsappPendiente" class="cerca-whatsapp" [href]="wa" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Contactar por WhatsApp a ' + negocio.nombre">
+                    <a *ngIf="whatsappUrl(negocio) as wa; else whatsappPendiente" class="cerca-whatsapp" (click)="registrarEvento('whatsapp', negocio)" [href]="wa" target="_blank" rel="noopener noreferrer" [attr.aria-label]="'Contactar por WhatsApp a ' + negocio.nombre">
                       <img src="assets/whatsapp-cerca.svg" alt="" aria-hidden="true" /> WhatsApp
                     </a>
                     <ng-template #whatsappPendiente><span class="cerca-whatsapp cerca-whatsapp-off"><img src="assets/whatsapp-cerca.svg" alt="" aria-hidden="true" /> No informado</span></ng-template>
-                    <a class="cerca-card-directions" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Cómo llegar ↗</a>
+                    <a class="cerca-card-directions" (click)="registrarEvento('ruta', negocio)" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Cómo llegar ↗</a>
                   </div>
                 </div>
                 <p *ngIf="negocio.fechaRevision" class="cerca-revision-resumen">Información pública consultada el {{ negocio.fechaRevision }} · confirmar vigencia</p>
@@ -140,8 +172,8 @@
           <ng-template #sinResultados>
             <div class="empty-state">
               <span aria-hidden="true">⌕</span>
-              <h3>No encontramos negocios con esos filtros</h3>
-              <p>Prueba otra categoría, comuna o distancia.</p>
+              <h3>No encontramos locales para esta búsqueda</h3>
+              <p>Prueba con otra palabra, comuna o distancia. Los proveedores aún no reciben solicitudes automáticas.</p>
               <button type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
             </div>
           </ng-template>
@@ -196,25 +228,18 @@
 
 <footer class="footer">
   <div class="layout footer-content"><a class="logo" href="#inicio" aria-label="Ir al inicio de Cerca"><img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" /></a><span>Prototipo visual 2026 · Datos y distancias ficticios · Santiago, Chile</span></div>
-  <!-- Acceso de edición local, separado del diseño público original -->
+  <!-- Entrada a administración protegida por contraseña y API -->
   <div class="layout admin-footer-access">
     <a href="#admin" (click)="entrarAdministracion()">Administración de anuncios</a>
   </div>
 </footer>
 
-<!-- Control de acceso de demostración: no sirve como autenticación segura. -->
-<div *ngIf="!accesoConcedido && !mostrarAdministracion" class="cerca-acceso-bloqueo" aria-hidden="true"></div>
-<div *ngIf="!accesoConcedido && !mostrarAdministracion" class="cerca-acceso-mensaje" role="status">
-  <strong>{{ accesoRechazado ? 'Acceso no disponible' : 'Bienvenido a CERCA' }}</strong>
-  <span>{{ accesoRechazado ? 'Elegiste no recibir promociones. Puedes cambiar tu respuesta desde la burbuja naranja.' : 'Para continuar, responde desde la burbuja naranja de la esquina inferior derecha.' }}</span>
-</div>
-
 <button *ngIf="!mostrarAdministracion" type="button" class="cerca-burbuja-suscripcion"
         (click)="mostrarSuscripcion ? cerrarSuscripcion() : abrirSuscripcion()"
         [attr.aria-expanded]="mostrarSuscripcion" aria-controls="cerca-suscripcion-panel"
-        [attr.aria-label]="accesoConcedido ? 'Configurar promociones de CERCA' : 'Responder y acceder a CERCA'">
+        [attr.aria-label]="accesoConcedido ? 'Configurar promociones de CERCA' : 'Recibir promociones de CERCA'">
   <span aria-hidden="true">✉</span>
-  <span>{{ accesoConcedido ? 'Promociones' : 'Entrar a CERCA' }}</span>
+  <span>Promociones</span>
 </button>
 
 <section *ngIf="mostrarSuscripcion && !mostrarAdministracion" id="cerca-suscripcion-panel" class="cerca-suscripcion-burbuja-panel"
@@ -228,7 +253,7 @@
     <button type="button" [class.elegido]="decisionSuscripcion === 'si'" (click)="elegirSuscripcion('si')">Sí, quiero</button>
     <button type="button" [class.elegido]="decisionSuscripcion === 'no'" (click)="elegirSuscripcion('no')">No, gracias</button>
   </div>
-  <p *ngIf="decisionSuscripcion !== 'si'" class="cerca-burbuja-aviso">Si eliges No, esta versión bloqueará el acceso hasta que cambies tu respuesta.</p>
+  <p *ngIf="decisionSuscripcion !== 'si'" class="cerca-burbuja-aviso">Es completamente opcional. Puedes seguir explorando CERCA sin inscribirte.</p>
   <form *ngIf="decisionSuscripcion === 'si'" class="cerca-suscripcion-form" (ngSubmit)="validarSuscripcion()">
     <fieldset>
       <legend>¿Cada cuánto quieres recibirlas?</legend>
@@ -242,17 +267,27 @@
       <label><input type="checkbox" name="novedadesSuscripcion" [(ngModel)]="tipoActualizaciones" /> Actualizaciones y nuevos negocios</label>
     </fieldset>
     <div class="cerca-suscripcion-fields">
+      <label>Nombre
+        <input type="text" name="nombreSuscripcion" [(ngModel)]="nombreSuscripcion" required maxlength="90" autocomplete="name" placeholder="¿Cómo te llamas?" />
+      </label>
       <label>Comuna
         <select name="comunaSuscripcion" [(ngModel)]="comunaSuscripcion">
           <option *ngFor="let c of comunas" [value]="c">{{ c }}</option>
         </select>
       </label>
-      <label>Rubro
-        <select name="rubroSuscripcion" [(ngModel)]="rubroSuscripcion">
-          <option value="Todos">Todos los negocios</option>
-          <option *ngFor="let c of categorias" [value]="c.nombre" [disabled]="c.nombre === 'Todos'">{{ c.nombre }}</option>
+      <label>¿Cuándo quieres comprar o contratar?
+        <select name="intencionSuscripcion" [(ngModel)]="intencionSuscripcion">
+          <option value="ahora">Necesito algo ahora</option>
+          <option value="pronto">Estoy buscando para pronto</option>
+          <option value="explorando">Solo estoy explorando</option>
         </select>
       </label>
+      <fieldset class="cerca-suscripcion-intereses">
+        <legend>¿Qué rubros te interesan? (uno o varios)</legend>
+        <label *ngFor="let item of categorias" [hidden]="item.nombre === 'Todos'">
+          <input type="checkbox" [checked]="interesesSuscripcion.includes(item.nombre)" (change)="alternarInteres(item.nombre)" /> {{item.nombre}}
+        </label>
+      </fieldset>
       <label>Recibir por
         <select name="canalSuscripcion" [(ngModel)]="canalSuscripcion" (ngModelChange)="contactoSuscripcion = ''">
           <option value="email">Correo electrónico</option>
@@ -265,11 +300,13 @@
       </label>
     </div>
     <label class="cerca-suscripcion-consent"><input type="checkbox" name="consentimientoSuscripcion" [(ngModel)]="consentimientoSuscripcion" />
-      Acepto recibir estas comunicaciones y entiendo que podré cancelar mi suscripción cuando se habilite el servicio.
+      Acepto recibir las comunicaciones seleccionadas de CERCA. Mis datos se guardarán en el servidor y puedo solicitar la baja.
     </label>
-    <p class="cerca-suscripcion-demo">Demo: esta pantalla NO guarda correo ni WhatsApp y NO envía promociones. Solo guarda la decisión de acceso en este navegador.</p>
+    <p class="cerca-suscripcion-demo">Registro real en PostgreSQL. Quedará pendiente la verificación de tu contacto; por ahora no se envían promociones.</p>
+    <p *ngIf="avisoSuscripcion" role="status" class="cerca-burbuja-aviso">{{avisoSuscripcion}}</p>
+    <button type="button" class="admin-secondary" (click)="solicitarBaja()">Cancelar mi suscripción en este dispositivo</button>
     <p *ngIf="errorSuscripcion" role="alert" class="cerca-suscripcion-error">{{ errorSuscripcion }}</p>
-    <button type="submit" class="cerca-burbuja-continuar">Continuar a CERCA →</button>
+    <button type="submit" class="cerca-burbuja-continuar" [disabled]="procesandoSuscripcion">{{procesandoSuscripcion?'Guardando en servidor…':'Confirmar mi inscripción →'}}</button>
   </form>
 </section>
 
@@ -279,21 +316,45 @@
     <ng-container *ngIf="negocioSeleccionado as negocio; else modalPublicar">
       <span class="modal-kicker">{{ negocio.categoria }}</span>
       <h2>{{ negocio.nombre }}</h2>
+      <div *ngIf="negocio.recomendacionEditorial" class="cerca-carlos-modal-cabecera">
+        <img [src]="negocio.foto" [alt]="'Foto de ' + negocio.nombre" loading="lazy" />
+        <div><span class="cerca-modal-etiqueta">★ PROFESIONAL DESTACADO</span>
+        <strong *ngIf="negocio.calificacion != null">★ {{ negocio.calificacion | number:'1.1-1' }} / 5</strong>
+        <small>Valoración editorial de una persona · Sin reseñas verificadas</small></div>
+      </div>
       <p>{{ negocio.descripcion }}</p>
       <div class="modal-data">
         <div><strong>Comuna</strong><span>{{ negocio.comuna }}</span></div>
         <div *ngIf="negocio.direccion"><strong>Dirección por verificar</strong><span>{{ negocio.direccion }}</span></div>
         <div><strong>Horario</strong><span>{{ negocio.horario || 'Por confirmar' }}</span></div>
-        <div><strong>Puntuación</strong><span>★ {{ puntuacionTexto(negocio) }} <ng-container *ngIf="negocio.opiniones != null"> ({{ negocio.opiniones }} opiniones)</ng-container></span></div>
+        <div><strong>Reputación CERCA</strong><span *ngIf="calificacionCerca(negocio) as r; else noCERCA">★ {{r.promedio | number:'1.1-1'}} / 5 · {{r.total}} evaluación(es) de este navegador</span><ng-template #noCERCA><span>Sin opiniones CERCA</span></ng-template></div>
+        <div *ngIf="negocio.calificacion != null"><strong>{{ negocio.recomendacionEditorial ? 'Recomendación personal' : 'Puntuación anterior de muestra' }}</strong><span>{{ puntuacionTexto(negocio) }}</span></div>
         <div><strong>Distancia actual</strong><span>{{ distanciaTexto(negocio) }}</span></div>
         <div *ngIf="negocio.telefono"><strong>Teléfono</strong><span>{{ negocio.telefono }}</span></div>
         <div><strong>WhatsApp</strong><span>{{ whatsappUrl(negocio) ? 'Disponible' : 'No informado' }}</span></div>
-        <div><strong>Sitio web</strong><a *ngIf="webUrl(negocio) as url; else sitioAusente" [href]="url" target="_blank" rel="noopener noreferrer">Visitar sitio ↗</a><ng-template #sitioAusente><span>No posee</span></ng-template></div>
+        <div><strong>Sitio web</strong><a *ngIf="webUrl(negocio) as url; else sitioAusente" (click)="registrarEvento('web', negocio)" [href]="url" target="_blank" rel="noopener noreferrer">Visitar sitio ↗</a><ng-template #sitioAusente><span>No posee</span></ng-template></div>
       </div>
       <div class="cerca-modal-actions">
-        <a *ngIf="whatsappUrl(negocio) as wa; else sinWhatsappModal" class="cerca-whatsapp" [href]="wa" target="_blank" rel="noopener noreferrer"><img src="assets/whatsapp-cerca.svg" alt="" /> Contactar por WhatsApp</a>
+        <a *ngIf="whatsappUrl(negocio) as wa; else sinWhatsappModal" class="cerca-whatsapp" (click)="registrarEvento('whatsapp', negocio)" [href]="wa" target="_blank" rel="noopener noreferrer"><img src="assets/whatsapp-cerca.svg" alt="" /> Contactar por WhatsApp</a>
         <ng-template #sinWhatsappModal><span class="cerca-whatsapp cerca-whatsapp-off"><img src="assets/whatsapp-cerca.svg" alt="" /> WhatsApp no informado</span></ng-template>
-        <a class="cerca-card-directions" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Cómo llegar ↗</a>
+        <a class="cerca-card-directions" (click)="registrarEvento('ruta', negocio)" [href]="enlaceMapa(negocio)" target="_blank" rel="noopener noreferrer">Cómo llegar ↗</a>
+      </div>
+      <div class="cerca-opinion-box">
+        <div class="cerca-opinion-title"><strong>⭐ Reputación CERCA</strong><span *ngIf="calificacionCerca(negocio) as resumen">{{ resumen.promedio | number:'1.1-1' }} / 5 · {{ resumen.total }} opinión(es) CERCA</span><span *ngIf="!calificacionCerca(negocio)">Todavía sin evaluaciones CERCA</span></div>
+        <p>Califica tu experiencia. Las opiniones se almacenan en CERCA; la compra no está verificada.</p>
+        <div class="cerca-opinion-estrellas" role="group" aria-label="Puntuación de 1 a 5 estrellas">
+          <button *ngFor="let estrella of [1,2,3,4,5]" type="button" (click)="elegirEstrellas(estrella)"
+            [attr.aria-label]="estrella + ' estrellas'" [attr.aria-pressed]="estrellasEditor === estrella"
+            [class.activa]="estrella <= estrellasEditor">★</button>
+        </div>
+        <div *ngIf="estrellasEditor > 0" class="cerca-opinion-motivos">
+          <strong>¿Qué ocurrió? Selecciona al menos un motivo.</strong>
+          <label *ngFor="let motivo of razonesDisponibles"><input type="checkbox" [checked]="motivosEditor.includes(motivo)" (change)="alternarMotivo(motivo)"/> {{ motivo }}</label>
+          <label>Comentario opcional <textarea rows="2" maxlength="450" [(ngModel)]="comentarioEditor" placeholder="Cuéntanos más..."></textarea></label>
+          <button type="button" class="cerca-opinion-enviar" (click)="enviarOpinion()">{{ opinionPropia ? 'Actualizar mi evaluación' : 'Enviar evaluación' }}</button>
+        </div>
+        <small *ngIf="errorOpinion" class="cerca-opinion-error" role="alert">{{errorOpinion}}</small>
+        <small *ngIf="avisoOpinion" class="cerca-opinion-ok" role="status">{{avisoOpinion}}</small>
       </div>
       <p *ngIf="negocio.fechaRevision" class="modal-note">Información pública consultada el {{ negocio.fechaRevision }}; los horarios pueden cambiar. Confirma con el negocio.</p>
       <p *ngIf="negocio.observacionRevision" class="modal-note"><strong>Observación:</strong> {{ negocio.observacionRevision }}</p>
@@ -311,23 +372,109 @@
   </section>
 </div>
 
-<!-- Panel de edición local. Se abre con http://localhost:4200/#admin -->
+<!-- Administración centralizada con PostgreSQL: /#admin -->
 <div class="admin-cover" *ngIf="mostrarAdministracion" role="region" aria-label="Editor de anuncios de Cerca">
+  <section *ngIf="!accesoAdmin" class="cerca-admin-login" aria-label="Inicio de sesión del administrador">
+    <img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" />
+    <h1>Acceso al administrador</h1>
+    <p>Los negocios y suscriptores están protegidos en PostgreSQL.</p>
+    <form (ngSubmit)="loginAdmin()">
+      <label>Contraseña administrativa
+        <input type="password" name="adminPassword" [(ngModel)]="adminPassword" autocomplete="current-password" required minlength="12" />
+      </label>
+      <button type="submit" class="admin-primary">Iniciar sesión</button>
+      <p *ngIf="errorAdminLogin" class="admin-error" role="alert">{{errorAdminLogin}}</p>
+    </form>
+    <button type="button" class="admin-secondary" (click)="salirAdministracion()">← Volver a CERCA</button>
+  </section>
+  <ng-container *ngIf="accesoAdmin">
   <div class="admin-topbar">
     <div><strong class="admin-brand"><img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" /></strong><span class="admin-top-title">Panel de anuncios</span></div>
-    <button type="button" class="admin-exit" (click)="salirAdministracion()">← Volver a CERCA</button>
+    <div><button type="button" class="admin-secondary" (click)="cargarAdmin()" [disabled]="cargandoAdmin">Actualizar datos</button> <button type="button" class="admin-exit" (click)="salirSesionAdmin();salirAdministracion()">Cerrar sesión</button></div>
   </div>
   <div class="admin-body">
     <div class="cerca-admin-tabs" role="tablist" aria-label="Secciones del administrador">
+      <button type="button" role="tab" [attr.aria-selected]="pestanaAdmin === 'tablero'"
+              [class.active]="pestanaAdmin === 'tablero'" (click)="pestanaAdmin = 'tablero'">▥ Tablero general</button>
       <button type="button" role="tab" [attr.aria-selected]="pestanaAdmin === 'anuncios'"
               [class.active]="pestanaAdmin === 'anuncios'" (click)="pestanaAdmin = 'anuncios'">Anuncios</button>
       <button type="button" role="tab" [attr.aria-selected]="pestanaAdmin === 'campanas'"
-              [class.active]="pestanaAdmin === 'campanas'" (click)="pestanaAdmin = 'campanas'">Programación de campañas</button>
+              [class.active]="pestanaAdmin === 'campanas'" (click)="pestanaAdmin = 'campanas'">Campañas</button>
+      <button type="button" role="tab" [attr.aria-selected]="pestanaAdmin === 'suscriptores'"
+              [class.active]="pestanaAdmin === 'suscriptores'" (click)="pestanaAdmin = 'suscriptores'">Suscriptores e intereses</button>
     </div>
+    <section *ngIf="pestanaAdmin === 'tablero'" class="cerca-dashboard" aria-label="Tablero general de CERCA">
+      <div class="cerca-dash-header">
+        <div><span class="admin-kicker">ANALÍTICA DE CERCA.CL</span><h1>Tablero general <span>✦</span></h1><p>Eventos centralizados en PostgreSQL · datos reales del servidor.</p></div>
+        <button class="admin-secondary" type="button" (click)="exportarMetricas()">↓ Exportar métricas JSON</button>
+      </div>
+      <div class="cerca-dash-notice" role="note"><strong>PostgreSQL conectado.</strong> Totales globales obtenidos de la API; los gráficos detallados muestran hasta los últimos 5.000 eventos para no sobrecargar el navegador. Los visitantes, suscripciones y evaluaciones se registran de forma centralizada. SEO, ingresos y envíos siguen sin integración.</div>
+      <div class="cerca-dash-filters">
+        <div class="cerca-dash-period" role="group" aria-label="Período">
+          <button type="button" *ngFor="let periodo of ['hoy','semana','mes','anio']" [class.selected]="periodoTablero === periodo" (click)="periodoTablero = $any(periodo); actualizarResumen()">{{ periodo==='anio'?'Año':(periodo | titlecase) }}</button>
+        </div>
+        <label>Comuna <select [(ngModel)]="comunaTablero" (ngModelChange)="actualizarResumen()"><option value="Todas">Todas</option><option *ngFor="let c of comunas" [value]="c">{{c}}</option></select></label>
+        <label>Rubro <select [(ngModel)]="categoriaTablero" (ngModelChange)="actualizarResumen()"><option value="Todas">Todos</option><option *ngFor="let c of categorias" [value]="c.nombre" [disabled]="c.nombre==='Todos'">{{c.nombre}}</option></select></label>
+      </div>
+      <div class="cerca-dash-layout">
+        <nav class="cerca-dash-rail" aria-label="Secciones del tablero">
+          <strong><img src="assets/cerca-logo-horizontal.png" alt="CERCA"/></strong>
+          <button type="button" (click)="irSeccionTablero('dash-resumen')">▥ Resumen</button>
+          <button type="button" (click)="irSeccionTablero('dash-negocios')">▣ Negocios</button>
+          <button type="button" (click)="irSeccionTablero('dash-reputacion')">★ Reputación</button>
+          <button type="button" (click)="irSeccionTablero('dash-reclamos')">☏ Reclamos</button>
+          <button type="button" (click)="irSeccionTablero('dash-calidad')">◷ Calidad de fichas</button>
+          <button type="button" (click)="irSeccionTablero('dash-operaciones')">▤ SEO y campañas</button>
+          <div>Todo se mide<br/><b>en CERCA.</b></div>
+        </nav>
+        <div class="cerca-dash-main">
+          <div id="dash-resumen" class="cerca-dash-kpis">
+            <div class="cerca-dash-kpi"><span>◉ Visitas de sesión</span><strong>{{ totalEvento('visita') | number }}</strong><small>Visitas en este navegador</small></div>
+            <div class="cerca-dash-kpi"><span>⌕ Búsquedas</span><strong>{{ totalEvento('busqueda') | number }}</strong><small>Botón Buscar</small></div>
+            <div class="cerca-dash-kpi"><span>◉ Fichas abiertas</span><strong>{{ totalEvento('ficha') | number }}</strong><small>Visitas a detalles</small></div>
+            <div class="cerca-dash-kpi"><span>☏ WhatsApp</span><strong>{{ totalEvento('whatsapp') | number }}</strong><small>Clics de contacto</small></div>
+            <div class="cerca-dash-kpi"><span>↗ Sitios web</span><strong>{{ totalEvento('web') | number }}</strong><small>Clics externos</small></div>
+            <div class="cerca-dash-kpi"><span>⌖ Cómo llegar</span><strong>{{ totalEvento('ruta') | number }}</strong><small>Clics de rutas</small></div>
+            <div class="cerca-dash-kpi"><span>♧ Inscripciones recibidas</span><strong>{{ (resumenGlobal?.suscripciones?.['pendiente_verificacion'] || 0) + suscriptoresConfirmados | number }}</strong><small>Confirmados: {{suscriptoresConfirmados}} · Pendientes de verificar</small></div>
+            <div class="cerca-dash-kpi"><span>↗ Acciones por ficha</span><strong>{{ tasaInteraccion===null?'—':(tasaInteraccion | number:'1.1-1')+'%' }}</strong><small>Contactos/clics ÷ fichas</small></div>
+          </div>
+          <div class="cerca-dash-grid" id="dash-negocios">
+            <article class="cerca-dash-panel cerca-dash-wide">
+              <div class="cerca-dash-panel-head"><h2>▥ Visitas en el período</h2><small>Sesiones registradas por el servidor</small></div>
+              <strong class="cerca-dash-highlight">{{totalEvento('visita')}}</strong>
+              <div class="cerca-dash-bars"><div *ngFor="let dato of serieVisitas" class="cerca-dash-bar-col" [title]="dato.etiqueta + ': ' + dato.valor"><div [style.height.%]="dato.alto" [class.sin-actividad]="!dato.valor"></div><small>{{dato.etiqueta}}</small></div></div>
+            </article>
+            <article class="cerca-dash-panel"><h2>⌖ Búsquedas por comuna</h2><div *ngIf="!comunasMasBuscadas.length" class="cerca-dash-empty">Todavía no hay búsquedas registradas.</div><div *ngFor="let f of comunasMasBuscadas" class="cerca-dash-progress"><span>{{f.nombre}}</span><div><i [style.width.%]="f.porcentaje"></i></div><strong>{{f.valor}}</strong></div></article>
+            <article class="cerca-dash-panel"><h2>▣ Negocios más vistos</h2><div *ngIf="!negociosMasVistos.length" class="cerca-dash-empty">Abre fichas para registrar visitas.</div><div *ngFor="let f of negociosMasVistos;let i=index" class="cerca-dash-ranked"><b>{{i+1}}.</b><span>{{f.nombre}}</span><strong>{{f.valor}}</strong></div></article>
+            <article class="cerca-dash-panel"><h2>▦ Categorías consultadas</h2><div *ngIf="!categoriasMasConsultadas.length" class="cerca-dash-empty">Usa el filtro de categorías.</div><div *ngFor="let f of categoriasMasConsultadas" class="cerca-dash-progress"><span>{{f.nombre}}</span><div><i [style.width.%]="f.porcentaje"></i></div><strong>{{f.valor}}</strong></div></article>
+            <article class="cerca-dash-panel"><h2>☏ Contactos e interacción</h2><div class="cerca-dash-tally"><span>WhatsApp</span><b>{{totalEvento('whatsapp')}}</b></div><div class="cerca-dash-tally"><span>Teléfono</span><b>{{totalEvento('telefono')}}</b></div><div class="cerca-dash-tally"><span>Visitas a web</span><b>{{totalEvento('web')}}</b></div><div class="cerca-dash-tally"><span>Cómo llegar</span><b>{{totalEvento('ruta')}}</b></div><div class="cerca-dash-tally"><span>Favoritos</span><b>{{totalEvento('favorito')}}</b></div><div class="cerca-dash-tally"><span>GPS activado</span><b>{{totalEvento('gps')}}</b></div></article>
+          </div>
+          <article class="cerca-dash-panel cerca-dash-business-table">
+            <h2>▦ Rendimiento por cada negocio</h2>
+            <p>Interacciones guardadas en servidor (la tabla usa los últimos 5.000 eventos); no equivalen a ventas concretadas.</p>
+            <div class="cerca-dash-table-scroll"><table><thead><tr><th>Negocio</th><th>Comuna</th><th>Fichas</th><th>WhatsApp</th><th>Web</th><th>Ruta</th><th>Tel.</th><th>★ CERCA</th></tr></thead>
+              <tbody><tr *ngFor="let fila of rendimientoNegocios">
+                <td>{{fila.negocio.nombre}}</td><td>{{fila.negocio.comuna}}</td><td>{{fila.vistas}}</td><td>{{fila.whatsapp}}</td><td>{{fila.web}}</td><td>{{fila.rutas}}</td><td>{{fila.telefono}}</td><td>{{fila.promedio === null?'—':(fila.promedio | number:'1.1-1')+' ('+fila.evaluaciones+')'}}</td>
+              </tr></tbody></table></div>
+          </article>
+          <div class="cerca-dash-grid cerca-dash-reputation" id="dash-reputacion">
+            <article class="cerca-dash-panel"><h2>★ Reputación CERCA</h2><div class="cerca-dash-score">{{promedioReputacion===null?'—':(promedioReputacion|number:'1.1-1')}} <span>★</span></div><p>{{resumenGlobal?.reputacion?.total || 0}} evaluaciones CERCA en el período (sin opiniones externas)</p><div class="cerca-dash-tally"><span>☺ Felicitaciones (4–5 ★)</span><b>{{felicitacionesTablero}}</b></div><div class="cerca-dash-tally"><span>☹ Reclamos (1–2 ★)</span><b>{{resumenGlobal?.reputacion?.reclamos || 0}}</b></div><div class="cerca-dash-tally"><span>◷ Opiniones regulares (3 ★)</span><b>{{(resumenGlobal?.reputacion?.total || 0)-felicitacionesTablero-(resumenGlobal?.reputacion?.reclamos || 0)}}</b></div></article>
+            <article class="cerca-dash-panel"><h2>Motivos más frecuentes</h2><div *ngIf="!motivosFrecuentes.length" class="cerca-dash-empty">Las personas pueden elegir motivos concretos al evaluar un negocio.</div><div *ngFor="let f of motivosFrecuentes" class="cerca-dash-progress"><span>{{f.nombre}}</span><div><i [style.width.%]="f.porcentaje"></i></div><strong>{{f.valor}}</strong></div></article>
+            <article class="cerca-dash-panel" id="dash-reclamos"><h2>◷ Reclamos y seguimiento</h2><div class="cerca-dash-tally"><span>Pendientes</span><b class="cerca-dash-red">{{reclamosPendientes}}</b></div><div class="cerca-dash-tally"><span>Resueltos</span><b>{{(resumenGlobal?.reputacion?.reclamos || 0)-reclamosPendientes}}</b></div><div *ngIf="!reclamosTablero.length" class="cerca-dash-empty">Sin reclamos registrados en el período.</div><div *ngFor="let r of reclamosTablero.slice(0,8)" class="cerca-dash-complaint"><strong>{{obtenerNegocio(r.negocioId)?.nombre || 'Negocio eliminado'}} · {{r.estrellas}} ★</strong><small>{{r.motivos.join(' · ')}}</small><p *ngIf="r.comentario">{{r.comentario}}</p><small>{{r.fecha | date:'dd/MM/yyyy HH:mm'}}</small><label>Respuesta administrativa<input type="text" maxlength="400" [(ngModel)]="r.respuesta" placeholder="Respuesta opcional" /></label><div><button type="button" (click)="guardarRespuesta(r)">Guardar respuesta</button><button type="button" (click)="gestionarReclamo(r,r.estado==='resuelto'?'pendiente':'resuelto')">{{r.estado==='resuelto'?'Reabrir':'Marcar resuelto'}}</button></div></div></article>
+          </div>
+          <div class="cerca-dash-grid cerca-dash-operations" id="dash-calidad">
+            <article class="cerca-dash-panel"><h2>▤ Calidad de fichas</h2><div class="cerca-dash-tally"><span>Negocios totales (filtro)</span><b>{{negociosTablero.length}}</b></div><div class="cerca-dash-tally"><span>Sin horario</span><b>{{horarioPendiente}}</b></div><div class="cerca-dash-tally"><span>Sin sitio web válido</span><b>{{webPendiente}}</b></div><div class="cerca-dash-tally"><span>Sin WhatsApp configurado</span><b>{{whatsappPendiente}}</b></div><div class="cerca-dash-tally"><span>Sin revisión documentada</span><b>{{fichaSinRevision}}</b></div><p>Los horarios publicados como referenciales todavía requieren confirmación.</p></article>
+            <article class="cerca-dash-panel" id="dash-operaciones"><h2>↗ SEO y campañas</h2><div class="cerca-dash-tally"><span>Google Search Console</span><b>Sin conectar</b></div><div class="cerca-dash-tally"><span>Impresiones / CTR</span><b>—</b></div><div class="cerca-dash-tally"><span>Campañas configuradas activas</span><b>{{campanasProgramadas}}</b></div><div class="cerca-dash-tally"><span>Envíos realizados</span><b>Sin conectar</b></div><div class="cerca-dash-tally"><span>Ingresos / Suscripciones pagadas</span><b>Sin conectar</b></div><p>Las campañas guardadas no se envían. El dashboard no inventa ventas ni estadísticas de Google.</p></article>
+            <article class="cerca-dash-panel"><h2>⚠ Alertas automáticas</h2><div class="cerca-dash-alert" *ngIf="reclamosPendientes"><span>Reclamos pendientes</span><b>{{reclamosPendientes}}</b></div><div class="cerca-dash-alert"><span>Horarios por confirmar</span><b>{{horarioPendiente}}</b></div><div class="cerca-dash-alert"><span>Sin enlace WhatsApp</span><b>{{whatsappPendiente}}</b></div><div class="cerca-dash-alert"><span>Sin web</span><b>{{webPendiente}}</b></div><p>Las alertas se calculan a partir de los datos que devuelve el servidor.</p></article>
+          </div>
+          <div class="cerca-dash-bottom-note">Eventos, negocios, consentimientos y opiniones se registran en PostgreSQL. La integración con medios de pago, correo/WhatsApp oficial y Search Console es una etapa separada.</div>
+        </div>
+      </div>
+    </section>
     <ng-container *ngIf="pestanaAdmin === 'anuncios'">
     <div class="admin-head">
       <div>
-        <span class="admin-kicker">EDICIÓN LOCAL DE PRUEBA</span>
+        <span class="admin-kicker">ANUNCIOS EN POSTGRESQL</span>
         <h1>Administrar anuncios</h1>
         <p>Agrega negocios, cambia sus fotos, modifica sus datos y controla cuáles se muestran en la página.</p>
       </div>
@@ -335,9 +482,8 @@
     </div>
 
     <div class="admin-warning">
-      <strong>Versión local, todavía sin acceso seguro.</strong>
-      Estos cambios se guardan únicamente en este navegador. Para publicar anuncios a todos los visitantes
-      y proteger esta entrada con contraseña, falta conectar una API y una base de datos con roles.
+      <strong>Editor conectado al servidor.</strong> Los cambios de negocios se guardan en PostgreSQL y se ven desde otros dispositivos.
+      <button type="button" class="admin-secondary" (click)="importarDatosLocales()">Importar mis anuncios antiguos de este navegador (una vez)</button>
     </div>
     <div *ngIf="avisoAdministracion" class="admin-message" role="status">{{ avisoAdministracion }}</div>
 
@@ -408,7 +554,7 @@
           <label *ngIf="anuncioEditor.destacado">Orden del destacado (1 primero)
             <input type="number" name="prioridadDestacadoAdmin" min="1" max="999" step="1" [(ngModel)]="anuncioEditor.prioridadDestacado" />
           </label>
-          <label class="admin-check admin-full"><input type="checkbox" name="publicadoAdmin" [(ngModel)]="anuncioEditor.publicado" /> Publicado (visible para visitantes de este navegador)</label>
+          <label class="admin-check admin-full"><input type="checkbox" name="publicadoAdmin" [(ngModel)]="anuncioEditor.publicado" /> Publicado (visible para todos los visitantes)</label>
         </div>
         <p *ngIf="errorFormulario" class="admin-error" role="alert">{{ errorFormulario }}</p>
         <div class="admin-form-actions">
@@ -429,9 +575,8 @@
         <button type="button" class="admin-secondary" (click)="exportarCampanas()">Exportar programación JSON</button>
       </div>
       <div class="admin-warning" role="note">
-        <strong>Configurador local de prueba: sin envíos reales.</strong>
-        Todavía no hay suscriptores en PostgreSQL ni servicio de correo o WhatsApp conectado.
-        El botón «Enviar» está desactivado deliberadamente. Los horarios guardados no ejecutan procesos automáticos.
+        <strong>Programaciones guardadas en PostgreSQL.</strong> Los suscriptores pendientes no son destinatarios habilitados.
+        Todavía falta integrar un servicio autorizado de correo/WhatsApp y confirmar contactos; «Enviar» sigue desactivado.
       </div>
       <div *ngIf="mensajeCampanas" role="status" class="admin-message">{{ mensajeCampanas }}</div>
 
@@ -529,10 +674,34 @@
           <div class="cerca-preview-row"><span>Rubro</span><strong>{{ programacionActual.categoria }}</strong></div>
           <h3>Filtro automático futuro</h3>
           <p>{{ filtroCampana }}</p>
-          <div class="cerca-no-subscribers"><strong>Destinatarios: sin datos</strong><span>No existe una base de suscriptores conectada. No se simulan contactos ni envíos.</span></div>
+          <div class="cerca-no-subscribers"><strong>Suscriptores confirmados: {{suscriptoresConfirmados}}</strong><span>El servidor almacena inscripciones reales; sin verificación y proveedor de envíos, no se realiza ninguna campaña.</span></div>
           <p class="cerca-campana-note">Cuando exista el backend, el botón Enviar deberá consultar destinatarios autorizados, respetar la fecha/hora, evitar duplicados y registrar cada envío.</p>
         </aside>
       </div>
     </section>
+    <section *ngIf="pestanaAdmin === 'suscriptores'" class="cerca-admin-suscriptores">
+      <div class="admin-head"><div><span class="admin-kicker">BASE DE DATOS CENTRAL</span><h1>Suscriptores e intención de compra</h1>
+      <p>Contactos registrados con consentimiento. Solo los que verifiquen titularidad podrán recibir campañas.</p></div>
+      <button type="button" class="admin-secondary" (click)="cargarAdmin()">Actualizar desde PostgreSQL</button></div>
+      <div class="cerca-dash-kpis">
+        <div class="cerca-dash-kpi"><span>Listado (máx. 1.000)</span><strong>{{suscriptoresAdmin.length}}</strong></div>
+        <div class="cerca-dash-kpi"><span>Pendientes</span><strong>{{resumenGlobal?.suscripciones?.['pendiente_verificacion']||0}}</strong></div>
+        <div class="cerca-dash-kpi"><span>Confirmados</span><strong>{{suscriptoresConfirmados}}</strong></div>
+        <div class="cerca-dash-kpi"><span>Bajas</span><strong>{{resumenGlobal?.suscripciones?.['baja']||0}}</strong></div>
+      </div>
+      <div class="cerca-seg-filtros">
+        <label>Comuna<select [(ngModel)]="filtroComunaAdmin"><option value="">Todas</option><option *ngFor="let c of comunas" [value]="c">{{c}}</option></select></label>
+        <label>Interés<select [(ngModel)]="filtroInteresAdmin"><option value="">Todos</option><option *ngFor="let c of categorias" [value]="c.nombre" [disabled]="c.nombre==='Todos'">{{c.nombre}}</option></select></label>
+        <label>Intención<select [(ngModel)]="filtroIntencionAdmin"><option value="">Todas</option><option value="ahora">Necesita ahora</option><option value="pronto">Pronto</option><option value="explorando">Explorando</option></select></label>
+        <label>Frecuencia<select [(ngModel)]="filtroFrecuenciaAdmin"><option value="">Todas</option><option value="diaria">Diaria</option><option value="semanal">Semanal</option><option value="mensual">Mensual</option></select></label>
+        <label>Estado<select [(ngModel)]="filtroEstadoAdmin"><option value="">Todos</option><option value="pendiente_verificacion">Pendiente</option><option value="confirmado">Confirmado</option><option value="baja">Baja</option></select></label>
+      </div>
+      <p><strong>{{suscriptoresFiltrados.length}}</strong> contactos coinciden con el filtro (lista hasta 1.000 más recientes).</p>
+      <div class="cerca-dash-table-scroll"><table><thead><tr><th>Fecha</th><th>Nombre</th><th>Contacto</th><th>Canal</th><th>Comuna</th><th>Intereses</th><th>Intención</th><th>Frecuencia</th><th>Estado</th></tr></thead><tbody>
+      <tr *ngFor="let s of suscriptoresFiltrados"><td>{{s.consentimiento_en|date:'dd/MM/yyyy'}}</td><td>{{s.nombre}}</td><td>{{s.contacto}}</td><td>{{s.canal}}</td><td>{{s.comuna}}</td><td>{{s.intereses.join(', ')}}</td><td>{{s.intencion}}</td><td>{{s.frecuencia}}</td><td>{{s.estado}}</td></tr>
+      </tbody></table></div>
+      <p class="cerca-dash-bottom-note">Solo uso administrativo. No publiques ni exportes teléfonos o correos sin necesidad. Un registro pendiente no significa que se haya verificado el contacto ni autoriza envíos automáticos.</p>
+    </section>
   </div>
+  </ng-container>
 </div>
