@@ -1,0 +1,20 @@
+CERCA.cl — ACCESO PRIVADO DESDE LA MISMA PÁGINA
+
+1. Entra a http://localhost:4200/
+2. Arriba, pulsa «Para negocios».
+3. Baja a la sección oscura «Que tu barrio te encuentre».
+4. Debajo de la descripción pulsa «🔒 Entrar a mi administración ↗».
+5. Se abrirá /panel-admin.html. Escribe tu correo autorizado y solicita el código de 8 dígitos (válido 6 minutos).
+6. Después del login podrás entrar en Negocios y oficios, Tablero general, Campañas, Suscriptores y Opiniones y reclamos.
+
+No se ha cambiado la cabecera, la portada, el buscador ni las fichas.
+El enlace en la sección «Para negocios» no reemplaza el botón naranja «Quiero publicar mi negocio»; ambos funcionan por separado.
+
+Para instalar SOLO el acceso: en tu proyecto CERCA que ya tenga el panel instalado, reemplaza los archivos
+  frontend/src/app/app.component.html
+  frontend/src/app/app.component.css
+Los demás archivos no cambian. Si tu proyecto NO tiene el panel instalado, también debes usar frontend/public/panel-admin.html y el backend del ZIP COMPLETO, configurar SMTP y PostgreSQL y ejecutar npm run migrate.
+
+No sobrescribas backend/.env ni ejecutes npm run seed si ya tienes negocios reales.
+La URL y la página de login son accesibles públicamente, pero los endpoints/datos requieren autenticación.
+No se ha publicado automáticamente en Netlify ni instalado en tu computador.

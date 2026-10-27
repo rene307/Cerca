@@ -1,0 +1,66 @@
+﻿id;nombre;categoria;comuna;clasificacion;investigado;horario_propuesto;telefono_publico;direccion_correccion;fuente;observacion;whatsapp_verificado;web_verificada;coordenadas_verificadas;vigencia
+1;Café Macondo;Cafés;La Florida;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+2;Bar Esquina 21;Bares;La Florida;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+3;Estudio Norte;Peluquería;La Florida;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+4;Mundo Mascota;Mascotas;La Florida;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+5;VulcaExpress;Vulcanización;La Florida;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+6;Verde Luna;Tiendas;La Florida;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+7;La Mesa del Barrio;Bares;Puente Alto;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+8;Casa Miga;Cafés;Ñuñoa;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+9;Tecno Barrio;Servicios;Providencia;DEMOSTRACIÓN;Pendiente;;;;;;No;No;No;Sin horario validado
+10;Café del Jardín;Cafés;La Florida;DESDE CAPTURAS;Sí;"Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)";+56 9 5879 0169;;https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2;Teléfono y horario coinciden con directorios independientes.;No;No;No;"Horario publicado; confirmar"
+11;KABI Pastelería y Cafetería;Cafés;La Florida;DESDE CAPTURAS;Sí;;+56 9 3647 0275;;Ficha pública del negocio en resultados de mapas;"Horarios inconsistentes entre fuentes; no rellenar.";No;No;No;Sin horario validado
+12;La Duquesa Bakery;Cafés;La Florida;DESDE CAPTURAS;Sí;;+56 9 6130 1176;;Ficha pública del negocio en resultados de mapas;Horario sin confirmar por el local.;No;No;No;Sin horario validado
+13;Cafetería del Rey Brujo;Cafés;La Florida;DESDE CAPTURAS;Sí;;;;Ficha pública del negocio en resultados de mapas;Horario por confirmar en el local.;No;No;No;Sin horario validado
+14;Cafetería Robusta;Cafés;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+15;Hola Ola;Cafés;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+16;Amasandería Walker;Panaderías;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+17;Amasandería La Espiga;Panaderías;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+18;Pastelería Dulce Almendra;Panaderías;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+19;Amasandería y Pastelería Lucas;Panaderías;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+20;Amasandería Edwards;Panaderías;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+21;Amasandería Camila;Panaderías;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+22;CHECK Servicio Técnico Computación;Computación;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+23;Servicio Técnico Computadores ComputerTech;Computación;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+24;TÉCNICO COMPUTACIÓN;Computación;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+25;La Pelu La Florida;Peluquería;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+26;Peluquería y Salón Cataleya Beauty Center;Peluquería;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+27;Salón Jaime Adrián;Peluquería;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+28;Vulcanización La Florida;Vulcanización;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+29;Vulcanización (Av. Departamental);Vulcanización;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+30;Redvulca a domicilio;Vulcanización;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+31;El Neumatin (Chapatín);Vulcanización;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+32;Vulcanización Los Picaflores;Vulcanización;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+33;Vulka Martín;Vulcanización;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+34;Vivero Rincón Verde;Viveros;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+35;Vivero Pacífico;Viveros;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+36;Vivero Sanse;Viveros;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+37;Mecánica a Domicilio 24/7;Mecánicos;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+38;Mecánico 24/7 Alexander & Jofran;Mecánicos;Peñalolén;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+39;Mecánico 24 Horas;Mecánicos;Peñalolén;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+40;MP Garage - Taller Mecánico a Domicilio;Mecánicos;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+41;Mecánico Alex;Mecánicos;Macul;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+42;Farmacia Indi tu Farmacia Independiente;Farmacias;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+43;Farmacia Arapharma;Farmacias;La Florida;DESDE CAPTURAS;Sí;"Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)";;;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;;No;No;No;"Horario publicado; confirmar"
+44;Farmacias Económicas;Farmacias;La Florida;DESDE CAPTURAS;Sí;"Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)";;;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;;No;No;No;"Horario publicado; confirmar"
+45;Farmacia Vecinal;Farmacias;La Florida;DESDE CAPTURAS;Sí;;;;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;Hay discrepancias de horarios y teléfonos entre directorios. No actualizar automáticamente esos campos.;No;No;No;Sin horario validado
+46;Farmacia El Químico;Farmacias;La Florida;DESDE CAPTURAS;Sí;"Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)";;;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;;No;No;No;"Horario publicado; confirmar"
+47;Farmacia BarrioFlorida;Farmacias;La Florida;DESDE CAPTURAS;Sí;;;;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;En el registro público se llama BARRIO FARMA en Rojas Magallanes 94 B. Confirmar identidad antes de cambiar nombre u horario.;No;No;No;Sin horario validado
+48;Farmacia Ciudadana La Florida;Farmacias;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+49;Farmacias Herrera;Farmacias;La Florida;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+50;Eco Farmacias;Farmacias;La Florida;DESDE CAPTURAS;Sí;"Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)";;Serafín Zamora 29, Local 19;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;"Nombre de calle corregido usando registro público; solo cambia la dirección si aún es la anterior.";No;No;No;"Horario publicado; confirmar"
+51;Farmacenter;Farmacias;La Florida;DESDE CAPTURAS;Sí;;;;https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida;Los horarios se contradicen entre directorios públicos. No asignar un horario definitivo.;No;No;No;Sin horario validado
+52;Farmacias Titán 24/7;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;;;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;La condición 24/7/urgencia puede variar. Confirmar el régimen permanente y turnos.;No;No;No;Sin horario validado
+53;Farmacia Dalem;Farmacias;Puente Alto;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+54;Farmacia Solidaria;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+55;Farmacia Roubillard S.A.;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+56;Farma Ulloa;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+57;Farmacia San Carlos;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+58;Farmacia de lo Alto;Farmacias;Puente Alto;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+59;Farmacias Ahumada;Farmacias;Puente Alto;DESDE CAPTURAS;Pendiente;;;;;;No;No;No;Sin horario validado
+60;Farmacia Netfarma;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+61;Farmacias La Botika;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+62;Farmacias Olímpica - Puente Alto;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+63;Farmacias Cruz Verde;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;Sólo la sucursal Av. Concha y Toro 3955, no generalizar a toda la cadena.;No;No;No;"Horario publicado; confirmar"
+64;Farmacia Novasalud - Puente Alto;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)";;;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"
+65;Farmacia Macarena;Farmacias;Puente Alto;DESDE CAPTURAS;Sí;"Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)";;Nonato Coo 3923;https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto;;No;No;No;"Horario publicado; confirmar"

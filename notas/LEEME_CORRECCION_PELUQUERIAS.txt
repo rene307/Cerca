@@ -1,0 +1,23 @@
+CERCA - CORRECCION DE NAVEGACION Y PELUQUERIAS
+===========================================
+
+1. RESPALDA tu carpeta de CERCA y tu base PostgreSQL antes de actualizar.
+2. Descomprime en una carpeta NUEVA. No mezcles archivos sueltos con versiones anteriores.
+3. Copia UNICAMENTE tu backend/.env de la version antigua (no compartas credenciales).
+4. CIERRA Angular y Node anteriores antes de iniciar INICIAR_CERCA_WEB_SEO.bat.
+5. Abre http://localhost:4200/la-florida/peluquerias
+   Ahora Angular interpreta la ruta y filtra por peluquerias de La Florida,
+   incluso si el servidor de desarrollo no ha aplicado el proxy SSR para ese enlace.
+6. Si sigue sin haber negocios, ejecuta COMPROBAR_MIS_PELUQUERIAS.bat.
+   Este comando NO modifica la base: muestra los registros reales en PostgreSQL.
+7. Si la base NO tiene las peluquerias anteriores pero quieres rescatarlas desde
+   el archivo seed incluido en el ZIP, ejecuta RECUPERAR_PELUQUERIAS_FALTANTES.bat.
+   Veras sus nombres ANTES de confirmar. Solo INSERTA fichas cuyo nombre + categoria
+   + comuna no estan en la BD. Nunca actualiza ni borra negocios existentes.
+
+La fuente de verdad de negocios en producción es PostgreSQL, base cerca.
+La portada, el administrador y la estructura SEO del backend se conservan.
+La pagina del puerto 4200 es vista Angular en desarrollo; los HTML SEO
+indexables se generan en el backend para el despliegue del sitio.
+
+No confirmado aqui: tu PostgreSQL de Windows ni la compilacion Angular de tu PC.

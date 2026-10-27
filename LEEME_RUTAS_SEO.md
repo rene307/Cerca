@@ -1,0 +1,60 @@
+# CERCA — URLs públicas reales para SEO local
+
+Se ha trabajado sobre `CERCA_ADMIN_CORREGIDO_LOGIN_6_MINUTOS.zip`, conservando la portada y el login por correo de 6 minutos. La API PostgreSQL sigue siendo la fuente de datos. No se creó una base alternativa ni se reemplazó el administrador.
+
+## Cómo verlo en tu computador con Windows
+
+1. Descomprime el ZIP completo. Si ya tienes un `backend/.env` funcionando, **copia tu archivo `.env` anterior** al `backend` de esta nueva carpeta. No incluyas contraseñas en archivos que envías a otras personas.
+2. Si no tenías `.env`, copia `backend/.env.example` a `backend/.env`, indica la contraseña de tu PostgreSQL `cerca`, `ADMIN_EMAIL`, parámetros SMTP y `JWT_SECRET` (32 caracteres como mínimo).
+3. En desarrollo, coloca `SITE_URL=http://localhost:4200` en `backend/.env`.
+4. Ejecuta `INICIAR_CERCA_ADMIN.bat` o abre `01_API_CERCA.bat` y `02_WEB_CERCA.bat` en ese orden. La API arranca en el puerto 3100; Angular, en el 4200.
+5. Ejecuta `03_VER_URLS_SEO.bat` para abrir automáticamente los ejemplos.
+
+Páginas de muestra (URLs locales **reales**, no anclas ni filtros dentro de la portada):
+
+- http://localhost:4200/la-florida
+- http://localhost:4200/la-florida/peluquerias
+- http://localhost:4200/la-florida/peluquerias/estudio-norte
+- http://localhost:4200/la-florida/cafes
+- http://localhost:4200/puente-alto/farmacias
+- http://localhost:4200/sitemap.xml
+
+Al editar, crear o publicar un negocio, sus páginas HTML pasan a usar la información de PostgreSQL; no debes generar un archivo por negocio. Se manejan comunas y rubros nuevos creados en el administrador. Las rutas inexistentes responden 404.
+
+## Cambios principales
+
+- **Portada:** mismo diseño y navegación principal; los círculos de las categorías enlazan a su página por comuna/rubro. Los botones «Ver negocio» conducen a la URL de la ficha, en vez de depender de un modal. Las reseñas siguen disponibles desde «Abrir reseñas y evaluación» en cada ficha.
+- **Administración:** botón `Ver URL SEO ↗` en Negocios y Oficios dentro de `panel-admin.html`. La autenticación con código de seis minutos no cambia. Las actualizaciones se reflejan desde la BD PostgreSQL (cache HTTP de 30 segundos para las páginas).
+- **Backend:** HTML completo en la respuesta inicial para cada comuna, rubro y ficha; `title`, descripción, H1, `canonical`, Open Graph, breadcrumbs y JSON-LD cuando la ficha esté verificada. URLs amigables, métricas de clics en WhatsApp, llamada, web y ruta; sitemap XML y robots.txt.
+- **Rutas de negocio:** se conserva un `slugSeo` estable al editar nombres desde el administrador. Los nombres duplicados reciben sufijo `--ID`. Si cambias **comuna o rubro**, la ruta se mueve: una migración futura debe definir redirecciones 301 de las URL antiguas si ya fueron indexadas.
+- **Rubros:** `Servicios` (registros antiguos) y `Oficios y Profesiones` (registros nuevos) comparten `/oficios-y-profesiones`.
+
+## Lo que falta antes de aparecer en Google
+
+La base de ejemplo contiene 65 fichas de muestra o procedentes de capturas sin verificación explícita. **No deben considerarse establecimientos confirmados.** Para evitar indexar negocios posiblemente ficticios o datos incorrectos, las fichas sin `datosVerificados=true` tienen `noindex` y no entran al sitemap. Para ser indexable, el negocio necesita estar publicado, tener datos verificados, descripción significativa (al menos 70 caracteres) y datos de ubicación o contacto. Las páginas de comuna/rubro se indexan solo si albergan alguna ficha verificada. No hay que marcar negocios de prueba como verificados solo para aumentar el sitemap.
+
+Comprueba en el panel los datos reales, teléfonos y consentimiento para uso de imágenes. Después puedes enviar `/sitemap.xml` a Google Search Console. El sitemap solo indica qué páginas deseas presentar al buscador: Google decide cuándo y si las indexa.
+
+## Publicación real: todo bajo un mismo dominio
+
+Para la web pública, necesitas que las peticiones a `/la-florida/...`, `/api/...` y `/sitemap.xml` lleguen al **mismo backend Node/Express** en el dominio publicado, o configurar un proxy/rewrite equivalente que comparta el origen. GitHub Pages por sí solo no ejecuta las rutas de servidor Node necesarias para esta implementación.
+
+Una opción es alojar la API y el frontend compilado en un mismo servicio de Node:
+
+1. `cd frontend` → `npm install` → `npm run build` (genera `frontend/dist/cerca/browser`).
+2. `cd ../backend` → `npm install`.
+3. Configura PostgreSQL, SMTP, `JWT_SECRET`, y `SITE_URL=https://TU-DOMINIO-REAL` sin barra al final en las variables del servidor.
+4. `npm run migrate` y `npm start` (usa `PORT` fijado por el hosting). Express entrega la portada compilada en `/`, las páginas SEO bajo `/:comuna/:rubro/:negocio`, los recursos y la API.
+5. Verifica que `/la-florida/peluquerias` envíe un HTML con su propio `title`, `canonical` y H1 al hacer **Ver código fuente**, sin esperar a que JavaScript dibuje el contenido.
+
+**Atención al dominio:** en la revisión del 22 de octubre de 2026 `https://cerca.cl` muestra públicamente un sitio llamado «Cerca – Escuela de Conductores». Antes de desplegar, confirma cuál es el dominio bajo tu control: no des por hecho que `cerca.cl` pertenece a este proyecto. Configura `SITE_URL` con el dominio real del directorio.
+
+## Pruebas técnicas
+
+`cd backend && npm test` valida además las rutas y los casos de colisiones. Las pruebas de Node pasan; no se pudo compilar Angular en este entorno porque el registro npm no era accesible y el proyecto no incluía `node_modules`. Ejecuta `npm install` y `npm run build` en tu computador para la comprobación final.
+
+## Diagnóstico del error 500 (octubre 2026)
+
+Esta versión **no usa SSR de Angular**: el HTML SEO lo genera Express. Para aislar un 500, primero ejecuta `04_DIAGNOSTICAR_URLS_SEO.bat` con API y frontend abiertos. Puedes abrir `03_VER_URLS_SEO.bat` para probar las URLs directamente en `http://127.0.0.1:3100`, sin pasar por Angular. Si falla `/api/salud`, revisa PostgreSQL y `.env`; si solo falla la versión `localhost:4200`, revisa el proxy Angular. La base no se toca al ejecutar el diagnóstico.
+
+El puerto por defecto de Express ahora es 3100; `PORT` de `.env` y del hosting tiene prioridad. Consulta también `LEEME_SOLUCION_ERROR_500_SEO.txt`.

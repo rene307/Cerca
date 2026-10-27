@@ -1,0 +1,42 @@
+CERCA.CL - VERSION OFICIOS Y PROFESIONES
+======================================
+
+Se modificó la navegación real del directorio CERCA sobre tu proyecto Angular + Node + PostgreSQL.
+
+1. Al tocar el icono naranja "Oficios y Profesiones" en la portada, SE OCULTAN las otras categorías.
+2. El mismo lugar muestra 25 especialidades con sus iconos, en tarjetas grandes adaptables a PC y celular.
+3. Al elegir Mecánicos, Gasfíteres, etc., se filtran LAS FICHAS REALES cargadas en la base por categoría y comuna.
+4. "Ver todos" muestra las fichas existentes de esos rubros. "Volver a categorías" regresa a la portada habitual.
+5. Si no hay trabajadores registrados en un rubro, muestra un aviso claro (NO inventa personas ni WhatsApp).
+6. Mantiene ficha de Carlos Mecánico y botón WhatsApp desde la versión anterior; la inscripción requiere backend y base.
+7. Mantiene todas las otras secciones: buscador Necesito/Descubrir, dashboard, registro, campañas, favoritos, mapa y fichas.
+8. Mantiene datos y categoría antiguos "Servicios" bajo la especialidad "Otros oficios" para no perder registros de PostgreSQL.
+
+ARRANCAR EN TU PC
+----------------
+Copia este ZIP en una CARPETA NUEVA (no sobreescribas sin respaldo), descomprímelo.
+Abre dos terminales Windows PowerShell o CMD.
+
+TERMINAL 1 (backend):
+  cd CERCA_OFICIOS_PROFESIONES\backend
+  npm install
+  npm start
+
+TERMINAL 2 (frontend):
+  cd CERCA_OFICIOS_PROFESIONES\frontend
+  npm install
+  npm start
+
+En Chrome: http://localhost:4200
+Si ya estabas ejecutando Angular, detén con Ctrl+C y vuelve a arrancar.
+
+BASE DE DATOS:
+- No se incluye contraseña ni archivo .env. Copia tu propio backend/.env a la nueva carpeta, o configúralo desde backend/.env.example.
+- PostgreSQL debe estar ejecutándose y la base se debe llamar "cerca".
+- Los rubros nuevos pueden verse en pantalla aunque estén vacíos; los inscritos deben añadirse desde el administrador y guardarse en PostgreSQL.
+- Para la ficha Carlos Mecánico, consulta LEEME_INSTALACION_CARLOS.md. Si no está en tu PostgreSQL, previo permiso de Carlos, en backend usa "npm run carlos" SOLO UNA VEZ (es idempotente).
+- El proyecto completo está basado en una copia guardada en Biblioteca; no necesariamente tiene cambios posteriores que solo estén en tu PC.
+
+IMPORTANTE: se añadió import "zone.js" en frontend/src/main.ts para resolver NG0908 en Angular 19.
+El frontend de esta copia es Angular standalone con interfaz estilo Ionic, pero NO incluye los paquetes @ionic/angular en las dependencias.
+No se cambió el esquema SQL ni se ejecutaron migraciones sobre tu base de datos.

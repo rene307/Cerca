@@ -1,0 +1,16 @@
+CERCA.cl - Crear y configurar la base de datos
+
+1) Abre pgAdmin 4 > Servers > PostgreSQL 18 > Databases.
+2) Selecciona la base postgres (no DondeAhi).
+3) Abre Query Tool.
+4) Ejecuta: CREATE DATABASE cerca;
+5) Click derecho en Databases > Refresh.
+6) Debe aparecer cerca junto a DondeAhi, ccc_db y las otras bases.
+7) Dentro de backend, copia .env.example como .env.
+8) En .env deja PGDATABASE=cerca, PGUSER=postgres y escribe tu clave PGPASSWORD.
+9) Configura ADMIN_PASSWORD_HASH y JWT_SECRET como explica README.
+10) En backend: npm install, npm run migrate, npm run seed y npm start.
+11) En frontend: npm install y npm start.
+
+IMPORTANTE: no se ha creado ni cambiado una base en tu PC desde ChatGPT.
+No publiques tu contrasena ni el archivo .env.

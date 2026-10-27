@@ -1,5 +1,4 @@
+import 'zone.js'; // Angular 19 necesita Zone.js antes de iniciar la aplicación.
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient } from '@angular/common/http';
-import { provideIonicAngular } from '@ionic/angular/standalone';
 import { AppComponent } from './app/app.component';
-bootstrapApplication(AppComponent, {providers: [provideIonicAngular(),provideHttpClient()]}).catch(console.error);
+bootstrapApplication(AppComponent).catch(e=>console.error(e));

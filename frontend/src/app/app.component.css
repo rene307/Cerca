@@ -735,3 +735,34 @@ body:has(.cerca-acceso-bloqueo) { overflow: hidden !important; }
 @media(max-width: 460px) {
   .cerca-oficios-panel .cerca-oficios-opciones { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* Acceso privado desde Para negocios; no altera la portada ni el resto del menú. */
+.cta-content a.cerca-acceso-admin-negocios {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 17px;
+  color: #ffbd9b;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+.cta-content a.cerca-acceso-admin-negocios:hover,
+.cta-content a.cerca-acceso-admin-negocios:focus-visible {
+  color: #fff;
+}
+
+/* SEO: los círculos y CTA son enlaces <a> rastreables, con idéntica apariencia. */
+.hero-category{text-decoration:none;color:inherit;cursor:pointer}.card-link{text-decoration:none;display:inline-flex;align-items:center;justify-content:space-between}.hero-category:hover,.card-link:hover{text-decoration:none}
+
+/* Estado de conexión con PostgreSQL — no falsear un directorio vacío. */
+.cerca-api-aviso{display:flex;align-items:center;flex-wrap:wrap;gap:12px;line-height:1.5;}
+.cerca-api-aviso strong{color:#8f340f;}
+.cerca-api-aviso span{flex:1;min-width:220px;}
+.cerca-api-reintentar{background:#ff601e;color:#fff;border:0;border-radius:12px;padding:10px 15px;font:800 12px 'DM Sans',Arial,sans-serif;cursor:pointer;}
+.cerca-api-reintentar:hover{background:#d94a0e;}
+
+/* Las URL internas saltan al listado sin que el encabezado lo tape. */
+#explorar { scroll-margin-top: 86px; }

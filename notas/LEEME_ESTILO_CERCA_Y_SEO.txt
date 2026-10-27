@@ -1,0 +1,55 @@
+CERCA — MISMO ESTILO VISUAL + URLS SEO REALES
+============================================
+
+QUÉ SE RESPETÓ:
+* NO se rehízo el frontend Angular ni su portada.
+* Se conservan el logo, naranja (#ff601e), blanco, negro, navegación
+  Explorar / Categorías / Mapa / Para negocios y las tarjetas redondeadas.
+* NO se cambió el acceso del administrador ni la base de datos PostgreSQL.
+* No se incluyó ningún archivo .env ni contraseñas.
+
+QUÉ SE AJUSTÓ:
+* Páginas por comuna, rubro y ficha usan la identidad visual de CERCA,
+  en vez del diseño verde del paquete SEO previo.
+* Metadatos de SEO (title, description, canonical, Open Graph, breadcrumbs,
+  JSON-LD condicional, robots.txt y sitemap) se mantienen.
+* Una sección sin negocios muestra un mensaje real y noindex, en vez de 404
+  o fichas ficticias. La ruta sigue funcionando.
+* Las fichas usan los datos PostgreSQL y enlaces de WhatsApp con métricas
+  cuando hay un número válido.
+* Los negocios con nombre igual en Servicios y Oficios no comparten URL.
+* El botón Publica tu negocio de las páginas SEO abre el modal original
+  de la portada mediante ?publicar=1.
+
+INICIAR EN WINDOWS
+1. EXTRAER el ZIP en una carpeta nueva.
+2. Copiar SOLO tu archivo backend/.env antiguo a esta nueva carpeta backend.
+   IMPORTANTE: confirmar que PORT=3100 y SITE_URL=http://localhost:4200
+   si estás trabajando localmente.
+3. Cierra las terminales anteriores de CERCA que ocupen 3000, 3100 o 4200.
+4. Ejecutar INICIAR_CERCA_WEB_SEO.bat.
+5. Abrir http://localhost:4200/la-florida/mecanicos
+   La portada sigue en http://localhost:4200/
+   Administración sigue en http://localhost:4200/panel-admin.html
+
+El .bat arranca Express 3100 y Angular 4200; un frontend solo no puede
+consultar negocios reales si Express o PostgreSQL están apagados.
+
+ANTES DE PUBLICAR:
+* Usar la URL pública real para SITE_URL y configurar correctamente las
+  rutas hacia Express y /api en el hosting.
+* Confirmar que los negocios publicados tienen datos reales y permiso para
+  usar fotografías. Los datos de muestra siguen sin indexarse por defecto.
+* El ZIP conserva las fichas incluidas en la versión previa; no requiere
+  volver a cargar ni eliminar tu base si ya está poblada.
+
+PRUEBAS REALIZADAS EN EL ENTORNO DE PREPARACION:
+* Sintaxis JavaScript comprobada con Node 22.
+* Rutas y casos de slugs probados sin una BD PostgreSQL real.
+* HTML de mecánicos, cafés, comuna y rubro sin registros inspeccionado.
+* Vista previa del nuevo CSS en Chromium.
+
+AUN POR VERIFICAR EN TU COMPUTADOR:
+* Conexión y datos de tu PostgreSQL local.
+* Instalación de npm y compilación Angular en Windows.
+* Entradas SMTP y autentificación con correo.

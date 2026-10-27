@@ -1,0 +1,35 @@
+CERCA | CORRECCION Y DIAGNOSTICO DE ERROR 500 EN URLS SEO
+========================================================
+
+ESTA VERSION NO USA SSR DE ANGULAR.
+Las paginas SEO son HTML generado en backend/src/seo-pages.js (Node/Express) con informacion de PostgreSQL. El frontend Angular se utiliza para la portada, y el puerto 4200 usa proxy hacia la API puerto 3100.
+
+CAMBIOS DE ESTA ENTREGA
+1) Backend al ejecutar "npm start" sin PORT: predeterminado corregido a 3100 (antes 3000). Sigue respetando PORT del .env y del hosting.
+2) Las rutas con sufijos por negocios duplicados, p.ej. /la-florida/peluquerias/estudio-norte--3, ya no se rechazan erroneamente.
+3) Errores del servidor informan en su terminal ruta y codigo de Postgres si existe. Errores PostgreSQL de conexion responden 503; otros errores no se esconden.
+4) Para comprobar si es problema de Angular, hay un .bat para abrir las rutas SEO directamente en Express (3100) y otro para diagnosticar API, DB, ruta y proxy.
+5) Se ampliaron las pruebas automaticas.
+
+PASOS EN WINDOWS
+A. Descomprime todo el ZIP en una carpeta nueva. NO BORRES LA BD EXISTENTE.
+B. Copia de tu instalacion anterior solamente backend/.env al backend de esta carpeta. Nunca publiques ese archivo.
+C. Cierra todas las ventanas antiguas de CERCA (Node/Angular) para evitar servidores viejos en 3100 y 4200.
+D. Ejecuta INICIAR_CERCA_ADMIN.bat y revisa las ventanas. Si el API no sube revisa PostgreSQL y el archivo backend/.env.
+E. Ejecuta 04_DIAGNOSTICAR_URLS_SEO.bat. La consola indicara si falla PostgreSQL, backend, proxy o si falta una ficha de la comuna y rubro.
+F. Ejecuta 03_VER_URLS_SEO.bat para abrir los HTML SEO directo desde Express. La portada normal sigue en http://localhost:4200; el admin en http://localhost:4200/panel-admin.html.
+
+PRUEBAS:
+  http://127.0.0.1:3100/api/admin/estado
+  http://127.0.0.1:3100/api/salud
+  http://127.0.0.1:3100/la-florida/cafes
+  http://localhost:4200/la-florida/cafes
+
+CODIGOS
+  200: pagina servida; revisa canonical y noindex
+  404: pagina no existe en BD (p.ej., no hay Cafes publicados en la comuna)
+  500: fallo del backend; consulta la ventana CERCA API para diagnostico exacto
+  503: habitualmente Postgres inaccesible
+  Sin conexion: no arrancó el servicio o se usa puerto equivocado
+
+NOTA DE PRODUCCION: se requiere el dominio y un hosting que ejecute Node/Express para SEO. Un sitio estatico en GitHub Pages no ejecuta estas rutas de servidor. Las fichas de demostracion no se indexan hasta verificar sus datos.

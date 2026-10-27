@@ -1,0 +1,35 @@
+CERCA.cl | SOLUCION AL ERROR "Ruta no encontrada"
+
+IMPORTANTE: Esta version usa la web en el puerto 4201 (NO 4200), porque en 4200
+sigue abierta tu version antigua. API en el 3100.
+
+1. Descomprime este archivo.
+2. COPIA tu archivo de tu proyecto anterior:
+   Cerca_Fase1.5\backend\.env
+   al archivo de esta carpeta:
+   CERCA_LOGIN_SOLUCION_FINAL\backend\.env
+   IMPORTANTE: copia el archivo; NO copies la carpeta completa ni compartas el .env.
+3. Doble clic en CONFIGURAR_CORREO_ADMIN.bat
+   Debes ingresar una CONTRASENA DE APLICACION de Gmail para el envio real.
+   No es tu contrasena normal. Ve a la seguridad de tu cuenta Google,
+   activa verificacion en dos pasos y crea una contrasena de aplicacion
+   (si tu cuenta tiene esa opcion). NO compartas esa clave en ChatGPT.
+   El asistente asegura el correo permitido y genera JWT_SECRET.
+4. Doble clic en INICIAR_CERCA_ADMIN.bat
+5. Entra SOLO aqui: http://localhost:4201/panel-admin.html
+6. Presiona "Enviarme clave magica". Llegara exclusivamente a
+   renerivaslabarca@gmail.com. Es de 8 digitos, 6 minutos y un solo uso.
+
+SI NO FUNCIONA:
+- Ejecuta DIAGNOSTICAR_CERCA.bat y comprueba que tanto la API como el proxy
+  devuelven: CERCA_ADMIN_OTP_V2.
+- Si la API no funciona, revisa la ventana 01_API_CERCA.bat.
+- Si no puede enviar el correo, revisa SMTP_PASS en backend\.env.
+- Si PostgreSQL falla, verifica PostgreSQL 18 y los datos PG* de tu .env.
+- No ejecutes seed ni borres bases. La migracion crea tablas que faltan.
+
+SEGURIDAD: El codigo NO se imprime en consola ni se entrega por API; solo se envia
+por Gmail. La contrasena SMTP queda local en .env. No la subas a GitHub.
+
+ESTADO: El codigo se reviso y puede probarse localmente, pero no se puede
+confirmar el correo real sin conectar tu Gmail y PostgreSQL en tu computador.

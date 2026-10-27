@@ -1,0 +1,63 @@
+CERCA.CL - SOLUCION 4200, SIN PUERTO 3100
+=========================================
+
+PROBLEMA ANTERIOR: Abrir Angular en el puerto 4200 no garantizaba que la API en
+3100 estuviera ejecutandose. Por eso veias el aviso rojo, portadas sin fichas,
+ECONNREFUSED y un filtro sin negocios.
+
+SOLUCION: INICIAR_CERCA_UN_SERVIDOR.bat sirve Angular compilado, API,
+PostgreSQL, fichas SEO y administrador desde http://localhost:4200 .
+No se requiere npm start en dos consolas, ni proxy a 3100.
+
+INSTALACION:
+1) Haz respaldo de tu carpeta antigua y tu base cerca.
+2) Cierra TODAS las terminales antiguas de CERCA (Ctrl+C). Debe quedar libre
+   el puerto 4200.
+3) Descomprime este ZIP en una carpeta NUEVA.
+4) Copia el archivo REAL backend/.env desde tu proyecto previo (nunca se incluye
+   tu contrasena en el ZIP). Verifica PGDATABASE=cerca, PGPASSWORD y si hay
+   DATABASE_URL (tiene prioridad sobre PGDATABASE).
+5) Doble clic en INICIAR_CERCA_UN_SERVIDOR.bat.
+   Revisa sus 6 etapas. No abras Angular con npm start por separado.
+6) Abre estas URL directamente:
+   http://localhost:4200/
+   http://localhost:4200/la-florida/peluquerias
+   http://localhost:4200/la-florida/panaderias
+   http://localhost:4200/panel-admin.html
+7) Si falta algun negocio, ejecuta DIAGNOSTICO_CERCA_UN_SERVIDOR.bat.
+
+BASE DE DATOS:
+- Todos los datos visibles se leen de PostgreSQL (base 'cerca').
+- Se aplica esquema SQL no destructivo con CREATE TABLE IF NOT EXISTS.
+- NO se borran negocios. Si la base esta completamente vacia, el iniciador PREGUNTA
+  si deseas recuperar el catalogo anterior (65 fichas no verificadas).
+- Si tienes negocios guardados SOLO en localStorage del navegador, usa el
+  acceso administrador y la opcion 'Importar mis anuncios antiguos'.
+- Si la BD realmente esta VACIA y quieres rescatar el catalogo del ZIP,
+  puedes ejecutar RECUPERAR_PELUQUERIAS_FALTANTES.bat solo tras respaldo y
+  revisando los datos de ejemplo/no verificados. No se requiere para conectar.
+
+SI FALLA POSTGRESQL:
+- ERR ECONNREFUSED 5432: Inicia el servicio postgresql-x64-18 en Windows,
+  revisa PGHOST=localhost y PGPORT=5432.
+- ERR 28P01: Revisa PGPASSWORD en backend/.env.
+- ERR 3D000: Falta la base 'cerca' en PostgreSQL.
+- ERROR 'requiere la base cerca': DATABASE_URL o PGDATABASE apunta a otra BD.
+- Puerto 4200 en uso: cierra la terminal antigua de Angular; no se detienen
+  otros programas de manera automatica.
+
+NOTA SEO:
+Las rutas /la-florida/panaderias y /la-florida/peluquerias reciben paginas
+HTML propias desde Express con enlaces reales a fichas. La portada Angular
+mantiene sus estilos originales. En produccion se necesita HTTPS y SITE_URL
+configurado con el dominio real, ademas de revisar datos antes de indexar.
+
+SI NO APARECEN LAS FICHAS QUE YA INGRESASTE:
+- Ejecuta DIAGNOSTICO_CERCA_UN_SERVIDOR.bat (verifica la API y el listado real).
+- Ejecuta RECUPERAR_NEGOCIOS_ANTERIORES.bat para VER las fichas anteriores
+  que no existen en la base. Te pregunta antes de insertar faltantes.
+  Si una ficha ya existe con el mismo nombre, comuna y categoria, no se toca.
+  Las antiguas figuran como NO verificadas. Haz respaldo antes.
+- Si tus fichas fueron guardadas exclusivamente en el navegador localStorage,
+  no aparecen en el catalogo del ZIP. Importalas desde tu panel administrador
+  con la funcion 'Importar mis anuncios antiguos'.

@@ -1,0 +1,21 @@
+CERCA.cl — Proyecto integrado con PostgreSQL (versión instalable)
+
+0) En pgAdmin crea una base NUEVA llamada cerca (no renombres DondeAhi):
+   usa la base postgres y ejecuta backend/sql/000_crear_base_cerca.sql.
+1) En backend instala dependencias con npm install.
+2) Copia backend/.env.example a backend/.env y completa tus datos reales:
+   PGHOST=localhost, PGPORT=5432, PGDATABASE=cerca, PGUSER=postgres,
+   PGPASSWORD=tu clave (o DATABASE_URL que termine en /cerca),
+   JWT_SECRET de 32+ caracteres,
+   ADMIN_PASSWORD_HASH generado con npm run hash-password.
+3) En backend ejecuta npm run migrate, después npm run seed y npm start.
+4) En frontend ejecuta npm install y npm start.
+5) Visita http://localhost:4200 y http://localhost:4200/#admin.
+
+La ruta /api se envía localmente al backend mediante frontend/proxy.conf.json.
+Si ajustas PORT del backend, revisa el puerto de ese proxy.
+
+No se incluyen credenciales, base PostgreSQL en ejecución, despliegue,
+verificación de teléfono/email ni proveedores para enviar campañas.
+
+Lee README_CERCA_POSTGRESQL.md antes de instalar o publicar.

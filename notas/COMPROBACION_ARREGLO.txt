@@ -1,0 +1,3 @@
+Comprobación: DIAGNOSTICAR_CERCA.bat muestra por separado el estado de la API y de Angular.
+Si API responde CERCA_ADMIN_OTP_V2 pero Angular no, reinicia Angular con 02_WEB_CERCA.bat;
+si la API no responde, revisa 01_API_CERCA.bat y backend/.env.

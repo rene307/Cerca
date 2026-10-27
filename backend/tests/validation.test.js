@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import { validarSuscriptor, validarNegocio, validarOpinion } from '../src/validation.js';
+const base={nombre:'Persona Prueba',canal:'email', contacto:'PEPE@ejemplo.cl',frecuencia:'semanal',intencion:'ahora',contenido:'ambas',comuna:'Puente Alto',intereses:['Mecánicos'],consentimiento:true};
+test('suscripción con consentimiento registra contacto normalizado',()=>assert.equal(validarSuscriptor(base).contacto,'pepe@ejemplo.cl'));
+test('sin consentimiento se rechaza',()=>assert.equal(validarSuscriptor({...base,consentimiento:false}),null));
+test('frecuencia anual prohibida',()=>assert.equal(validarSuscriptor({...base,frecuencia:'anual'}),null));
+test('whatsapp requiere +569...',()=>assert.equal(validarSuscriptor({...base,canal:'whatsapp',contacto:'912345678'}),null));
+test('sin intereses se rechaza',()=>assert.equal(validarSuscriptor({...base,intereses:[]}),null));
+test('negocio requiere nombre, categoría y comuna',()=>assert.ok(validarNegocio({nombre:'Test',categoria:'Cafés',comuna:'La Florida'})));
+test('opiniones exigen motivos y 1 a 5 estrellas',()=>assert.equal(validarOpinion({negocioId:1,estrellas:0,motivos:['Rápido'],dispositivo:'device-cerca-123456'}),null));

@@ -53,12 +53,12 @@
         <!-- Portada original: todos los círculos intactos y uno adicional. -->
         <div id="categorias" class="cerca-oficios-seccion">
           <div *ngIf="!mostrarPanelOficios" class="hero-categories" aria-label="Filtrar por categoría">
-            <button *ngFor="let item of categorias" type="button" class="hero-category"
-                    [class.selected]="categoriaActiva === item.nombre"
-                    (click)="seleccionarCategoria(item.nombre)">
+            <a *ngFor="let item of categorias" class="hero-category"
+               [href]="seoRutaCategoria(comuna, item.nombre)" [class.selected]="categoriaActiva === item.nombre"
+               [attr.aria-label]="'Ver ' + item.nombre + ' en ' + comuna">
               <span class="category-circle" aria-hidden="true">{{ item.icono }}</span>
               <span class="category-label">{{ item.nombre }}</span>
-            </button>
+            </a>
             <button type="button" class="hero-category cerca-oficios-entrada"
                     (click)="abrirPanelOficios()" aria-label="Ver Oficios y Profesiones">
               <span class="category-circle" aria-hidden="true"><img src="assets/oficios-profesiones.svg" alt=""></span>
@@ -88,13 +88,17 @@
   </section>
 
   <section class="results-section" id="explorar">
-    <p *ngIf="!apiDisponible" class="cerca-api-aviso" role="alert">{{apiError}} · Para mostrar negocios reales se necesita la API CERCA.</p>
+    <div *ngIf="!apiDisponible" class="cerca-api-aviso" role="alert">
+      <strong>No se pudieron cargar los negocios desde PostgreSQL.</strong>
+      <span>{{ apiError }}</span>
+      <button type="button" class="cerca-api-reintentar" (click)="reintentarConexion()">Reintentar conexion</button>
+    </div>
     <div class="layout">
       <div class="results-header">
         <div>
-          <h2>{{ consultaActiva ? 'Locales que podrían ayudarte' : 'Destacados de tu barrio' }} <span>✦</span></h2>
+          <h2>{{ tituloResultados }} <span>✦</span></h2>
           <p *ngIf="consultaActiva">Buscaste «{{ consultaActiva }}» en {{ comuna }}. Mostramos coincidencias por rubro; consulta disponibilidad directamente con cada negocio.</p>
-          <p *ngIf="!consultaActiva">Descubre negocios de tu zona, revisa sus fichas y comunícate directamente con ellos.</p>
+          <p *ngIf="!consultaActiva">{{ rutaCategoriaActiva ? 'Estas son las fichas publicadas en CERCA para esta comuna y categoría.' : 'Descubre negocios de tu zona, revisa sus fichas y comunícate directamente con ellos.' }}</p>
         </div>
         <div class="results-controls">
           <label class="distance-control">
@@ -111,11 +115,13 @@
         </div>
       </div>
 
+      <div *ngIf="rutaNegocioNoEncontrado" class="cerca-api-aviso" role="alert">No existe una ficha publicada con esta dirección. Revisa si cambió el nombre o si el administrador la despublicó.</div>
       <div class="results-layout">
         <div class="results-main">
           <p class="cerca-gps-status" role="status">{{ estadoGPS }}</p>
           <div class="results-meta">
-            <strong>{{ negociosFiltrados.length }} {{ negociosFiltrados.length === 1 ? 'negocio encontrado' : 'negocios encontrados' }}</strong>
+            <strong *ngIf="apiDisponible">{{ negociosFiltrados.length }} {{ negociosFiltrados.length === 1 ? 'negocio encontrado' : 'negocios encontrados' }}</strong>
+            <strong *ngIf="!apiDisponible">Sin datos: API desconectada</strong>
             <span>{{ comuna }} <span *ngIf="mostrarSoloFavoritos">· Mis favoritos</span></span>
           </div>
 
@@ -162,20 +168,28 @@
                   </div>
                 </div>
                 <p *ngIf="negocio.fechaRevision" class="cerca-revision-resumen">Información pública consultada el {{ negocio.fechaRevision }} · confirmar vigencia</p>
-                <button class="card-link" type="button" (click)="abrirDetalle(negocio)">
+                <a class="card-link" [href]="seoRutaNegocio(negocio)">
                   Ver negocio <span aria-hidden="true">↗</span>
-                </button>
+                </a>
               </div>
             </article>
           </div>
 
           <ng-template #sinResultados>
-            <div class="empty-state">
+            <div class="empty-state" *ngIf="apiDisponible; else conexionPendiente">
               <span aria-hidden="true">⌕</span>
               <h3>No encontramos locales para esta búsqueda</h3>
               <p>Prueba con otra palabra, comuna o distancia. Los proveedores aún no reciben solicitudes automáticas.</p>
               <button type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
             </div>
+            <ng-template #conexionPendiente>
+              <div class="empty-state" role="status">
+                <span aria-hidden="true">⌁</span>
+                <h3>Esperando conexión con la base de datos</h3>
+                <p>Inicia la API CERCA para mostrar los negocios publicados. No se ha confirmado que no existan locales.</p>
+                <button type="button" (click)="reintentarConexion()">Reintentar conexión</button>
+              </div>
+            </ng-template>
           </ng-template>
         </div>
 
@@ -220,7 +234,9 @@
 
   <section id="negocios" class="business-cta">
     <div class="layout cta-content">
-      <div><span>PARA EMPRENDEDORES</span><h2>Que tu barrio te encuentre.</h2><p>Presenta tu negocio y conecta con personas que buscan lo que ofreces.</p></div>
+      <div><span>PARA EMPRENDEDORES</span><h2>Que tu barrio te encuentre.</h2><p>Presenta tu negocio y conecta con personas que buscan lo que ofreces.</p>
+        <a class="cerca-acceso-admin-negocios" href="/panel-admin.html" aria-label="Abrir acceso privado al panel de administración de CERCA">🔒 Entrar a mi administración <span aria-hidden="true">↗</span></a>
+      </div>
       <button type="button" (click)="abrirPublicacion()">Quiero publicar mi negocio ↗</button>
     </div>
   </section>
@@ -228,10 +244,6 @@
 
 <footer class="footer">
   <div class="layout footer-content"><a class="logo" href="#inicio" aria-label="Ir al inicio de Cerca"><img src="assets/cerca-logo-horizontal.png" width="184" height="50" alt="CERCA" /></a><span>Prototipo visual 2026 · Datos y distancias ficticios · Santiago, Chile</span></div>
-  <!-- Entrada a administración protegida por contraseña y API -->
-  <div class="layout admin-footer-access">
-    <a href="#admin" (click)="entrarAdministracion()">Administración de anuncios</a>
-  </div>
 </footer>
 
 <button *ngIf="!mostrarAdministracion" type="button" class="cerca-burbuja-suscripcion"

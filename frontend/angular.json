@@ -1,1 +1,55 @@
-{"$schema":"./node_modules/@angular/cli/lib/config/schema.json","version":1,"newProjectRoot":"projects","projects":{"cerca":{"projectType":"application","schematics":{},"root":"","sourceRoot":"src","prefix":"app","architect":{"build":{"builder":"@angular/build:application","options":{"outputPath":"dist/cerca","index":"src/index.html","browser":"src/main.ts","polyfills":["zone.js"],"tsConfig":"tsconfig.app.json","styles":["src/global.scss"],"assets":[{"glob":"**/*","input":"src/assets","output":"assets"}]},"configurations":{"production":{"optimization":true,"outputHashing":"all"},"development":{"optimization":false,"sourceMap":true}},"defaultConfiguration":"development"},"serve":{"builder":"@angular/build:dev-server","configurations":{"production":{"buildTarget":"cerca:build:production"},"development":{"buildTarget":"cerca:build:development"}},"defaultConfiguration":"development"}}}},"cli":{"analytics":false}}
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "cerca": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/cerca",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "styles": [
+              "src/global.scss"
+            ],
+            "scripts": [],
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public",
+                "output": "/"
+              }
+            ]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "outputHashing": "all"
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "cerca:build"
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "cerca:build:production"
+            }
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false
+  }
+}

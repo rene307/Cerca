@@ -1,0 +1,45 @@
+CERCA.cl - ARREGLO «RUTA NO ENCONTRADA» - 22/10/2026
+====================================================
+
+CAUSA PROBABLE SEGÚN LA CAPTURA:
+La pantalla de Angular abre, pero el backend que recibe /api/admin/solicitar-codigo
+responde «Ruta no encontrada». Esa respuesta es el 404 del backend antiguo.
+Es necesario ejecutar la API que SÍ trae la ruta, no solo copiar el panel HTML.
+
+QUÉ CAMBIA ESTA VERSIÓN:
+1. Backend para autenticación por email, código de 8 dígitos, 6 minutos y un solo uso.
+2. Backend de CERCA en puerto 3100, evitando la versión anterior en puerto 3000.
+3. Proxy de Angular /api -> http://127.0.0.1:3100.
+4. Mensajes de estado en el login y diagnóstico de versión.
+5. No altera la portada pública, ni carga datos ficticios como si fueran métricas.
+6. Panel privado: negocios, destacados, eventos, reclamos, suscriptores y campañas.
+
+INSTALACIÓN EN WINDOWS:
+1. Haz copia de tu proyecto actual. Extrae este ZIP en una carpeta NUEVA.
+2. Copia el backend/.env de tu proyecto CERCA anterior hacia el backend de esta carpeta.
+   Si no tienes .env, duplica backend/.env.example y nómbralo .env.
+3. En backend/.env revisa las variables: PGDATABASE=cerca, PGPASSWORD, ADMIN_EMAIL,
+   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, SMTP_FROM, JWT_SECRET.
+   Para Gmail, SMTP_HOST=smtp.gmail.com, SMTP_PORT=465, SMTP_SECURE=true;
+   SMTP_PASS es una contraseña de APLICACIÓN de Google, no la de ingreso normal.
+   Para el envío debes activar autenticación de dos pasos y generar una contraseña de app.
+   JWT_SECRET debe tener al menos 32 caracteres aleatorios.
+4. CIERRA el Angular anterior y el backend anterior si están abiertos (terminales).
+   No cierres PostgreSQL ni elimines la base de datos.
+5. Doble clic en INICIAR_CERCA_ADMIN.bat. Verifica que aparezcan dos terminales sin error.
+6. Abre http://localhost:4200/panel-admin.html, usa ADMIN_EMAIL y solicita el código.
+7. Si no funciona: doble clic en DIAGNOSTICAR_CERCA.bat. Las 2 primeras
+   líneas deben indicar HTTP 200 / CERCA_ADMIN_OTP_V2.
+
+IMPORTANTE:
+- Debes conservar las DOS ventanas de terminal mientras usas la web local.
+- La portada/Angular usa el puerto 4200. El backend de este paquete usa el 3100.
+- No se instala automáticamente en tu PC por descargar este ZIP.
+- NO ejecutes npm run seed con una base con negocios. No borres ni reemplaces
+  archivos .env reales, ni los de otros proyectos.
+- La migración ejecuta CREATE TABLE IF NOT EXISTS para crear tablas faltantes sin
+  borrar las filas existentes. Haz respaldo igualmente antes de migrar.
+- La clave sólo se envía si el backend puede conectarse a PostgreSQL y al SMTP.
+- Si no has configurado SMTP, no se puede enviar una clave real ni entrar de forma segura.
+- No publiques backend/.env ni subas contraseñas a GitHub.
+- Las campañas no envían WhatsApp automáticamente; sólo se almacena la programación.

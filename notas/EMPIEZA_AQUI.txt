@@ -1,0 +1,28 @@
+CERCA.cl - CORRECCION: NO APARECEN NEGOCIOS
+============================================
+PROBLEMA ENCONTRADO: el frontend Angular 19 usa Vite y el proxy anterior tenia /api y /la-florida sin /**; las subrutas no llegaban a Node. Por eso /la-florida/peluquerias mostraba portada Angular en vez de fichas HTML SEO.
+
+1) Cierra TODAS las terminales antiguas de CERCA (los puertos 4200 y 3100 deben estar libres).
+2) Descomprime este ZIP en una CARPETA NUEVA (no mezcles archivos con Cerca_Fase1.5).
+3) Copia SOLO tu backend/.env anterior a backend/.env de esta carpeta. NO incluyas este archivo al enviar el ZIP a terceros.
+4) Ejecuta INICIAR_CERCA_WEB_SEO.bat. No cierres las ventanas que se abren.
+5) Ejecuta COMPROBAR_CERCA.bat. Debe mostrar 4 resultados OK.
+6) Visita http://localhost:4200/la-florida/peluquerias
+7) Panel privado: http://localhost:4200/panel-admin.html
+
+QUE SE ARREGLO
+- /api/** envia todas las solicitudes JSON al puerto 3100.
+- /la-florida/** y /otras-comunas/** envian rutas SEO completas al backend. Los negocios y la ficha tienen URL real, H1, canonical, y HTML rastreable.
+- /seo-pages.css entrega los estilos naranjas de CERCA al backend.
+- Si la API falla, NO se publican los 45 ejemplos como falsos resultados; aparece advertencia clara y boton Reintentar conexion.
+- Si la base esta completamente vacia, tras crear tablas se recupera automaticamente el catalogo preliminar del proyecto (65 registros) sin editar ni borrar datos existentes. Son fichas por verificar; Google no las indexa hasta verificarse.
+- El panel, login por correo y portada no se reescriben.
+
+SI NO APARECEN FICHAS
+- ERROR 3100: revisa la ventana CERCA API y el archivo .env. PostgreSQL debe tener una base llamada cerca.
+- ERROR 4200: hay un Angular viejo, termina su proceso y reinicia desde ESTE ZIP.
+- API devuelve 0 negocios: comprueba base cerca; no inventes negocios para disimular.
+- Si hay registros pero 0 peluquerias, esa categoria realmente necesita negocios publicados.
+- NUNCA reinicies la base ni borres datos para arreglar el proxy.
+
+NOTA: El paquete fue probado en sintaxis, rutas y configuracion, pero no se pudo verificar con tu PostgreSQL de Windows. Se requiere npm install para sus dependencias si no estan instaladas.

@@ -1,0 +1,47 @@
+CERCA.cl — ARREGLO DE URLS SEO EN LOCALHOST:4200
+================================================
+
+ESTE PAQUETE CONSERVA la portada Ionic/Angular, formularios, fichas, panel de
+administracion y el backend PostgreSQL. NO borra negocios. NO incluye .env,
+contraseñas ni modifica tu base de datos hasta que ejecutes el script.
+
+UN SOLO INICIO: INICIAR_CERCA_SEO.bat
+
+1) DESCOMPRIME TODO EN UNA CARPETA NUEVA. No pegues archivos de carpetas
+   antiguas encima, para evitar mezclar diferentes versiones.
+2) CIERRA las terminales viejas donde corren `ng serve`, `npm start` y Node
+   usando el puerto 4200. Conserva los otros proyectos abiertos.
+3) COPIA TU `.env` EXISTENTE (backend/.env) al `backend` NUEVO.
+   Debe apuntar a PGDATABASE=cerca y PostgreSQL tiene que estar iniciado.
+   Si no existe, crea backend/.env desde backend/.env.example.
+   Nunca envíes contraseñas ni .env a nadie.
+4) DOBLE CLIC en INICIAR_CERCA_SEO.bat. El script hace npm install, migra
+   con CREATE TABLE IF NOT EXISTS, compila Angular y levanta Node 4200.
+5) Abre http://localhost:4200/la-florida/cafes
+   También funcionan: /, /la-florida, /sitemap.xml, /panel-admin.html
+6) Si algo falla, ejecuta VERIFICAR_URLS_SEO.bat: imprime el estado HTTP.
+   Si falla compilacion Angular, conserva la salida del .bat para corregir.
+
+POR QUÉ CAMBIAMOS LA FORMA DE INICIO
+- Antes Angular en 4200 enviaba algunos enlaces a otro backend (3100),
+  que podía estar apagado, ser una versión vieja o no tener tablas.
+- Ahora el navegador, la API, el panel y las paginas SEO vienen del
+  MISMO SERVIDOR en el puerto 4200. No requiere proxy de Angular.
+- Los enlaces SEO muestran contenido HTML desde PostgreSQL; no son filtros
+  de una sola pantalla.
+
+COMPORTAMIENTO CORRECTO
+- /la-florida/cafes: HTML con titulo, H1, canonical y tarjetas de fichas.
+- Una categoria vacia: pagina con 0 fichas y noindex (sin inventar negocios).
+- Negocio inexistente: 404; URL duplicada con '--ID': admitida.
+- Si PostgreSQL esta apagado: 503 con pagina explicativa (no un 500 sin detalles).
+- Sitemap contiene solamente negocios publicados y verificados.
+- El correo admin debe configurarse por SMTP en .env si se requiere codigo.
+
+Antes de publicar usa SITE_URL=https://TU-DOMINIO_REAL y aloja Angular
+compilado + Node en un servidor publico. La direccion localhost:4200 es
+solo una prueba local. No recomendamos indexar fichas sin datos verificados.
+
+IMPORTANTE: La compilacion y el acceso a TU PostgreSQL/SMTP de Windows se
+pueden validar solamente en tu PC. Se efectuaron pruebas de código y sintaxis
+pero no se comprobó ese entorno.

@@ -1,0 +1,27 @@
+CERCA.CL — CORRECCIÓN DE PANTALLA BLANCA (NG0908)
+
+Problema: Angular 19 necesita que Zone.js se cargue antes de bootstrapApplication.
+En este proyecto zone.js ~0.15.0 ya está declarado en frontend/package.json,
+pero el archivo frontend/src/main.ts no lo importaba.
+
+QUÉ CAMBIÓ
+- frontend/src/main.ts: se agregó como primera línea import 'zone.js';
+- Sin cambios en PostgreSQL, backend, fichas ni estilo.
+
+INSTALACIÓN SIN PERDER TUS CAMBIOS
+1. Haz copia de seguridad de tu proyecto local Cerca_Fase1.5.
+2. Si deseas conservar TODO tu proyecto local, copia SOLO el archivo
+   frontend/src/main.ts de este paquete al mismo lugar de tu proyecto.
+   Alternativa aún más segura: en tu main.ts actual, agrega import 'zone.js';
+   como primera línea y deja todo lo demás intacto.
+3. Desde la carpeta frontend ejecuta:
+   npm install
+   npm start
+4. Si el servidor ya estaba encendido, detén con Ctrl+C y reinícialo.
+5. Abre http://localhost:4200 y haz Ctrl+Shift+R.
+
+IMPORTANTE
+- El ZIP completo está basado en la copia CERCA que compartiste antes,
+  no contiene necesariamente cambios posteriores que hayas hecho en tu PC.
+- No copies ni publiques archivos .env con contraseñas.
+- Debes mantener backend corriendo por separado con npm start.

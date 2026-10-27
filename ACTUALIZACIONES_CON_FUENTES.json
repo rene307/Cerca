@@ -1,0 +1,146 @@
+{
+  "fecha_consulta": "2026-10-18",
+  "alcance": "Contraste parcial desde fuentes públicas, sin WhatsApp confirmado ni actualización automática",
+  "fichas": [
+    {
+      "nombre": "Café del Jardín",
+      "comuna": "La Florida",
+      "telefono": "+56 9 5879 0169",
+      "horario": "Lun–Vie 18:00–21:00; sáb–dom cerrado (publicado; confirmar)",
+      "fuente": "https://es.restaurantguru.com/Cafe-del-Jardin-La-Florida-2",
+      "nota": "Teléfono y horario coinciden con directorios independientes."
+    },
+    {
+      "nombre": "KABI Pastelería y Cafetería",
+      "comuna": "La Florida",
+      "telefono": "+56 9 3647 0275",
+      "fuente": "Ficha pública del negocio en resultados de mapas",
+      "nota": "Horarios inconsistentes entre fuentes; no rellenar."
+    },
+    {
+      "nombre": "La Duquesa Bakery",
+      "comuna": "La Florida",
+      "telefono": "+56 9 6130 1176",
+      "fuente": "Ficha pública del negocio en resultados de mapas",
+      "nota": "Horario sin confirmar por el local."
+    },
+    {
+      "nombre": "Cafetería del Rey Brujo",
+      "comuna": "La Florida",
+      "fuente": "Ficha pública del negocio en resultados de mapas",
+      "nota": "Horario por confirmar en el local."
+    },
+    {
+      "nombre": "Farmacia Arapharma",
+      "comuna": "La Florida",
+      "horario": "Lun–Vie 11:00–19:00; sáb–dom cerrado (publicado; confirmar)",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
+    },
+    {
+      "nombre": "Farmacias Económicas",
+      "comuna": "La Florida",
+      "horario": "Lun–Sáb 10:00–20:00; dom cerrado (publicado; confirmar)",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
+    },
+    {
+      "nombre": "Farmacia Vecinal",
+      "comuna": "La Florida",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      "nota": "Hay discrepancias de horarios y teléfonos entre directorios. No actualizar automáticamente esos campos."
+    },
+    {
+      "nombre": "Farmacenter",
+      "comuna": "La Florida",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      "nota": "Los horarios se contradicen entre directorios públicos. No asignar un horario definitivo."
+    },
+    {
+      "nombre": "Farmacia El Químico",
+      "comuna": "La Florida",
+      "horario": "Lun–Jue 10:00–20:00; vie 10:00–14:00; sáb 10:00–19:00; dom 11:00–19:00 (publicado; confirmar)",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida"
+    },
+    {
+      "nombre": "Farmacia BarrioFlorida",
+      "comuna": "La Florida",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      "nota": "En el registro público se llama BARRIO FARMA en Rojas Magallanes 94 B. Confirmar identidad antes de cambiar nombre u horario."
+    },
+    {
+      "nombre": "Eco Farmacias",
+      "comuna": "La Florida",
+      "horario": "Lun–Vie 09:00–19:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
+      "direccion": "Serafín Zamora 29, Local 19",
+      "fuente": "https://www.buscafarma.cl/farmacias-de-turno/metropolitana/la-florida",
+      "nota": "Nombre de calle corregido usando registro público; solo cambia la dirección si aún es la anterior."
+    },
+    {
+      "nombre": "Farmacias Titán 24/7",
+      "comuna": "Puente Alto",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      "nota": "La condición 24/7/urgencia puede variar. Confirmar el régimen permanente y turnos."
+    },
+    {
+      "nombre": "Farmacia Solidaria",
+      "comuna": "Puente Alto",
+      "horario": "Lun, mié–vie 09:00–14:00 y 15:00–18:00; mar 09:00–14:00 y 15:00–22:00; sáb 09:00–14:00; dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacia Roubillard S.A.",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Vie 09:30–14:00 y 15:30–21:00; sáb–dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farma Ulloa",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Sáb 09:00–21:00; dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacia San Carlos",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Vie 09:00–16:30 y 17:00–21:00; sáb 10:00–16:30; dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacia Netfarma",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Vie 10:30–14:30 y 16:30–22:00; sáb–dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacias La Botika",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Sáb 10:00–14:00 y 17:00–21:00; dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacias Olímpica - Puente Alto",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Sáb 09:00–15:00 y 17:00–20:00; dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacias Cruz Verde",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Vie 09:00–22:30; sáb 09:30–22:30; dom 10:30–21:30 (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto",
+      "nota": "Sólo la sucursal Av. Concha y Toro 3955, no generalizar a toda la cadena."
+    },
+    {
+      "nombre": "Farmacia Novasalud - Puente Alto",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Vie 09:30–19:30; sáb–dom cerrado (publicado; confirmar)",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    },
+    {
+      "nombre": "Farmacia Macarena",
+      "comuna": "Puente Alto",
+      "horario": "Lun–Vie 10:00–14:00 y 16:00–20:00; sáb 10:00–14:00; dom cerrado (publicado; confirmar)",
+      "direccion": "Nonato Coo 3923",
+      "fuente": "https://buscafarma.cl/farmacias-de-turno/metropolitana/puente-alto"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+CERCA.cl — PANEL DE ADMINISTRACIÓN PRIVADO
+==========================================
+
+URL local: http://localhost:4200/panel-admin.html
+Acceso alternativo: http://localhost:4200/#admin (redirige al panel privado)
+La portada pública, las categorías y el círculo de Oficios y Profesiones se mantienen.
+
+INSTALACIÓN (WINDOWS / VS CODE)
+1. Haz copia de tu proyecto actual y especialmente del archivo backend/.env. Este ZIP no incluye el .env real.
+2. Extrae este ZIP en una carpeta nueva. No elimines tu PostgreSQL ni ejecutes seed sobre datos existentes.
+3. En backend: copia .env.example a .env SOLO si no tienes ya uno; de lo contrario, conserva el .env y añade ADMIN_EMAIL y SMTP_*.
+4. Mantén tus PGHOST,PGPORT,PGDATABASE=cerca,PGUSER,PGPASSWORD,JWT_SECRET (JWT_SECRET >=32 caracteres).
+5. Agrega en backend/.env lo siguiente (sin compartir tus claves):
+
+ ADMIN_EMAIL=tu_correo_real
+ SMTP_HOST=smtp.tu_proveedor
+ SMTP_PORT=587
+ SMTP_SECURE=false
+ SMTP_USER=usuario_del_correo
+ SMTP_PASS=clave_smtp_o_clave_de_aplicacion
+ SMTP_FROM="CERCA.cl <correo_verificado@dominio.cl>"
+
+6. PowerShell 1, desde backend:
+ npm install
+ npm run migrate
+ npm test
+ npm start
+
+7. PowerShell 2, desde frontend:
+ npm install
+ npm start
+
+8. En navegador: http://localhost:4200/panel-admin.html
+9. Pon el correo definido en ADMIN_EMAIL. Llegará un código de 8 dígitos válido 6 minutos.
+   Un solo uso, máximo cinco intentos. Sesión administrativa máxima 4 horas.
+
+MÓDULOS CONECTADOS A POSTGRESQL (al arrancar backend y configurar SMTP)
+ - Tablero: visitas, búsquedas, aperturas, clics WhatsApp, suscriptores y opiniones.
+ - Períodos hoy, semana, mes o año; filtros de comuna y categoría.
+ - Negocios/oficios: crear, editar, publicar, ocultar y eliminar; fotos mediante URL HTTPS.
+ - Destacados: marcar y ordenar prioridad desde el editor, mostrar reputación.
+ - Opiniones/reclamos: ver y gestionar estados/respuestas.
+ - Suscriptores: ver registros reales, intereses y estado; no equivale a permisos de envío.
+ - Campañas: guardar programación diaria, semanal, mensual, anual por territorio/categoría.
+ - Solicitudes «Necesito»: consulta y cambio de estado en PostgreSQL. El endpoint POST /api/solicitudes está preparado pero la portada actual aún no le envía solicitudes.
+ - Planes: tarifas/escenarios comerciales ilustrativos; NO ingresos efectivamente cobrados.
+
+LÍMITES REALES
+ - SIN proveedor SMTP configurado no se envían códigos y el login no permite entrar.
+ - SIN PostgreSQL/backend activos no hay métricas ni edición remota.
+ - SIN proveedor WhatsApp/email ni verificación de titularidad no hay campañas enviadas.
+ - Ningún evento de clic indica automáticamente una venta.
+ - Los eventos de negocio descargados para el panel están limitados a las últimas 5.000 interacciones. El resumen global es agregado en SQL y puede filtrarse.
+ - El acceso URL es público, pero los datos/API quedan protegidos por código temporal. No publicar credenciales ni .env.
+ - Debes configurar el proxy /api y HTTPS cuando publiques el panel.
+ - No ejecutar npm run seed si la base cerca ya tiene negocios.
+ - Este paquete NO modifica por sí mismo tu instalación local ni Netlify.
