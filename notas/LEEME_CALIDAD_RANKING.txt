@@ -1,0 +1,24 @@
+CERCA.cl — ETAPA 1: COMPLETITUD Y POSICIÓN DE NEGOCIOS
+
+Se conserva la portada y sus elementos visuales. No se borra ni reescribe la base PostgreSQL.
+
+NOVEDADES
+1. Panel de administrador: en Tablero general aparece el contador de fichas incompletas y una tabla de las diez que más correcciones necesitan, con botón para abrir la sección de negocios.
+2. Negocios y oficios: opción Solo incompletos, porcentaje, campos faltantes y botón Editar. En edición se ve qué campos debe corregir.
+3. Orden público en resultados: primero mayor completitud; si empatan, destacado y prioridad; luego cercanía. Hasta los destacados incompletos quedan detrás de fichas más completas.
+4. Sitio web: se admite marcar «El negocio no tiene sitio web» sin inventar una dirección.
+5. Valoraciones: módulo de opiniones ya existente; deliberadamente NO se modificó en esta etapa.
+
+CAMPOS DE LA MÉTRICA (9): nombre, categoría, comuna, descripción original (>80 caracteres), dirección/referencia, foto no genérica, horario confirmado, WhatsApp chileno +569 y sitio web HTTPS o declaración explícita de que no tiene. Los datos no confirmados y textos de plantilla se clasifican como pendientes. Las fichas inicialmente incompletas siguen publicadas (no se eliminan).
+
+INSTALACIÓN
+- Copia de seguridad de la carpeta actual y de PostgreSQL antes de reemplazar archivos.
+- Si ya tienes este mismo proyecto base, reemplaza los 3 archivos del PARCHE en idénticas rutas, y agrega backend/src/calidad-negocios.js.
+- Si prefieres, descomprime el ZIP completo y copia tu backend/.env de tu versión actual (no lo subas a GitHub ni lo compartas).
+- En backend: npm test; npm start. En frontend: npm start.
+- Si Angular estaba iniciado, reinícialo; actualiza Chrome con Ctrl+F5.
+- Administrador: http://localhost:4200/panel-admin.html, opción Tablero general o Negocios y oficios.
+
+No hace falta migración SQL: la ficha es JSONB y el puntaje se calcula en las consultas; siempre se recalcula al editar. No se introduce NoSQL. No se inventan ni verifican automáticamente direcciones, horarios o fotos.
+
+Nota: el diseño de una puntuación de reputación y valoraciones de personas será una etapa posterior.

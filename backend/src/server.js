@@ -10,15 +10,12 @@ import nodemailer from 'nodemailer';
 import { db } from './db.js';
 import { requireCercaDatabase } from './require-cerca-database.js';
 import { validarSuscriptor, validarNegocio, validarOpinion, tiposEvento, frecuencias } from './validation.js';
-import { registerSeoPages } from './seo-pages.js';
-import { slug } from './seo-utils.js';
+import { conCalidad, compararCalidadNegocios } from './calidad-negocios.js';
 
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
-// Permite fotografías remotas de fichas (la portada ya utiliza imágenes HTTPS de terceros).
-app.use(helmet({contentSecurityPolicy:{directives:{...helmet.contentSecurityPolicy.getDefaultDirectives(),
-  'img-src':["'self'",'data:','https:']}}}));
+app.use(helmet());
 const origins=(process.env.CORS_ORIGINS||'http://localhost:4200').split(',').map(x=>x.trim()).filter(Boolean);
 app.use(cors({origin(origin,cb){ if(!origin||origins.includes(origin))return cb(null,true);return cb(new Error('Origen no autorizado'));}}));
 app.use(express.json({ limit: '300kb' }));
@@ -37,20 +34,11 @@ function admin(req,res,next){
   try {const p=jwt.verify(match[1],secret,{algorithms:['HS256']});if(p.role!=='admin')throw Error(); next();}catch{return err(res,'Sesión vencida o inválida.',401);}
 }
 
-// Endpoint de diagnóstico sin secretos: evita confundir una API antigua con el backend actualizado.
-// No garantiza que SMTP o la base de datos estén disponibles; solo comprueba la versión y configuración presente.
-app.get('/api/admin/estado',(_req,res)=>{
- res.set('Cache-Control','no-store').json({
-   ok:true,servicio:'CERCA_ADMIN_OTP_V2',codigoMinutos:DURACION_CODIGO_SEGUNDOS/60,
-   correoConfigurado:correoConfigurado(),
-   mensaje:correoConfigurado()?'Servidor actualizado y correo configurado.':'Servidor actualizado: falta configurar ADMIN_EMAIL, SMTP o JWT_SECRET en backend/.env.'
- });
-});
 app.get('/api/salud',wrap(async(_req,res)=>{await db.query('SELECT 1');res.json({ok:true,postgresql:true});}));
 
 app.get('/api/negocios',wrap(async(_req,res)=>{
  const {rows}=await db.query("SELECT id, datos FROM negocios WHERE COALESCE(datos->>'publicado','true') <> 'false' ORDER BY id");
- res.json(rows.map(r=>({...r.datos,id:Number(r.id)})));
+ res.json(rows.map(r=>conCalidad({...r.datos,id:Number(r.id)})).sort(compararCalidadNegocios));
 }));
 
 app.post('/api/suscripciones',sensitive,wrap(async(req,res)=>{
@@ -116,6 +104,14 @@ function correoConfigurado(){
  return emailValido(adminEmail())&&Boolean(process.env.SMTP_HOST&&process.env.SMTP_USER&&process.env.SMTP_PASS&&process.env.SMTP_FROM)&&
         Boolean(process.env.JWT_SECRET&&process.env.JWT_SECRET.length>=32);
 }
+// Identifica una API actualizada y distingue problemas de SMTP sin exponer credenciales.
+app.get('/api/admin/estado', (_req, res) => {
+  res.set('Cache-Control', 'no-store').json({
+    servicio: 'CERCA_ADMIN_OTP_V1',
+    disponible: true,
+    correoConfigurado: correoConfigurado()
+  });
+});
 function transportarCorreo(){
  const puerto=Number(process.env.SMTP_PORT||587);
  if(!Number.isInteger(puerto)||puerto<1||puerto>65535)throw Error('Puerto SMTP incorrecto.');
@@ -181,7 +177,7 @@ app.post('/api/admin/verificar-codigo',limiteCodigoAdmin,wrap(async(req,res)=>{
 }));
 app.get('/api/admin/negocios',admin,wrap(async(_req,res)=>{
  const {rows}=await db.query('SELECT id,datos FROM negocios ORDER BY id');
- res.json(rows.map(r=>({...r.datos,id:Number(r.id)})));
+ res.json(rows.map(r=>conCalidad({...r.datos,id:Number(r.id)})));
 }));
 app.post('/api/admin/importar',admin,wrap(async(req,res)=>{
  const lista=req.body?.negocios;
@@ -193,7 +189,6 @@ app.post('/api/admin/importar',admin,wrap(async(req,res)=>{
   await client.query('BEGIN');
   for(const n of datos){
    const id=n.id;delete n.id;
-   n.slugSeo = n.slugSeo || slug(n.nombre) || ('negocio-' + id);
    await client.query('INSERT INTO negocios (id,datos) VALUES ($1,$2::jsonb) ON CONFLICT (id) DO UPDATE SET datos=EXCLUDED.datos,actualizado_en=NOW()',[id,JSON.stringify(n)]);
   }
   await client.query("SELECT setval(pg_get_serial_sequence('negocios','id'), (SELECT MAX(id) FROM negocios), true)");
@@ -213,7 +208,6 @@ app.get('/api/reputacion',wrap(async(_req,res)=>{
 app.post('/api/admin/negocios',admin,wrap(async(req,res)=>{
  const v=validarNegocio(req.body);if(!v)return err(res,'Datos del negocio inválidos.');
  delete v.id;
- v.slugSeo=slug(v.nombre);
  const {rows}=await db.query("INSERT INTO negocios(datos) VALUES ($1::jsonb) RETURNING id",[JSON.stringify(v)]);
  res.status(201).json({...v,id:Number(rows[0].id)});
 }));
@@ -221,11 +215,8 @@ app.put('/api/admin/negocios/:id',admin,wrap(async(req,res)=>{
  const id=Number(req.params.id),v=validarNegocio(req.body);
  if(!Number.isSafeInteger(id)||id<1||!v)return err(res,'Datos inválidos.');
  delete v.id;
- // Preserva la URL histórica aunque el administrador modifique el nombre comercial.
- const previo=await db.query('SELECT datos FROM negocios WHERE id=$1',[id]);
- if(!previo.rows.length)return err(res,'Negocio no encontrado.',404);
- v.slugSeo=previo.rows[0].datos.slugSeo || slug(previo.rows[0].datos.nombre) || ('negocio-' + id);
  const {rows}=await db.query('UPDATE negocios SET datos=$2::jsonb,actualizado_en=NOW() WHERE id=$1 RETURNING id',[id,JSON.stringify(v)]);
+ if(!rows.length)return err(res,'Negocio no encontrado.',404);
  res.json({...v,id});
 }));
 app.delete('/api/admin/negocios/:id',admin,wrap(async(req,res)=>{
@@ -323,22 +314,11 @@ app.put('/api/admin/campanas/:frecuencia',admin,wrap(async(req,res)=>{
  res.json({ok:true,enviosRealizados:0});
 }));
 app.use('/api',(_req,res)=>err(res,'Ruta no encontrada.',404));
-// Páginas públicas HTML reales y sitemap: Google puede rastrearlas sin ejecutar Angular.
-registerSeoPages(app,db);
-app.use((error,req,res,_next)=>{
-  // Registrar ruta y codigo del error sin enviar detalles internos al visitante.
-  console.error('CERCA ERROR:',req.method,req.path,'codigo:',error.code||'sin-codigo','mensaje:',error.message);
-  const esBD=Boolean(error.code && (String(error.code).startsWith('08') || ['57P01','57P02','57P03','53300','53400'].includes(error.code)));
-  const status=esBD?503:500;
-  res.set('Cache-Control','no-store');
-  if(req.path.startsWith('/api/'))return res.status(status).json({error:esBD?'Base de datos no disponible. Revisa PostgreSQL.':'Error interno del servidor CERCA. Revisa la terminal de la API.'});
-  return res.status(status).type('html').send('<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>CERCA - Servicio no disponible</title></head><body><main><h1>No se pudo cargar esta pagina</h1><p>La ruta existe, pero el servidor no pudo consultar o generar los datos. Revisa la ventana de CERCA API y la conexion a PostgreSQL.</p><a href="/">Volver al inicio</a></main></body></html>');
-});
-// Puerto local unico para esta version (coincide con frontend/proxy.conf.json).
-const port=Number(process.env.PORT||3100);
+app.use((error,_req,res,_next)=>{console.error('API CERCA:',error.message);res.status(500).json({error:'Ocurrió un error en el servidor. Revisa sus registros.'});});
+const port=Number(process.env.PORT||3000);
 try {
   await requireCercaDatabase();
-  app.listen(port,()=>console.log(`CERCA WEB + API + SEO conectados a PostgreSQL (base cerca); abre http://localhost:${port}`));
+  app.listen(port,()=>console.log(`CERCA API conectada a la base cerca; puerto ${port}`));
 } catch (error) {
   console.error('CERCA: no se pudo iniciar el servidor:', error.message);
   await db.end();

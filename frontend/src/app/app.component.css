@@ -754,15 +754,6 @@ body:has(.cerca-acceso-bloqueo) { overflow: hidden !important; }
   color: #fff;
 }
 
-/* SEO: los círculos y CTA son enlaces <a> rastreables, con idéntica apariencia. */
-.hero-category{text-decoration:none;color:inherit;cursor:pointer}.card-link{text-decoration:none;display:inline-flex;align-items:center;justify-content:space-between}.hero-category:hover,.card-link:hover{text-decoration:none}
-
-/* Estado de conexión con PostgreSQL — no falsear un directorio vacío. */
-.cerca-api-aviso{display:flex;align-items:center;flex-wrap:wrap;gap:12px;line-height:1.5;}
-.cerca-api-aviso strong{color:#8f340f;}
-.cerca-api-aviso span{flex:1;min-width:220px;}
-.cerca-api-reintentar{background:#ff601e;color:#fff;border:0;border-radius:12px;padding:10px 15px;font:800 12px 'DM Sans',Arial,sans-serif;cursor:pointer;}
-.cerca-api-reintentar:hover{background:#d94a0e;}
-
-/* Las URL internas saltan al listado sin que el encabezado lo tape. */
-#explorar { scroll-margin-top: 86px; }
+/* Solo acceso privado: se conserva intacto el resto de la portada. */
+.main-nav .cerca-nav-admin { color: #da4e16; font-weight: 800; }
+.main-nav .cerca-nav-admin:hover { color: #b93208; }

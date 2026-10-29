@@ -1,0 +1,14 @@
+# CERCA.cl — 20 cafés de Ñuñoa, reseñas breves (2026-10-28)
+
+**Este paquete es para el proyecto `Cerca_Fase1.5` con carpetas `backend` y `frontend`.**
+
+1. Copia **CONECTAR_FICHAS_NUNOA.bat** y **CONECTAR_NUNOA_A_CERCA.cjs** a la raíz de `Cerca_Fase1.5`, junto a las carpetas backend y frontend. **No borres ni reemplaces carpetas.**
+2. Cierra el servidor actual si lo tienes abierto y ejecuta CONECTAR_FICHAS_NUNOA.bat.
+3. Verifica el recuento que muestre PostgreSQL. 21 es el resultado esperado si Casa Miga era el único café anterior y estaba publicado.
+4. Ejecuta el **INICIAR_CERCA_SEO.bat** que ya existe en tu proyecto para recompilar el frontend y arrancar la API. Luego abre `http://localhost:4200/nunoa/cafes` y recarga con Ctrl+F5.
+
+**Solo cambia el contenido:** añade los 20 negocios, conserva las fichas anteriores y muestra la especialidad de cada café en máximo dos líneas de su tarjeta. Inserta/actualiza datos en la base `cerca` dentro de una transacción; respeta teléfonos y reseñas propios, privilegios de administración, historial de valoraciones, rutas SEO y fotografías existentes. Las fotografías nuevas, cuando faltan, son ilustrativas generadas. No activa WhatsApp sin confirmación ni marca fichas como verificadas. No realiza despliegue remoto. No incluye ni imprime contraseñas.
+
+**Verificación sin modificar nada:** desde PowerShell en Cerca_Fase1.5 ejecuta `node .\CONECTAR_NUNOA_A_CERCA.cjs --verificar-paquete`.
+
+Si el recuento de PostgreSQL es correcto pero la web sigue mostrando 1, hay un servidor antiguo o la web apunta a una base distinta; reinicia `INICIAR_CERCA_SEO.bat` y revisa qué devuelve `http://localhost:4200/api/negocios`.

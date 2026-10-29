@@ -1,0 +1,19 @@
+CERCA.CL — 20 CAFETERIAS DE NUNOA (SIN CAMBIAR DISENO)
+
+1) Descomprime este ZIP en Descargas (no dentro de Cerca_Fase1.5).
+2) Haz doble clic en INSTALAR_EN_CERCA.bat.
+3) Si la pagina esta abierta, recarga con Ctrl+F5. Para las rutas SEO actualizadas, cierra el servidor anterior y abre INICIAR_CERCA_SEO.bat en tu carpeta Cerca_Fase1.5.
+4) Abre http://localhost:4200/nunoa/cafes
+
+Este paquete es compatible con el proyecto Cerca_Fase1.5.rar que nos enviaste.
+Revisa los cambios del proyecto con el hash original del RAR y NO sobrescribe si detecta modificaciones ajenas.
+Guarda respaldo de los 4 archivos originales antes de actualizarlos.
+
+Se suman 20 fichas con fotos ilustrativas (no reales). No se reemplaza Casa Miga ni otro negocio.
+La importacion PostgreSQL es incremental e idempotente: si la corres de nuevo, omite las fichas ya existentes.
+No se utilizan las notas de Google como calificaciones de CERCA.
+Las nuevas fichas quedan fuera de indexacion de Google mientras falta verificar la informacion.
+Rutas correctas: /nunoa/cafes y /nunoa/cafes/nombre-del-local
+No toca datos existentes en PostgreSQL; solo INSERT para nombres nuevos.
+No incluye claves ni contrasenas. Usa el backend/.env del proyecto instalado.
+Si PostgreSQL no esta iniciado, puedes reintentar con AGREGAR_20_CAFETERIAS_NUNOA.bat.

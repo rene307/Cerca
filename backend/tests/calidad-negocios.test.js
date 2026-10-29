@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {evaluarCalidadNegocio,conCalidad,compararCalidadNegocios} from '../src/calidad-negocios.js';
+const completa={id:1,nombre:'Café A',categoria:'Cafés',comuna:'La Florida',descripcion:'Ofrecemos café preparado al momento, pastelería artesanal y atención en nuestro local de barrio todos los días.',direccion:'Av. La Florida 1234',foto:'https://example.com/cafe-real.jpg',horario:'Lunes a viernes 9:00 a 18:00',whatsapp:'+56912345678',sitioWebEstado:'no posee'};
+test('ficha completa acepta ausencia de sitio web declarada',()=>{const r=evaluarCalidadNegocio(completa);assert.deepEqual(r.camposFaltantes,[]);assert.equal(r.calidadFicha,100)});
+test('foto genérica y descripción plantilla penalizan',()=>{const r=evaluarCalidadNegocio({...completa,foto:'https://images.unsplash.com/photo-123',descripcion:'Local incluido desde las capturas. Fotografía genérica representativa de su rubro.'});assert.ok(r.camposFaltantes.includes('Foto real del local'));assert.ok(r.camposFaltantes.some(s=>s.startsWith('Descripción original')))});
+test('destacado incompleto queda después de negocio completo',()=>{const a=conCalidad(completa),b=conCalidad({...completa,id:2,horario:'',destacado:true,prioridadDestacado:1});assert.equal([b,a].sort(compararCalidadNegocios)[0].id,1)});
+test('menos faltantes mejora ranking sin alterar reputación',()=>{const a=conCalidad({...completa,id:3,whatsapp:''}),b=conCalidad({...completa,id:4,whatsapp:'',horario:''});assert.equal([b,a].sort(compararCalidadNegocios)[0].id,3);assert.equal('calificacion' in a,false)});

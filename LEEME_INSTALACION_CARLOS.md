@@ -19,7 +19,7 @@ NO reemplaza ni modifica por sí solo tu carpeta local ni la base PostgreSQL.
 4. Para que la ficha tenga el aspecto especial de estrella/5.0 y WhatsApp personalizado, integra manualmente los cambios de los archivos `frontend/src/app/app.component.ts`, `.html`, `.css` con tu código actual (no los sobrescribas si hiciste cambios desde esta copia).
 5. Si prefieres hacerlo desde pgAdmin en la base `cerca`, ejecuta `backend/sql/002_carlos_mecanico.sql` **en vez de** `node src/agregar-carlos.js`; ambos actualizan o crean una sola ficha sin duplicarla.
 6. Con el backend `npm start` y frontend `npm start`, recarga la app y selecciona La Florida / Mecánicos.
-7. En Chrome verifica `http://localhost:3100/api/negocios` para confirmar la ficha de Carlos.
+7. En Chrome verifica `http://localhost:3000/api/negocios` para confirmar la ficha de Carlos.
 
 ## OPCIÓN B: ejecutar el proyecto completo del ZIP
 Copia la carpeta a otro directorio, traslada SOLO tu `.env` local a la carpeta `backend/` en tu PC (no viene incluido), luego en terminales separadas:

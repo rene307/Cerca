@@ -41,7 +41,6 @@ interface ProgramacionCampana {
 
 interface Negocio {
   id: number;
-  slugSeo?: string; // Identificador estable: si cambian el nombre, no cambia la URL.
   nombre: string;
   categoria: Exclude<Categoria, 'Todos'>;
   comuna: string;
@@ -65,10 +64,14 @@ interface Negocio {
   fechaRevision?: string;  // Fecha de consulta, no fecha de confirmación por el comercio.
   observacionRevision?: string; // Discrepancias o limitaciones de la fuente.
   sitioWeb?: string;       // only HTTPS links are offered.
+  sitioWebEstado?: 'no posee'; // Confirmación explícita: el negocio no tiene web
   horario?: string;        // confirmed textual opening hours.
   latitud?: number;       // real latitude confirmed by administrator.
   longitud?: number;      // real longitude confirmed by administrator.
   datosVerificados?: boolean;
+  calidadFicha?: number; // Puntaje calculado por API, 0–100
+  fichaCompleta?: boolean;
+  camposFaltantes?: string[];
 
 }
 
@@ -106,123 +109,6 @@ interface BarraMetrica { etiqueta: string; valor: number; alto: number; }
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements OnDestroy {
-  // Enlaces SEO reales: mismo dominio, slug por comuna + rubro + nombre.
-  private slugSeo(texto: string): string {
-    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
-      .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-  }
-  seoRutaCategoria(comuna: string, categoria: Categoria): string {
-    const slugs: Record<string,string> = {
-      'Cafés':'cafes','Panaderías':'panaderias','Computación':'computacion',
-      'Viveros':'viveros','Farmacias':'farmacias','Mecánicos':'mecanicos',
-      'Bares':'bares','Peluquería':'peluquerias','Mascotas':'mascotas',
-      'Vulcanización':'vulcanizaciones','Tiendas':'tiendas',
-      'Servicios':'oficios-y-profesiones'
-    };
-    const base = '/' + this.slugSeo(comuna);
-    return categoria === 'Todos' ? base : base + '/' + (slugs[categoria] || this.slugSeo(categoria));
-  }
-  seoRutaNegocio(negocio: Negocio): string {
-    const categoria = this.categoriaNormalizada(negocio.categoria);
-    const base=this.seoRutaCategoria(negocio.comuna,categoria);
-    const nombre=negocio.slugSeo || this.slugSeo(negocio.nombre) || ('negocio-' + negocio.id);
-    const duplicados=this.negocios.filter(n=>n.comuna===negocio.comuna && this.categoriaNormalizada(n.categoria)===categoria && (n.slugSeo || this.slugSeo(n.nombre) || ('negocio-' + n.id))===nombre && n.publicado!==false);
-    return base + '/' + nombre + (duplicados.length > 1 ? '--' + negocio.id : '');
-  }
-
-  private categoriaNormalizada(categoria: string): Categoria {
-    const mapa: Record<string,Categoria> = {
-      'peluqueria':'Peluquería','peluquerias':'Peluquería',
-      'panaderia':'Panaderías','panaderias':'Panaderías',
-      'mecanico':'Mecánicos','mecanicos':'Mecánicos',
-      'cafe':'Cafés','cafes':'Cafés',
-      'servicio':'Servicios','servicios':'Servicios',
-      'oficios-y-profesiones':'Servicios',
-      'bar':'Bares','bares':'Bares',
-      'farmacia':'Farmacias','farmacias':'Farmacias'
-    };
-    return mapa[this.slugSeo(categoria)] || (categoria as Categoria);
-  }
-  // En desarrollo Angular puede servir su index.html para una URL SEO (ruta profunda).
-  // Interpretamos esa ruta para que la página muestre SIEMPRE el rubro solicitado.
-  // En producción el backend conserva sus páginas HTML renderizadas para buscadores.
-  rutaCategoriaActiva = false;
-  rutaNegocioNoEncontrado = false;
-  private readonly etiquetasRuta: Record<string, Categoria> = {
-    'cafes':'Cafés', 'panaderias':'Panaderías', 'computacion':'Computación',
-    'viveros':'Viveros', 'farmacias':'Farmacias', 'mecanicos':'Mecánicos',
-    'bares':'Bares', 'peluquerias':'Peluquería', 'mascotas':'Mascotas',
-    'vulcanizaciones':'Vulcanización', 'tiendas':'Tiendas',
-    'oficios-y-profesiones':'Servicios'
-  };
-  private rutaNegocioSlug: string | null = null;
-
-  get tituloResultados(): string {
-    if (this.consultaActiva) return 'Locales que podrían ayudarte';
-    if (!this.rutaCategoriaActiva) return 'Destacados de tu barrio';
-    const titulos: Record<string,string> = {'Peluquería':'Peluquerías','Servicios':'Oficios y Profesiones'};
-    return `${titulos[this.categoriaActiva] || this.categoriaActiva} en ${this.comuna}`;
-  }
-
-  // Lee comuna + rubro + ficha de la URL. No usa datos ficticios ni altera la BD.
-  private aplicarRutaNavegador(abrirFicha = true): void {
-    if (typeof window === 'undefined') return;
-    const partes = window.location.pathname.split('/').filter(Boolean);
-    const comuna = this.comunas.find(c => this.slugSeo(c) === partes[0]);
-    const categoria = partes.length >= 2 ? this.etiquetasRuta[partes[1]] : undefined;
-    this.rutaNegocioSlug = null;
-    this.rutaNegocioNoEncontrado = false;
-    if (!comuna || partes.length > 3 || (partes.length >= 2 && !categoria)) {
-      this.rutaCategoriaActiva = false;
-      return;
-    }
-    this.comuna = comuna;
-    this.categoriaActiva = categoria || 'Todos';
-    this.rutaCategoriaActiva = true;
-    this.busqueda = '';
-    this.consultaActiva = '';
-    this.categoriasIntencion = null;
-    this.oficioSeleccionado = null;
-    this.mostrarSoloFavoritos = false;
-    this.negocioSeleccionado = null;
-    if (partes.length === 3) this.rutaNegocioSlug = partes[2];
-    if (abrirFicha && this.apiDisponible) this.abrirFichaDeRuta();
-  }
-  private enfocarResultadosSiRutaSeo(): void {
-    if (!this.rutaCategoriaActiva || typeof window === 'undefined') return;
-    // Al abrir /la-florida/peluquerias, mostrar las peluquerías, no la portada.
-    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-      document.getElementById('explorar')?.scrollIntoView({behavior:'auto',block:'start'});
-    }));
-  }
-  private abrirFichaDeRuta(): void {
-    if (!this.rutaNegocioSlug || !this.apiDisponible) return;
-    const encontrado = this.negocios.find(n => n.publicado !== false &&
-      this.seoRutaNegocio(n) === window.location.pathname);
-    if (encontrado) this.abrirDetalle(encontrado);
-    else this.rutaNegocioNoEncontrado = true;
-  }
-  navegarCategoria(evento: MouseEvent, categoria: Categoria): void {
-    // Preserva enlaces reales para abrir en pestañas nuevas o copiar la dirección.
-    if (evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey || evento.button !== 0) return;
-    evento.preventDefault();
-    const ruta = this.seoRutaCategoria(this.comuna, categoria);
-    window.history.pushState(null, '', ruta);
-    this.aplicarRutaNavegador();
-    this.registrarEvento('categoria');
-    this.irA('explorar');
-  }
-  navegarNegocio(evento: MouseEvent, negocio: Negocio): void {
-    if (evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey || evento.button !== 0) return;
-    evento.preventDefault();
-    window.history.pushState(null, '', this.seoRutaNegocio(negocio));
-    this.aplicarRutaNavegador(false);
-    this.rutaNegocioSlug = window.location.pathname.split('/').pop() || null;
-    this.abrirDetalle(negocio);
-  }
-  @HostListener('window:popstate')
-  actualizarRutaPorHistorial(): void { this.aplicarRutaNavegador(); }
-
   readonly categorias: { nombre: Categoria; icono: string }[] = [
     { nombre: 'Todos', icono: '✦' },
     { nombre: 'Cafés', icono: '☕' },
@@ -859,13 +745,7 @@ export class AppComponent implements OnDestroy {
     if(this.adminToken)headers.set('Authorization','Bearer '+this.adminToken);
     let res:Response;
     try {res=await fetch('/api'+ruta,{...opciones,headers,cache:'no-store'});}
-    catch {throw Error('No hay conexion con CERCA. Ejecuta INICIAR_CERCA_UN_SERVIDOR.bat y revisa PostgreSQL.');}
-    // Cuando el proxy de Angular no reenvia /api/** devuelve index.html en vez de JSON.
-    // Detectarlo explicitamente: de otro modo se ve una pagina vacia sin ninguna explicacion.
-    const tipo=res.headers.get('content-type') || '';
-    if(res.ok && !tipo.toLowerCase().includes('json')) {
-      throw Error('CERCA esta mostrando una version anterior sin API. Cierra Angular y ejecuta INICIAR_CERCA_UN_SERVIDOR.bat.');
-    }
+    catch {throw Error('No se puede conectar con el servidor CERCA. Inicia PostgreSQL y la API.');}
     if(!res.ok){
       let msg='Error del servidor '+res.status;
       try{const body=await res.json();msg=body.error||msg;}catch{}
@@ -876,35 +756,16 @@ export class AppComponent implements OnDestroy {
   }
   private async iniciarServidor():Promise<void> {
     try {
-      // Los negocios son el dato obligatorio. Las evaluaciones son opcionales:
-      // un fallo en /reputacion NO debe esconder fichas que PostgreSQL si devolvio.
       const negocios=await this.api<Negocio[]>('/negocios');
-      if(!Array.isArray(negocios))throw Error('La API no entrego un listado de negocios valido.');
       this.negocios=negocios;
+      const [opiniones,reputacion]=await Promise.all([
+        this.api<OpinionCerca[]>('/reputacion'),
+        this.api<Record<number,{promedio:number;total:number}>>('/reputacion/resumen')]);
+      this.opinionesCerca=opiniones;this.reputacionPorNegocio=reputacion;
       this.apiDisponible=true;this.apiError='';
-      try {
-        const [opiniones,reputacion]=await Promise.all([
-          this.api<OpinionCerca[]>('/reputacion'),
-          this.api<Record<number,{promedio:number;total:number}>>('/reputacion/resumen')]);
-        this.opinionesCerca=opiniones;this.reputacionPorNegocio=reputacion;
-      } catch {
-        this.opinionesCerca=[];this.reputacionPorNegocio={};
-        // El catalogo sigue disponible aunque reputacion este temporalmente fuera.
-      }
-      if(typeof window !== 'undefined') {
-        this.aplicarRutaNavegador();
-        this.enfocarResultadosSiRutaSeo();
-        const id = Number(new URLSearchParams(window.location.search).get('negocio'));
-        const business = negocios.find(n => n.id === id && n.publicado !== false);
-        if(business) this.abrirDetalle(business);
-      }
       if(this.visitaPendiente){this.visitaPendiente=false;this.registrarEvento('visita');}
-    }catch(e){
-      this.apiDisponible=false;this.apiError=(e as Error).message;
-      this.enfocarResultadosSiRutaSeo();
-    }
+    }catch(e){this.apiDisponible=false;this.apiError=(e as Error).message;}
   }
-  reintentarConexion(): void {void this.iniciarServidor();}
   async loginAdmin():Promise<void> {
     this.errorAdminLogin='';
     try {
@@ -1386,9 +1247,7 @@ export class AppComponent implements OnDestroy {
     }
     if (typeof window === 'undefined') return;
     if (window.location.hash === '#admin') { window.location.assign('/panel-admin.html'); return; }
-    if (new URLSearchParams(window.location.search).get('publicar') === '1') this.mostrarPublicacion = true;
     this.mostrarAdministracion = false;
-    this.aplicarRutaNavegador(false);
     try {
       const decisionGuardada = JSON.parse(window.localStorage.getItem(this.claveDecisionVisitante) || 'null');
       if (decisionGuardada?.version === 1 && decisionGuardada?.estado === 'si') {
@@ -1759,13 +1618,27 @@ export class AppComponent implements OnDestroy {
       : 'Sin calificación';
   }
 
+  // Respeta el puntaje calculado por PostgreSQL/API; fallback para fichas antiguas.
+  private puntajeCalidad(n: Negocio): number {
+    if (typeof n.calidadFicha === 'number') return n.calidadFicha;
+    let puntos = 0;
+    if ((n.nombre || '').trim().length >= 2) puntos++;
+    if ((n.categoria || '').trim().length >= 2) puntos++;
+    if ((n.comuna || '').trim().length >= 2) puntos++;
+    if ((n.descripcion || '').trim().length >= 80 && !/local incluido desde las capturas|fotograf[ií]a gen[eé]rica representativa|texto de ejemplo|descripci[oó]n pendiente/i.test(n.descripcion || '')) puntos++;
+    if ((n.direccion || '').trim().length >= 5) puntos++;
+    if (n.foto && !/images\.unsplash\.com|source\.unsplash\.com|picsum\.photos|placehold\.co|placeholder/i.test(n.foto)) puntos++;
+    if ((n.horario || '').trim().length >= 5 && !/por confirmar|\(publicado; confirmar\)|horario pendiente|sin confirmar/i.test(n.horario || '')) puntos++;
+    if (/^\+?56\s*9(?:[\s-]?\d){8}$/.test((n.whatsapp || '').trim())) puntos++;
+    if (/^https:\/\/[^\s.]+\.[^\s]+/i.test(n.sitioWeb || '') || n.sitioWebEstado === 'no posee') puntos++;
+    return Math.round(100*puntos/9);
+  }
+
   get negociosFiltrados(): Negocio[] {
-    // No ofrecer registros de ejemplo como si estuvieran recuperados de PostgreSQL.
-    if (!this.apiDisponible) return [];
     const texto = this.busqueda.trim().toLocaleLowerCase('es');
     return this.negocios.filter((negocio) => {
       if (negocio.publicado === false) return false;
-      const coincideCategoria = this.categoriasIntencion ? this.categoriasIntencion.includes(negocio.categoria) : (this.categoriaActiva === 'Todos' || this.categoriaNormalizada(negocio.categoria) === this.categoriaActiva);
+      const coincideCategoria = this.categoriasIntencion ? this.categoriasIntencion.includes(negocio.categoria) : (this.categoriaActiva === 'Todos' || negocio.categoria === this.categoriaActiva);
       const coincideOficio = !this.oficioSeleccionado || this.negocioDeOficio(negocio, this.oficioSeleccionado);
       const coincideComuna = negocio.comuna === this.comuna;
       const km = this.distanciaReal(negocio);
@@ -1775,6 +1648,9 @@ export class AppComponent implements OnDestroy {
       const coincideFavorito = !this.mostrarSoloFavoritos || this.favoritos.has(negocio.id);
       return coincideCategoria && coincideOficio && coincideComuna && coincideDistancia && coincideTexto && coincideFavorito;
     }).sort((a, b) => {
+      // Calidad manda: incluso un destacado incompleto va bajo fichas más completas.
+      const calidad = this.puntajeCalidad(b) - this.puntajeCalidad(a);
+      if (calidad) return calidad;
       const primero = Number(this.esDestacadoEnComuna(b)) - Number(this.esDestacadoEnComuna(a));
       if (primero) return primero;
       if (this.esDestacadoEnComuna(a) && this.esDestacadoEnComuna(b)) {
@@ -1922,10 +1798,6 @@ export class AppComponent implements OnDestroy {
   }
 
   cerrarModal(): void {
-    if (this.negocioSeleccionado && this.rutaNegocioSlug && typeof window !== 'undefined') {
-      window.history.replaceState(null, '', this.seoRutaCategoria(this.comuna, this.categoriaActiva));
-      this.rutaNegocioSlug = null;
-    }
     this.negocioSeleccionado = null;
     this.mostrarPublicacion = false;
   }

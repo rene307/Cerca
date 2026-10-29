@@ -23,7 +23,6 @@ export function validarNegocio(v){
   if(!v||typeof v!=='object'||Array.isArray(v)||typeof v.nombre!=='string'||!v.nombre.trim()||v.nombre.length>140||typeof v.categoria!=='string'||v.categoria.length>90||typeof v.comuna!=='string'||!v.comuna.trim()||v.comuna.length>90)return null;
   const o={...v,nombre:v.nombre.trim(),comuna:v.comuna.trim()};
   if(JSON.stringify(o).length>250000)return null; // Foto base64 grande: subir por almacenamiento de objetos en producción.
-  if(o.slugSeo != null && (typeof o.slugSeo !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(o.slugSeo)))return null;
   if(o.sitioWeb&& !/^https:\/\//i.test(o.sitioWeb))return null;
   if(o.latitud!=null&&(!Number.isFinite(Number(o.latitud))||Math.abs(Number(o.latitud))>90))return null;
   if(o.longitud!=null&&(!Number.isFinite(Number(o.longitud))||Math.abs(Number(o.longitud))>180))return null;

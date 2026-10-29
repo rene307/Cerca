@@ -1,5 +1,3 @@
-> **NUEVO INICIO RECOMENDADO (OCTUBRE 2026):** Lee `LEEME_PRIMERO_UN_SOLO_SERVIDOR.txt` y ejecuta `INICIAR_CERCA_UN_SERVIDOR.bat`. Ahora la web, API y SEO trabajan en el mismo puerto **4200**, no necesitas dos terminales ni proxy al 3100.
-
 # CERCA.cl — Edición con API real y PostgreSQL
 
 Esta entrega integra la última versión de las 65 fichas, logo, tarjetas, reputación, campañas y dashboard con un backend **Node.js + Express + PostgreSQL**.
@@ -43,7 +41,7 @@ Los comandos están escritos sin presuponer PowerShell ni otro intérprete. Pued
 `GET /api/salud` debe mostrar `{"ok":true,"postgresql":true}` cuando PostgreSQL esté conectado (con el proxy de Angular o consultando la API directamente).
 
 ### Producción
-El frontend utiliza **rutas relativas `/api`**. Debes configurar tu hosting o proxy inverso para enviar `/api/*` a la API Express protegida por HTTPS. En Angular local se usa `frontend/proxy.conf.json`, cuyo objetivo coincide con PORT=3100 por defecto. Si cambias el puerto del backend, cambia también ese archivo. Ajusta `CORS_ORIGINS` para la URL pública exacta. **No** publiques `.env`, contraseñas, claves JWT ni `node_modules`.
+El frontend utiliza **rutas relativas `/api`**. Debes configurar tu hosting o proxy inverso para enviar `/api/*` a la API Express protegida por HTTPS. En Angular local se usa `frontend/proxy.conf.json`, cuyo objetivo coincide con PORT=3000 por defecto. Si cambias el puerto del backend, cambia también ese archivo. Ajusta `CORS_ORIGINS` para la URL pública exacta. **No** publiques `.env`, contraseñas, claves JWT ni `node_modules`.
 
 No exponer directamente PostgreSQL a internet: solo el backend debe conectarse. Aplica TLS y copias de seguridad gestionadas en producción. No compartas el archivo `.env`.
 

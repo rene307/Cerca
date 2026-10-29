@@ -1,0 +1,865 @@
+{
+  "tipo": "DATOS PARA AÑADIR - NO ES UNA ACTUALIZACIÓN DE INTERFAZ",
+  "proyecto": "CERCA.cl",
+  "operacion_requerida": "solo insertar negocios nuevos sin actualizar existentes",
+  "categorias_no_modificar": true,
+  "usar_categoria_existente": "Cafés",
+  "no_cambiar": [
+    "HTML",
+    "CSS",
+    "Angular",
+    "rutas ya existentes",
+    "fotografías actuales",
+    "La Florida",
+    "mapa",
+    "filtros",
+    "administración",
+    "posicionamiento existente",
+    "PostgreSQL actual sin revisión de esquema"
+  ],
+  "criterio_antiduplicados": "comuna + nombre normalizado + direccion normalizada; revisar antes de insertar",
+  "prioridad_listado": "respetar reglas actuales de CERCA; fichas incompletas debajo de fichas completas",
+  "aviso": "No publicar automáticamente y no mostrar referencias Google como reputación CERCA. Contactos, fotos reales y horario completo no confirmados.",
+  "negocios": [
+    {
+      "id_sugerido": "NUN-CAF-001",
+      "nombre": "Kalopsia Café",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Francisco de Villagra 45, local 7",
+      "descripcion_borrador": "Kalopsia Café se encuentra en Francisco de Villagra 45, local 7. Entre las opiniones visibles en la búsqueda compartida se mencionan un espacio pequeño y acogedor, una ambientación agradable y música relajante. Esta ficha de CERCA.cl reúne su ubicación y datos referenciales para quienes buscan cafeterías en Ñuñoa. Su horario completo, carta y medios de contacto están pendientes de confirmación.",
+      "slug_sugerido": "kalopsia-cafe",
+      "ruta_sugerida": "/nunoa/cafeterias/kalopsia-cafe",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.8,
+        "numero_resenas_mostrado": "187",
+        "hora_apertura_vista_en_captura_no_confirmada": "09:45",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-002",
+      "nombre": "Trama - Café de Especialidad",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Diagonal Oriente 5569",
+      "descripcion_borrador": "Trama – Café de Especialidad está en Diagonal Oriente 5569. La reseña mostrada en la captura destaca el café, los pancitos y preparaciones dulces. Es una alternativa para explorar la oferta de cafeterías de Ñuñoa. En esta ficha podrás consultar la dirección de referencia; falta verificar el horario semanal, los canales de atención y la disponibilidad actual de productos.",
+      "slug_sugerido": "trama-cafe-de-especialidad",
+      "ruta_sugerida": "/nunoa/cafeterias/trama-cafe-de-especialidad",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 5.0,
+        "numero_resenas_mostrado": "89",
+        "hora_apertura_vista_en_captura_no_confirmada": "10:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-003",
+      "nombre": "Casa Amore Mio",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Clorinda Willshaw 450",
+      "descripcion_borrador": "Casa Amore Mio figura en Clorinda Willshaw 450, Ñuñoa. Una reseña visible alude al ambiente acogedor, al café y a la comida. La ficha permite ubicar el establecimiento dentro del directorio local de CERCA.cl, mientras se reúnen datos confirmados sobre sus horarios, su propuesta gastronómica y sus formas de contacto. El contenido se presenta como información preliminar.",
+      "slug_sugerido": "casa-amore-mio",
+      "ruta_sugerida": "/nunoa/cafeterias/casa-amore-mio",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 5.0,
+        "numero_resenas_mostrado": "252",
+        "hora_apertura_vista_en_captura_no_confirmada": "08:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-004",
+      "nombre": "The perfect match",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Villaseca 98",
+      "descripcion_borrador": "The Perfect Match aparece en Villaseca 98. Entre los comentarios mostrados en la búsqueda se mencionan tostadas francesas y matcha latte; la disponibilidad de esas preparaciones debe confirmarse con el local. Aquí encontrarás su ubicación referencial dentro de la categoría Cafeterías de Ñuñoa. La información comercial completa aún se encuentra en revisión.",
+      "slug_sugerido": "the-perfect-match",
+      "ruta_sugerida": "/nunoa/cafeterias/the-perfect-match",
+      "rango_precios_referencial_clp": {
+        "minimo": 10000,
+        "maximo": 15000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.7,
+        "numero_resenas_mostrado": "562",
+        "hora_apertura_vista_en_captura_no_confirmada": "08:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-005",
+      "nombre": "Macchiato Café",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Humberto Trucco 45",
+      "descripcion_borrador": "Macchiato Café está registrado en Humberto Trucco 45. En la reseña visible de la captura se destacan el sabor del café y las opciones de té e infusiones. Esta ficha de Ñuñoa permite localizar el negocio y consultar los datos que han podido recuperarse. Antes de publicar información definitiva se deben verificar el horario de funcionamiento y los canales oficiales de atención.",
+      "slug_sugerido": "macchiato-cafe",
+      "ruta_sugerida": "/nunoa/cafeterias/macchiato-cafe",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.8,
+        "numero_resenas_mostrado": "425",
+        "hora_apertura_vista_en_captura_no_confirmada": "12:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-006",
+      "nombre": "El Café de la Villa",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "La Calera 690",
+      "descripcion_borrador": "El Café de la Villa figura en La Calera 690. La búsqueda compartida incluye una opinión que menciona café, jugos y ciabattas tostadas; se trata de referencias de una reseña, no de una carta confirmada. CERCA.cl incorpora esta ubicación al recorrido de cafeterías de Ñuñoa, manteniendo pendientes la validación de horarios, contacto y servicios actuales.",
+      "slug_sugerido": "el-cafe-de-la-villa",
+      "ruta_sugerida": "/nunoa/cafeterias/el-cafe-de-la-villa",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.7,
+        "numero_resenas_mostrado": "166",
+        "hora_apertura_vista_en_captura_no_confirmada": "16:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-007",
+      "nombre": "Café Montenegro",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Presidente José Batlle y Ordóñez 4385",
+      "descripcion_borrador": "Café Montenegro aparece en Avenida Presidente José Batlle y Ordóñez 4385. Las capturas muestran una reseña que lo describe como un café pequeño con productos valorados favorablemente por quien comentó. Esta ficha permite identificar su dirección referencial en Ñuñoa. El menú, los precios vigentes, los horarios y el contacto oficial deben confirmarse antes de completar su publicación.",
+      "slug_sugerido": "cafe-montenegro",
+      "ruta_sugerida": "/nunoa/cafeterias/cafe-montenegro",
+      "rango_precios_referencial_clp": {
+        "minimo": 10000,
+        "maximo": 15000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.5,
+        "numero_resenas_mostrado": "2,7 mil (aprox.)",
+        "hora_apertura_vista_en_captura_no_confirmada": "09:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-008",
+      "nombre": "Cafe Del Barrio",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Irarrázaval 4130",
+      "descripcion_borrador": "Cafe Del Barrio se ubica, según la captura, en Avenida Irarrázaval 4130. Una opinión visible menciona opciones veganas y una carta que puede variar. La disponibilidad real de alternativas para distintas preferencias alimentarias debe consultarse al establecimiento. Esta ficha en CERCA.cl reúne su ubicación y deja señalados los datos que requieren verificación.",
+      "slug_sugerido": "cafe-del-barrio",
+      "ruta_sugerida": "/nunoa/cafeterias/cafe-del-barrio",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.6,
+        "numero_resenas_mostrado": "473",
+        "hora_apertura_vista_en_captura_no_confirmada": "09:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-009",
+      "nombre": "Cafetería Botanika",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Manuel de Salas 181",
+      "descripcion_borrador": "Cafetería Botanika aparece en Manuel de Salas 181. La reseña visible en la búsqueda menciona un ambiente tranquilo, buen café y atención cordial. Estas referencias orientan la descripción preliminar sin sustituir una verificación directa. CERCA.cl incorpora el negocio al directorio de Ñuñoa mientras quedan pendientes horarios completos, información de contacto y material fotográfico autorizado.",
+      "slug_sugerido": "cafeteria-botanika",
+      "ruta_sugerida": "/nunoa/cafeterias/cafeteria-botanika",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.7,
+        "numero_resenas_mostrado": "114",
+        "hora_apertura_vista_en_captura_no_confirmada": "08:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-010",
+      "nombre": "Kila Coffee",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Román Díaz 2023",
+      "descripcion_borrador": "Kila Coffee figura en Román Díaz 2023. En la captura se ve una opinión favorable que menciona carrot cake y un ambiente agradable. Esa referencia no confirma la carta disponible actualmente. La ficha presenta la ubicación del establecimiento en Ñuñoa y reserva espacios para incorporar el horario actualizado, sus contactos oficiales y fotografías autorizadas.",
+      "slug_sugerido": "kila-coffee",
+      "ruta_sugerida": "/nunoa/cafeterias/kila-coffee",
+      "rango_precios_referencial_clp": {
+        "minimo": 10000,
+        "maximo": 15000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.9,
+        "numero_resenas_mostrado": "374",
+        "hora_apertura_vista_en_captura_no_confirmada": "10:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-011",
+      "nombre": "Gulerie Pastelería & Cafetería - Ñuñoa",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Dublé Almeyda 3141",
+      "descripcion_borrador": "Gulerie Pastelería & Cafetería – Ñuñoa figura en Dublé Almeyda 3141. Una reseña visible en la captura destaca un latte y un cheesecake. La ficha se integra en la categoría Cafeterías y Pastelerías de Ñuñoa, con dirección de referencia y datos preliminares. La oferta vigente de productos, el horario completo y el contacto directo están por verificar.",
+      "slug_sugerido": "gulerie-pasteleria-cafeteria-nunoa",
+      "ruta_sugerida": "/nunoa/cafeterias/gulerie-pasteleria-cafeteria-nunoa",
+      "rango_precios_referencial_clp": {
+        "minimo": 10000,
+        "maximo": 15000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.8,
+        "numero_resenas_mostrado": "1,2 mil (aprox.)",
+        "hora_apertura_vista_en_captura_no_confirmada": "08:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-012",
+      "nombre": "Cafetería Seis Siete Ocho",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Irarrázaval 3601, local 4",
+      "descripcion_borrador": "Cafetería Seis Siete Ocho está registrada en Avenida Irarrázaval 3601, local 4. Las capturas incluyen un comentario favorable sobre el café, la atención y el ambiente acogedor. CERCA.cl reúne esta referencia para facilitar el descubrimiento de cafeterías de Ñuñoa. La ficha todavía requiere confirmar horarios semanales, WhatsApp y medios oficiales de comunicación.",
+      "slug_sugerido": "cafeteria-seis-siete-ocho",
+      "ruta_sugerida": "/nunoa/cafeterias/cafeteria-seis-siete-ocho",
+      "rango_precios_referencial_clp": {
+        "minimo": 1000,
+        "maximo": 5000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.9,
+        "numero_resenas_mostrado": "153",
+        "hora_apertura_vista_en_captura_no_confirmada": "07:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-013",
+      "nombre": "Moin Cafetería",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Presidente José Batlle y Ordóñez 3796",
+      "descripcion_borrador": "Moin Cafetería aparece en Avenida Presidente José Batlle y Ordóñez 3796. Una reseña visible menciona café de especialidad y una preparación llamada Franzbrötchen; conviene confirmar la disponibilidad actual en el local. Esta ficha incorpora el establecimiento al directorio de Ñuñoa y deja pendientes los horarios, datos de contacto e imágenes aprobadas para publicación.",
+      "slug_sugerido": "moin-cafeteria",
+      "ruta_sugerida": "/nunoa/cafeterias/moin-cafeteria",
+      "rango_precios_referencial_clp": {
+        "minimo": 10000,
+        "maximo": 15000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.9,
+        "numero_resenas_mostrado": "101",
+        "hora_apertura_vista_en_captura_no_confirmada": "12:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-014",
+      "nombre": "Café Rayo Negro",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Irarrázaval 1309",
+      "descripcion_borrador": "Café Rayo Negro está registrado en Avenida Irarrázaval 1309. Una reseña incluida en la búsqueda habla del café, del ambiente y de conexión wifi; esa disponibilidad debe comprobarse antes de anunciarla como servicio. CERCA.cl presenta la dirección referencial del negocio, mientras la información operativa y los canales de contacto se mantienen pendientes de validación.",
+      "slug_sugerido": "cafe-rayo-negro",
+      "ruta_sugerida": "/nunoa/cafeterias/cafe-rayo-negro",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.8,
+        "numero_resenas_mostrado": "101",
+        "hora_apertura_vista_en_captura_no_confirmada": "08:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-015",
+      "nombre": "Latte Corazón Ñuñoa",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Italia 1707",
+      "descripcion_borrador": "Latte Corazón Ñuñoa figura en Avenida Italia 1707. En una de las opiniones visibles se mencionan waffles con manjar, aunque no constituye una confirmación de su carta vigente. La ficha incorpora esta cafetería al directorio de Ñuñoa y facilita ubicar la dirección referencial. Falta confirmar el horario, el contacto y los servicios actuales.",
+      "slug_sugerido": "latte-corazon-nunoa",
+      "ruta_sugerida": "/nunoa/cafeterias/latte-corazon-nunoa",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 25000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.3,
+        "numero_resenas_mostrado": "136",
+        "hora_apertura_vista_en_captura_no_confirmada": "12:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-016",
+      "nombre": "Nodo Café",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Exequiel Fernández 175",
+      "descripcion_borrador": "Nodo Café aparece en Exequiel Fernández 175. La captura muestra un comentario que lo recomienda para visitar en pareja. CERCA.cl reúne esta referencia junto con la ubicación del local para quienes buscan cafeterías en Ñuñoa. Todavía deben verificarse el horario completo, los datos de contacto y la propuesta actual del establecimiento.",
+      "slug_sugerido": "nodo-cafe",
+      "ruta_sugerida": "/nunoa/cafeterias/nodo-cafe",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.9,
+        "numero_resenas_mostrado": "95",
+        "hora_apertura_vista_en_captura_no_confirmada": "07:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-017",
+      "nombre": "Gena Coffee",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "José Domingo Cañas 2183",
+      "descripcion_borrador": "Gena Coffee está registrado en José Domingo Cañas 2183. Una opinión visible destaca el café de especialidad y la atención recibida. Esa valoración corresponde a una fuente externa y no a reseñas propias de CERCA.cl. La ficha presenta la dirección de referencia dentro de Ñuñoa y mantiene por confirmar los horarios, el contacto y la carta actual.",
+      "slug_sugerido": "gena-coffee",
+      "ruta_sugerida": "/nunoa/cafeterias/gena-coffee",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.9,
+        "numero_resenas_mostrado": "207",
+        "hora_apertura_vista_en_captura_no_confirmada": "07:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-018",
+      "nombre": "Voy Contigo Café",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Av. Presidente José Batlle y Ordóñez 3933",
+      "descripcion_borrador": "Voy Contigo Café aparece en Avenida Presidente José Batlle y Ordóñez 3933. La reseña visible en las capturas menciona comida y café de especialidad. CERCA.cl incluye este local en su directorio de cafeterías de Ñuñoa, con información inicial de ubicación. El detalle de productos, los horarios y los medios oficiales de contacto deberán verificarse.",
+      "slug_sugerido": "voy-contigo-cafe",
+      "ruta_sugerida": "/nunoa/cafeterias/voy-contigo-cafe",
+      "rango_precios_referencial_clp": {
+        "minimo": 10000,
+        "maximo": 15000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.5,
+        "numero_resenas_mostrado": "347",
+        "hora_apertura_vista_en_captura_no_confirmada": "10:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-019",
+      "nombre": "La Giraldilla Café",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Luis Pereira 1456",
+      "descripcion_borrador": "La Giraldilla Café figura en Luis Pereira 1456. En la búsqueda compartida aparece una reseña que destaca el café de grano, sándwiches y la atención. Se trata de referencias de terceros que deben contrastarse con el establecimiento. La ficha registra su ubicación en Ñuñoa mientras queda pendiente completar horarios, contacto y fotografías autorizadas.",
+      "slug_sugerido": "la-giraldilla-cafe",
+      "ruta_sugerida": "/nunoa/cafeterias/la-giraldilla-cafe",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 20000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.6,
+        "numero_resenas_mostrado": "228",
+        "hora_apertura_vista_en_captura_no_confirmada": "09:00",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    },
+    {
+      "id_sugerido": "NUN-CAF-020",
+      "nombre": "patonejo • café • bakery",
+      "comuna": "Ñuñoa",
+      "categoria_existente": "Cafés",
+      "direccion": "Villaseca 439",
+      "descripcion_borrador": "patonejo • café • bakery está registrado en Villaseca 439. Una reseña visible en la captura menciona café y croissant. La ficha de CERCA.cl permite ubicar esta cafetería dentro de Ñuñoa, sin presentar esa referencia como un menú confirmado. Los horarios, medios de contacto y material fotográfico aún requieren revisión antes de su publicación definitiva.",
+      "slug_sugerido": "patonejo-cafe-bakery",
+      "ruta_sugerida": "/nunoa/cafeterias/patonejo-cafe-bakery",
+      "rango_precios_referencial_clp": {
+        "minimo": 5000,
+        "maximo": 10000
+      },
+      "datos_de_contacto": {
+        "telefono": null,
+        "whatsapp": null,
+        "sitio_web": null
+      },
+      "horario_confirmado": null,
+      "fotografia_real_autorizada": null,
+      "reputacion_cerca": {
+        "puntuacion": null,
+        "numero_evaluaciones": 0
+      },
+      "referencia_google_no_es_valoracion_cerca": {
+        "nota": 4.6,
+        "numero_resenas_mostrado": "245",
+        "hora_apertura_vista_en_captura_no_confirmada": "08:30",
+        "fecha_captura": "2026-10-28"
+      },
+      "estado_verificacion": "informacion_incompleta",
+      "revision_pendiente": [
+        "contacto",
+        "horarios completos",
+        "foto real autorizada",
+        "sitio web",
+        "descripcion final revisada",
+        "confirmar direccion"
+      ],
+      "publicacion_automatica": false,
+      "origen": "Capturas de Google aportadas por el usuario el 28-10-2026"
+    }
+  ]
+}

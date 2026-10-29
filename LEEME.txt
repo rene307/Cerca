@@ -1,0 +1,29 @@
+CERCA.cl - ÑUÑOA | 20 cafeterías investigadas + Casa Miga ya existente
+ACTUALIZACIÓN 29-10-2026
+
+CONTENIDO
+- 20 cafeterías con dirección, teléfonos públicos donde había, fuente, descripción original SEO de 200-300 palabras y una reseña breve para tarjeta.
+- Incluye ilustraciones para las 20 fichas. NO son fotos reales de los locales.
+- No crea números WhatsApp no comprobados.
+- No incorpora reseñas ni calificaciones Google a las evaluaciones CERCA.
+- Conserva la ficha Casa Miga y las existentes, con sus evaluaciones y datos verificados.
+- Las fichas NO están verificadas por propietarios y siguen pendientes de fotografía real, WhatsApp y horarios.
+- Reparación de carga: las fallas del servicio de reseñas ya no ocultan los negocios que entrega la API.
+- Reparación de calidad: una ilustración generada ya no cuenta como foto real en la métrica.
+
+COMO INSTALAR (WINDOWS)
+1. Haz una copia de la carpeta Cerca_Fase1.5 y de la base PostgreSQL 'cerca'.
+2. Copia los 3 archivos .cjs / .bat de este ZIP a la carpeta principal Cerca_Fase1.5, donde están backend y frontend.
+3. Ejecuta INSTALAR_CAFETERIAS_NUNOA.bat.
+4. El programa usa exclusivamente la base local configurada en backend/.env, comprueba que la base activa se llame 'cerca', e imprime el recuento.
+5. Detén el servidor anterior, abre INICIAR_CERCA_SEO.bat y haz Ctrl+F5 en http://localhost:4200/nunoa/cafes
+6. La prueba definitiva es ver 21 cafeterías, si Casa Miga permanece publicada. Comprueba también /api/negocios y cada página /nunoa/cafes/slug.
+
+COMPROBACION SIN MODIFICAR NADA
+node CONECTAR_NUNOA_A_CERCA.cjs --verificar-paquete
+
+IMPORTANTE
+Este paquete NO ejecuta cambios por sí solo en tu computador ni realiza un despliegue en cerca.cl.
+No borra ni reemplaza la portada, los filtros, la sección de oficios o los demás rubros.
+El instalador puede no coincidir con una versión posterior del proyecto: si advierte incompatibilidad, revisa el mensaje antes de seguir.
+Ninguna ficha se debe presentar como verificada por el propietario mientras falten datos.

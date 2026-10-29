@@ -7,6 +7,7 @@
       <a href="#categorias" (click)="cerrarMenu()">Categorías</a>
       <a href="#mapa" (click)="cerrarMenu()">Mapa</a>
       <a href="#negocios" (click)="cerrarMenu()">Para negocios</a>
+      <a href="/panel-admin.html" class="cerca-nav-admin" aria-label="Ingresar al panel privado de administración">🔒 Mi administración</a>
     </nav>
 
     <div class="nav-actions">
@@ -53,12 +54,12 @@
         <!-- Portada original: todos los círculos intactos y uno adicional. -->
         <div id="categorias" class="cerca-oficios-seccion">
           <div *ngIf="!mostrarPanelOficios" class="hero-categories" aria-label="Filtrar por categoría">
-            <a *ngFor="let item of categorias" class="hero-category"
-               [href]="seoRutaCategoria(comuna, item.nombre)" [class.selected]="categoriaActiva === item.nombre"
-               [attr.aria-label]="'Ver ' + item.nombre + ' en ' + comuna">
+            <button *ngFor="let item of categorias" type="button" class="hero-category"
+                    [class.selected]="categoriaActiva === item.nombre"
+                    (click)="seleccionarCategoria(item.nombre)">
               <span class="category-circle" aria-hidden="true">{{ item.icono }}</span>
               <span class="category-label">{{ item.nombre }}</span>
-            </a>
+            </button>
             <button type="button" class="hero-category cerca-oficios-entrada"
                     (click)="abrirPanelOficios()" aria-label="Ver Oficios y Profesiones">
               <span class="category-circle" aria-hidden="true"><img src="assets/oficios-profesiones.svg" alt=""></span>
@@ -88,17 +89,13 @@
   </section>
 
   <section class="results-section" id="explorar">
-    <div *ngIf="!apiDisponible" class="cerca-api-aviso" role="alert">
-      <strong>No se pudieron cargar los negocios desde PostgreSQL.</strong>
-      <span>{{ apiError }}</span>
-      <button type="button" class="cerca-api-reintentar" (click)="reintentarConexion()">Reintentar conexion</button>
-    </div>
+    <p *ngIf="!apiDisponible" class="cerca-api-aviso" role="alert">{{apiError}} · Para mostrar negocios reales se necesita la API CERCA.</p>
     <div class="layout">
       <div class="results-header">
         <div>
-          <h2>{{ tituloResultados }} <span>✦</span></h2>
+          <h2>{{ consultaActiva ? 'Locales que podrían ayudarte' : 'Destacados de tu barrio' }} <span>✦</span></h2>
           <p *ngIf="consultaActiva">Buscaste «{{ consultaActiva }}» en {{ comuna }}. Mostramos coincidencias por rubro; consulta disponibilidad directamente con cada negocio.</p>
-          <p *ngIf="!consultaActiva">{{ rutaCategoriaActiva ? 'Estas son las fichas publicadas en CERCA para esta comuna y categoría.' : 'Descubre negocios de tu zona, revisa sus fichas y comunícate directamente con ellos.' }}</p>
+          <p *ngIf="!consultaActiva">Descubre negocios de tu zona, revisa sus fichas y comunícate directamente con ellos.</p>
         </div>
         <div class="results-controls">
           <label class="distance-control">
@@ -115,13 +112,11 @@
         </div>
       </div>
 
-      <div *ngIf="rutaNegocioNoEncontrado" class="cerca-api-aviso" role="alert">No existe una ficha publicada con esta dirección. Revisa si cambió el nombre o si el administrador la despublicó.</div>
       <div class="results-layout">
         <div class="results-main">
           <p class="cerca-gps-status" role="status">{{ estadoGPS }}</p>
           <div class="results-meta">
-            <strong *ngIf="apiDisponible">{{ negociosFiltrados.length }} {{ negociosFiltrados.length === 1 ? 'negocio encontrado' : 'negocios encontrados' }}</strong>
-            <strong *ngIf="!apiDisponible">Sin datos: API desconectada</strong>
+            <strong>{{ negociosFiltrados.length }} {{ negociosFiltrados.length === 1 ? 'negocio encontrado' : 'negocios encontrados' }}</strong>
             <span>{{ comuna }} <span *ngIf="mostrarSoloFavoritos">· Mis favoritos</span></span>
           </div>
 
@@ -168,28 +163,20 @@
                   </div>
                 </div>
                 <p *ngIf="negocio.fechaRevision" class="cerca-revision-resumen">Información pública consultada el {{ negocio.fechaRevision }} · confirmar vigencia</p>
-                <a class="card-link" [href]="seoRutaNegocio(negocio)">
+                <button class="card-link" type="button" (click)="abrirDetalle(negocio)">
                   Ver negocio <span aria-hidden="true">↗</span>
-                </a>
+                </button>
               </div>
             </article>
           </div>
 
           <ng-template #sinResultados>
-            <div class="empty-state" *ngIf="apiDisponible; else conexionPendiente">
+            <div class="empty-state">
               <span aria-hidden="true">⌕</span>
               <h3>No encontramos locales para esta búsqueda</h3>
               <p>Prueba con otra palabra, comuna o distancia. Los proveedores aún no reciben solicitudes automáticas.</p>
               <button type="button" (click)="limpiarFiltros()">Limpiar filtros</button>
             </div>
-            <ng-template #conexionPendiente>
-              <div class="empty-state" role="status">
-                <span aria-hidden="true">⌁</span>
-                <h3>Esperando conexión con la base de datos</h3>
-                <p>Inicia la API CERCA para mostrar los negocios publicados. No se ha confirmado que no existan locales.</p>
-                <button type="button" (click)="reintentarConexion()">Reintentar conexión</button>
-              </div>
-            </ng-template>
           </ng-template>
         </div>
 
