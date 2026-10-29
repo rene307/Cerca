@@ -15,7 +15,7 @@ export function evaluarCalidadNegocio(n={}) {
   const descripcion=valor(n.descripcion);
   pedir(descripcion.length>=80 && !/local incluido desde las capturas|fotograf[ií]a gen[eé]rica representativa|texto de ejemplo|descripci[oó]n pendiente/i.test(descripcion),'Descripción original (mínimo 80 caracteres)');
   pedir(valor(n.direccion).length>=5,'Dirección o referencia');
-  pedir(fotoPropia(n.foto),'Foto real del local');
+  pedir(fotoPropia(n.foto) && n.fotoTipo !== 'ilustrativa-generada' && n.fotoRealAutorizada !== false,'Foto real del local');
   pedir(valor(n.horario).length>=5 && !/por confirmar|\(publicado; confirmar\)|horario pendiente|sin confirmar/i.test(valor(n.horario)),'Horario confirmado');
   pedir(/^\+?56\s*9(?:[\s-]?\d){8}$/.test(valor(n.whatsapp)),'WhatsApp +569');
   pedir(urlWebValida(n.sitioWeb) || n.sitioWebEstado==='no posee','Web HTTPS o marcar «No posee»');

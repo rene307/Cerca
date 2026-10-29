@@ -89,7 +89,7 @@
   </section>
 
   <section class="results-section" id="explorar">
-    <p *ngIf="!apiDisponible" class="cerca-api-aviso" role="alert">{{apiError}} · Para mostrar negocios reales se necesita la API CERCA.</p>
+    <p *ngIf="!apiDisponible" class="cerca-api-aviso" role="status">{{apiError}}<span *ngIf="!catalogoRespaldoActivo"> · Para mostrar los negocios se necesita la API CERCA.</span></p>
     <div class="layout">
       <div class="results-header">
         <div>
@@ -120,7 +120,7 @@
             <span>{{ comuna }} <span *ngIf="mostrarSoloFavoritos">· Mis favoritos</span></span>
           </div>
 
-          <div *ngIf="apiDisponible && negociosFiltrados.length > 0; else sinResultados" class="business-grid">
+          <div *ngIf="(apiDisponible || catalogoRespaldoActivo) && negociosFiltrados.length > 0; else sinResultados" class="business-grid">
             <article class="business-card" [class.cerca-destacado]="esDestacadoEnComuna(negocio)" *ngFor="let negocio of negociosFiltrados; trackBy: trackById">
               <div class="card-image">
                 <img [src]="negocio.foto" [alt]="'Imagen ilustrativa: ' + negocio.categoria" loading="lazy" />
@@ -144,6 +144,8 @@
                 </div>
                 <p *ngIf="negocio.direccion" class="card-address">⌖ {{ negocio.direccion }}</p>
                 <p *ngIf="!negocio.direccion">{{ negocio.descripcion }}</p>
+                <!-- CERCA_NUNOA_RESEÑA_BREVE_V3 -->
+                <p class="cerca-nunoa-resena" *ngIf="negocio.comuna === 'Ñuñoa' && negocio.categoria === 'Cafés' && negocio.resumenFicha">{{ negocio.resumenFicha }}</p>
                 <div class="cerca-card-facts" aria-label="Información del comercio">
                   <div class="cerca-card-fact"><span>◷ Horario</span><strong>{{ negocio.horario || 'Por confirmar' }}</strong></div>
                   <div class="cerca-card-fact"><span>★ Reputación CERCA</span><strong *ngIf="calificacionCerca(negocio) as rep; else sinRep">{{rep.promedio | number:'1.1-1'}} / 5 ({{rep.total}})</strong><ng-template #sinRep><strong>Sin evaluaciones CERCA</strong></ng-template></div>

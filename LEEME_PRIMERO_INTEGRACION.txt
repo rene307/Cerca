@@ -1,0 +1,48 @@
+CERCA.cl — INTEGRACIÓN CONJUNTA: CALIDAD + CAFETERÍAS DE ÑUÑOA
+29 de octubre de 2026
+
+ESTE ZIP UNE DOS PROYECTOS EN UNA SOLA CARPETA, NO CONTIENE DOS ZIP SUELTOS.
+
+LO QUE YA VIENE FUSIONADO EN LOS ARCHIVOS:
+- La métrica de calidad de fichas (0 a 100%) y listado de campos faltantes en el administrador.
+- El ranking público: primero fichas más completas; en empate, negocios destacados.
+- La mejora para que errores de reseñas no oculten fichas cargadas desde PostgreSQL.
+- Las descripciones cortas de Ñuñoa para las tarjetas y las 20 ilustraciones WEBP.
+- Las ilustraciones generadas NO se consideran fotos reales en el ranking.
+- Se mantienen la portada, sus categorías, los oficios, el administrador y los negocios originales.
+
+IMPORTANTE: LA BASE DE DATOS EXISTENTE NO SE MODIFICA SOLO POR DESCOMPRIMIR EL ZIP.
+Para dar de alta las 20 cafeterías nuevas en TU PostgreSQL cerca, ejecuta el instalador indicado abajo.
+La ficha existente de Casa Miga se conserva: 20 nuevas + Casa Miga = 21, si ella ya existe y está publicada.
+
+PASOS EN WINDOWS, PARA EL PROYECTO COMPLETO:
+1. Haz respaldo de tu carpeta CERCA y de tu base PostgreSQL 'cerca'.
+2. Descomprime el ZIP en una carpeta NUEVA. No mezcles archivos de proyectos anteriores.
+3. Copia tu backend/.env actual a la carpeta backend de esta versión (NUNCA publiques .env).
+   El ZIP no incluye contraseñas ni credenciales personales.
+4. Si es necesario instala las dependencias: abre terminal en backend y ejecuta npm install.
+5. Asegúrate de que PostgreSQL cerca esté funcionando.
+6. En la raíz del proyecto ejecuta INSTALAR_CAFETERIAS_NUNOA.bat.
+   Actualiza/añade las 20 cafeterías solo en tu base cerca local usando la configuración backend/.env.
+   No ejecuta cambios en cerca.cl publicado. No uses npm run seed sobre tu base editada.
+7. Reinicia backend: cd backend && npm start
+8. Reinicia Angular en otra terminal: cd frontend && npm install && npm start
+9. Comprueba http://localhost:4200/nunoa/cafes y http://localhost:4200/panel-admin.html.
+
+CONTROL DE CALIDAD:
+- El sistema exige datos como WhatsApp, horario confirmado y foto REAL para obtener 100%.
+- Si faltan datos, la ficha se muestra más abajo; no se borra.
+- Cambiar datos de una ficha en el administrador recalcula el puntaje.
+- Los textos/fuentes públicos de Ñuñoa aún requieren confirmación del propietario.
+- Las ilustraciones son generadas, NO fotografías verificadas.
+- No se garantizan 21 cafés si la ficha previa de Casa Miga no existe o no está publicada.
+
+PRUEBAS DE ESTA ENTREGA:
+- Los dos paquetes se extrajeron completos, se comprobaron las marcas de parche y el orden de ranking.
+- Las 20 imágenes y sus textos están integrados en frontend.
+- No se ha ejecutado la carga contra tu PostgreSQL, ni verificado la compilación Angular real.
+
+ARCHIVOS DE INSTALACIÓN:
+- INSTALAR_CAFETERIAS_NUNOA.bat: registra/actualiza fichas en PostgreSQL cerca (con respaldo previo).
+- CONECTAR_NUNOA_A_CERCA.cjs: lógica segura de importación, modo --verificar-paquete.
+- CORREGIR_VISUALIZACION_NUNOA.cjs: verificación/reparación idempotente de carga y calidad.

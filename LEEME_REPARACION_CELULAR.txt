@@ -1,0 +1,57 @@
+CERCA.cl - Reparación de locales que no aparecen en celulares
+==============================================================
+VERSIÓN: corrección sobre CERCA_CL_UNIFICADO_CALIDAD_RANKING_Y_21_CAFES_NUNOA.zip
+
+CAMBIOS LIMITADOS
+- Ajuste RESPONSIVE de la zona de resultados a una columna en teléfonos angostos.
+- Antes el *ngIf* ocultaba todas las fichas si /api/negocios no funcionaba.
+- Ahora hay un catálogo público de RESPALDO para mostrar 85 fichas preparadas
+  (65 de la base inicial y 20 cafés nuevos de Ñuñoa; incluye Casa Miga entre
+  las 65 iniciales) mientras no se puede contactar al backend.
+- Si PostgreSQL/API responde, SUS DATOS TIENEN PRIORIDAD sobre el respaldo.
+- Si API no responde, se muestra aviso visible de que el catálogo es una copia
+  que puede estar desactualizada. NO se miden eventos ni se modifican negocios
+  en el respaldo.
+- Se conserva el ranking de calidad, el administrador, el SEO y la portada.
+
+OPCIÓN A - SOLO REPARACIÓN (recomendada si ya tienes CERCA configurado)
+1. Respaldar tu carpeta Cerca_Fase1.5.
+2. Abrir el ZIP de solo parche; copiar su carpeta frontend/ sobre la carpeta
+   frontend/ de Cerca_Fase1.5, permitiendo reemplazar SOLO:
+   frontend/src/app/app.component.ts
+   frontend/src/app/app.component.html
+   frontend/src/app/app.component.css
+   frontend/public/catalogo-respaldo.json (nuevo)
+3. NO reemplazar backend/.env, base de datos, package.json ni archivos de Node.
+4. Detener y reiniciar Angular desde frontend: npm start
+5. En el celular: abrir la dirección de la versión actualizada y actualizar.
+
+OPCIÓN B - PROYECTO COMPLETO
+1. Descomprimir en una carpeta NUEVA.
+2. Copiar tu backend/.env privado desde tu proyecto actual a backend/.env.
+3. Para cargar las cafeterías en PostgreSQL, seguir LEEME_PRIMERO_INTEGRACION.txt;
+   ejecutar instalador solo si aún no están cargadas, tras hacer respaldo de BD.
+4. Ejecutar backend y frontend como ya lo hacías, y probar en celular.
+
+CÓMO PROBAR SIN ARRIESGAR TU WEB ACTUAL
+- En computador, usar Chrome > F12 > vista dispositivo, 390 x 844.
+- Seleccionar La Florida o Ñuñoa; ir a #explorar. Deben aparecer tarjetas.
+- Probar que Ver negocio abre la ficha y Volver a categorías sigue funcionando.
+- Verificar con red activa y con backend detenido: sin backend se muestra
+  claramente «copia pública del catálogo».
+
+IMPORTANTE PARA CELULARES REALES
+- http://localhost:4200 en el teléfono NO apunta a tu PC; apunta al teléfono.
+- Si pruebas en tu red Wi-Fi, debes exponer Angular en la IP local de tu PC.
+- En Netlify hay que publicar el nuevo build Angular: cambiar el código local
+  NO actualiza automáticamente la web pública.
+- Para métricas actualizadas, nuevas ediciones y alta/baja en tiempo real,
+  CERCA necesita backend desplegado públicamente y conexión PostgreSQL activa.
+  El archivo estático de respaldo no puede sustituir una API en producción.
+
+PRUEBAS DE ESTA ENTREGA
+- 15 pruebas de backend pasaron.
+- Archivo TypeScript comprobado por transpilación sintáctica (0 diagnósticos).
+- Test visual CSS en Chromium a 320, 360, 390, 492, 540, 720, 1024 y 1440px:
+  tarjetas visibles, una columna hasta 540px, sin desbordamiento horizontal.
+- Compilación de Angular NO ejecutada (dependencias no disponibles sin red).

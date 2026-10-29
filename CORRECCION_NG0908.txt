@@ -1,0 +1,19 @@
+CERCA.cl — Corrección de pantalla blanca / Angular NG0908
+
+CAMBIOS PUNTUALES (NO SE MODIFICA PORTADA NI BACKEND)
+1) frontend/src/main.ts: importa zone.js antes de bootstrapApplication.
+2) frontend/public/assets/oficios-profesiones.svg: corrige la ubicación pública del ícono.
+
+PASOS EN WINDOWS (PowerShell)
+1. Detén ng serve con Ctrl+C.
+2. Copia los archivos anteriores a su misma ruta en tu proyecto,
+   o descomprime el ZIP completo en otra carpeta.
+3. Abre una terminal en frontend y ejecuta:
+      npm install
+      npm install zone.js@~0.15.0
+      npm start
+4. Recarga http://localhost:4200 con Ctrl+F5 (y cierra las pestañas anteriores si fuera necesario).
+
+Si ves una página blanca, verifica primero que estes ejecutando el proyecto que acabas de actualizar.
+El paquete NO cambia el título, los textos, la búsqueda, ni el resto de los círculos.
+NO reemplaces tu archivo .env ni tu base de datos PostgreSQL por los de ejemplo.

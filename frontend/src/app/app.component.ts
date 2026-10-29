@@ -45,10 +45,13 @@ interface Negocio {
   categoria: Exclude<Categoria, 'Todos'>;
   comuna: string;
   descripcion: string;
+  resumenFicha?: string; // Texto breve de la tarjeta de Ñuñoa.
   distancia?: number;
   calificacion?: number;
   opiniones?: number;
   foto: string;
+  fotoTipo?: string;
+  fotoRealAutorizada?: boolean;
   icono: string;
   pinX?: number;
   pinY?: number;
@@ -721,6 +724,7 @@ export class AppComponent implements OnDestroy {
   tokenBajaSuscripcion = '';
   reputacionPorNegocio:Record<number,{promedio:number;total:number}> = {};
   apiDisponible = false;
+  catalogoRespaldoActivo = false;
   apiError = 'Conectando CERCA con PostgreSQL…';
   accesoAdmin = false;
   adminPassword = '';
@@ -754,17 +758,56 @@ export class AppComponent implements OnDestroy {
     }
     return res.json() as Promise<T>;
   }
-  private async iniciarServidor():Promise<void> {
+  // El respaldo público permite explorar los locales en celular o en un hosting
+  // estático mientras la API real no está conectada. No sustituye PostgreSQL:
+  // muestra un aviso explícito y NO registra interacciones ni edita negocios.
+  private async cargarRespaldoPublico(): Promise<void> {
     try {
+      const respuesta = await fetch('/catalogo-respaldo.json', {cache:'no-store'});
+      if (!respuesta.ok) return;
+      const catalogo: unknown = await respuesta.json();
+      if (!Array.isArray(catalogo)) return;
+      const validos = catalogo.filter((n): n is Negocio =>
+        n && typeof n.id === 'number' && typeof n.nombre === 'string' &&
+        typeof n.categoria === 'string' && typeof n.comuna === 'string' &&
+        typeof n.descripcion === 'string' && typeof n.foto === 'string' &&
+        n.publicado !== false);
+      if (!this.apiDisponible && validos.length) {
+        this.negocios = validos;
+        this.catalogoRespaldoActivo = true;
+        this.apiError = 'Mostrando una copia pública del catálogo. Puede estar desactualizada: las ediciones, métricas y opiniones requieren conexión al servidor.';
+      }
+    } catch { /* Si falta el respaldo, el usuario verá el aviso de API. */ }
+  }
+  private async iniciarServidor():Promise<void> {
+    // No bloquear la lista de negocios por una conexión lenta o caída.
+    await this.cargarRespaldoPublico();
+    try {
+      // La API y PostgreSQL tienen prioridad sobre el catálogo público de respaldo.
       const negocios=await this.api<Negocio[]>('/negocios');
-      this.negocios=negocios;
-      const [opiniones,reputacion]=await Promise.all([
-        this.api<OpinionCerca[]>('/reputacion'),
-        this.api<Record<number,{promedio:number;total:number}>>('/reputacion/resumen')]);
-      this.opinionesCerca=opiniones;this.reputacionPorNegocio=reputacion;
+      this.negocios=negocios.map(n=>({ ...n,
+        comuna: n.comuna === 'Nunoa' ? 'Ñuñoa' : n.comuna,
+        categoria: (n.categoria === 'Cafeterías' ? 'Cafés' : n.categoria) as Negocio['categoria']
+      }));
+      this.catalogoRespaldoActivo=false;
       this.apiDisponible=true;this.apiError='';
       if(this.visitaPendiente){this.visitaPendiente=false;this.registrarEvento('visita');}
-    }catch(e){this.apiDisponible=false;this.apiError=(e as Error).message;}
+      try {
+        const [opiniones,reputacion]=await Promise.all([
+          this.api<OpinionCerca[]>('/reputacion'),
+          this.api<Record<number,{promedio:number;total:number}>>('/reputacion/resumen')]);
+        this.opinionesCerca=opiniones;this.reputacionPorNegocio=reputacion;
+      }catch(e){
+        // Un error secundario no puede ocultar las fichas ya cargadas.
+        this.opinionesCerca=[];this.reputacionPorNegocio={};
+        console.warn('CERCA: no se pudieron leer opiniones; directorio disponible.',e);
+      }
+    }catch(e){
+      this.apiDisponible=false;
+      this.apiError = this.catalogoRespaldoActivo
+        ? 'Mostrando una copia pública del catálogo. Para ver fichas actualizadas y registrar métricas, conecta el backend de CERCA.cl.'
+        : (e as Error).message;
+    }
   }
   async loginAdmin():Promise<void> {
     this.errorAdminLogin='';
@@ -1627,7 +1670,7 @@ export class AppComponent implements OnDestroy {
     if ((n.comuna || '').trim().length >= 2) puntos++;
     if ((n.descripcion || '').trim().length >= 80 && !/local incluido desde las capturas|fotograf[ií]a gen[eé]rica representativa|texto de ejemplo|descripci[oó]n pendiente/i.test(n.descripcion || '')) puntos++;
     if ((n.direccion || '').trim().length >= 5) puntos++;
-    if (n.foto && !/images\.unsplash\.com|source\.unsplash\.com|picsum\.photos|placehold\.co|placeholder/i.test(n.foto)) puntos++;
+    if (n.foto && n.fotoTipo !== 'ilustrativa-generada' && n.fotoRealAutorizada !== false && !/images\.unsplash\.com|source\.unsplash\.com|picsum\.photos|placehold\.co|placeholder/i.test(n.foto)) puntos++;
     if ((n.horario || '').trim().length >= 5 && !/por confirmar|\(publicado; confirmar\)|horario pendiente|sin confirmar/i.test(n.horario || '')) puntos++;
     if (/^\+?56\s*9(?:[\s-]?\d){8}$/.test((n.whatsapp || '').trim())) puntos++;
     if (/^https:\/\/[^\s.]+\.[^\s]+/i.test(n.sitioWeb || '') || n.sitioWebEstado === 'no posee') puntos++;

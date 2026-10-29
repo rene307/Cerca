@@ -1,0 +1,38 @@
+CERCA.cl - ENTRADA A TU PANEL PRIVADO (VERSION INTEGRADA)
+======================================================
+
+1. Haz respaldo de tu carpeta CERCA.cl actual y de tu base PostgreSQL.
+2. Usa ESTA carpeta completa, sin mezclar archivos de otros ZIP.
+3. Crea backend/.env a partir de backend/.env.example. Conserva las credenciales
+   de PostgreSQL para la base "cerca"; no ejecutes npm run seed si ya tienes negocios.
+   Configura ADMIN_EMAIL (tu único correo autorizado), JWT_SECRET (al menos 32
+   caracteres aleatorios) y SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER,
+   SMTP_PASS y SMTP_FROM para recibir el correo de acceso.
+   Nunca compartas .env, ni lo publiques en GitHub o Netlify.
+4. Doble clic en INICIAR_CERCA_ADMIN.bat. Abrirá 2 consolas (backend y frontend),
+   siempre que puerto 3000 esté libre y Node.js esté instalado. Asegúrate de que
+   la migración terminó bien. La migración no borra negocios existentes.
+5. Abre http://localhost:4200. En la barra superior aparece "🔒 Mi administración".
+   También puedes entrar desde "Para negocios" al final de esa sección.
+   Dirección directa: http://localhost:4200/panel-admin.html
+6. Escribe tu correo, pulsa "Enviarme clave mágica", recibe los 8 dígitos y
+   escríbelos antes de que transcurran 6 minutos.
+7. Accederás al panel privado, donde puedes gestionar negocios y consultar
+   métricas de PostgreSQL; guarda los cambios desde el formulario de cada ficha.
+
+SI SALE "RUTA NO ENCONTRADA":
+- Tenías un backend anterior abierto en el puerto 3000. Ciérralo con Ctrl+C.
+- Abre backend DE ESTE ZIP y ejecuta npm install, npm run migrate, npm start.
+- Comprueba http://localhost:4200/api/admin/estado: debe mostrar servicio
+  CERCA_ADMIN_OTP_V1 y si el correo está configurado (sin revelar claves).
+
+IMPORTANTE:
+- SMTP es necesario para enviar el código por email. Sin credenciales reales,
+  el login NO entrará y no se fabrica una contraseña ficticia.
+- No hay acceso automático a los procesos que ya tienes abiertos. Es necesario
+  iniciar los servidores de este paquete.
+- La portada pública (buscador, categorías, destacados) no fue rediseñada.
+- Las campañas se guardan como programación, pero NO se envían mensajes
+  ni se cobran pagos automáticamente.
+- La entrada desde Netlify requiere un backend público que atienda /api;
+  publicar solo el frontend no basta.
