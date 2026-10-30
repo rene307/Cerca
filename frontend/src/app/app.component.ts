@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 type Categoria =
@@ -111,7 +111,7 @@ interface BarraMetrica { etiqueta: string; valor: number; alto: number; }
   styleUrls: ['./app.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnDestroy {
+export class AppComponent implements AfterViewInit, OnDestroy {
   readonly categorias: { nombre: Categoria; icono: string }[] = [
     { nombre: 'Todos', icono: '✦' },
     { nombre: 'Cafés', icono: '☕' },
@@ -197,6 +197,64 @@ export class AppComponent implements OnDestroy {
     'Providencia',
     'Santiago'
   ];
+
+  // Lectura de URLs directas: /nunoa/cafes, /la-florida/panaderias,
+  // y /comuna/categoria/nombre-del-negocio, sin alterar la portada pública.
+  private rutaPublicaActiva = false;
+  private negocioSlugEnRuta: string | null = null;
+
+  private slugRuta(valor: string): string {
+    return valor.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  private aplicarRutaPublica(): void {
+    if (typeof window === 'undefined') return;
+    const segmentos = window.location.pathname.split('/').filter(Boolean);
+    if (segmentos.length < 2 || segmentos.length > 3) return;
+    const comuna = this.comunas.find(nombre => this.slugRuta(nombre) === segmentos[0].toLowerCase());
+    if (!comuna) return;
+    const categorias: Record<string, Categoria> = {
+      cafes: 'Cafés', cafeterias: 'Cafés', cafeteria: 'Cafés',
+      panaderias: 'Panaderías', panaderia: 'Panaderías',
+      amasanderias: 'Panaderías', amasanderia: 'Panaderías',
+      computacion: 'Computación', viveros: 'Viveros', farmacias: 'Farmacias',
+      mecanicos: 'Mecánicos', mecanicas: 'Mecánicos', bares: 'Bares',
+      peluquerias: 'Peluquería', peluqueria: 'Peluquería',
+      mascotas: 'Mascotas', veterinarias: 'Mascotas',
+      vulcanizaciones: 'Vulcanización', vulcanizacion: 'Vulcanización',
+      tiendas: 'Tiendas', servicios: 'Servicios',
+      oficios: 'Servicios', profesiones: 'Servicios'
+    };
+    const categoria = categorias[this.slugRuta(segmentos[1])];
+    if (!categoria) return;
+    this.comuna = comuna;
+    this.categoriaActiva = categoria;
+    this.categoriasIntencion = null;
+    this.oficioSeleccionado = null;
+    this.mostrarSoloFavoritos = false;
+    this.negocioSlugEnRuta = segmentos[2] ? this.slugRuta(segmentos[2]) : null;
+    this.rutaPublicaActiva = true;
+    if (typeof document !== 'undefined') {
+      document.title = `${categoria} en ${comuna} | CERCA.cl`;
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (!this.rutaPublicaActiva || typeof window === 'undefined') return;
+    window.requestAnimationFrame(() => {
+      document.getElementById('explorar')?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    });
+  }
+
+  private abrirNegocioDesdeRuta(): void {
+    if (!this.negocioSlugEnRuta) return;
+    const negocio = this.negociosFiltrados.find(n => this.slugRuta(n.nombre) === this.negocioSlugEnRuta);
+    if (negocio) {
+      if (this.negocioSeleccionado?.id === negocio.id) this.negocioSeleccionado = negocio;
+      else this.abrirDetalle(negocio);
+    }
+  }
 
   // NEGOCIOS Y DISTANCIAS DE EJEMPLO: no provienen de una base de datos ni de GPS.
   negocios: Negocio[] = [
@@ -776,6 +834,7 @@ export class AppComponent implements OnDestroy {
         this.negocios = validos;
         this.catalogoRespaldoActivo = true;
         this.apiError = 'Mostrando una copia pública del catálogo. Puede estar desactualizada: las ediciones, métricas y opiniones requieren conexión al servidor.';
+        this.abrirNegocioDesdeRuta();
       }
     } catch { /* Si falta el respaldo, el usuario verá el aviso de API. */ }
   }
@@ -791,6 +850,7 @@ export class AppComponent implements OnDestroy {
       }));
       this.catalogoRespaldoActivo=false;
       this.apiDisponible=true;this.apiError='';
+      this.abrirNegocioDesdeRuta();
       if(this.visitaPendiente){this.visitaPendiente=false;this.registrarEvento('visita');}
       try {
         const [opiniones,reputacion]=await Promise.all([
@@ -1304,6 +1364,7 @@ export class AppComponent implements OnDestroy {
     // La fuente de verdad es PostgreSQL. Los anuncios locales antiguos solo se importan
     // por elección explícita del administrador desde "Importar mis anuncios antiguos".
     // No se sobrescribe la base central desde localStorage al abrir la página.
+    this.aplicarRutaPublica();
     this.iniciarMetricas();
     void this.iniciarServidor();
   }
