@@ -1,0 +1,11 @@
+# CERCA.cl - despliegue de Angular 19 desde /frontend
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist/cerca/browser"
+
+# Angular gestiona las rutas por comuna/categoria/negocio.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
