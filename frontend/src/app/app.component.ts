@@ -846,7 +846,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       const negocios=await this.api<Negocio[]>('/negocios');
       this.negocios=negocios.map(n=>({ ...n,
         comuna: n.comuna === 'Nunoa' ? 'Ñuñoa' : n.comuna,
-        categoria: (n.categoria === 'Cafeterías' ? 'Cafés' : n.categoria) as Negocio['categoria']
+        categoria: (String(n.categoria) === 'Cafeterías' ? 'Cafés' : n.categoria) as Negocio['categoria']
       }));
       this.catalogoRespaldoActivo=false;
       this.apiDisponible=true;this.apiError='';
