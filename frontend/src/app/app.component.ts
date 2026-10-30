@@ -208,6 +208,45 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
 
+  // La API, el respaldo JSON y las fichas antiguas pueden usar variantes del mismo rubro.
+  // Internamente mantenemos los nombres que esperan los filtros y el HTML actual.
+  private claveCatalogo(valor: unknown): string {
+    return String(valor ?? '').normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('es-CL').replace(/\s+/g, ' ').trim();
+  }
+
+  private categoriaCanonica(valor: unknown): Negocio['categoria'] {
+    const equivalencias: Record<string, Negocio['categoria']> = {
+      'cafe': 'Cafés', 'cafes': 'Cafés', 'cafeteria': 'Cafés', 'cafeterias': 'Cafés',
+      'panaderia': 'Panaderías', 'panaderias': 'Panaderías',
+      'amasanderia': 'Panaderías', 'amasanderias': 'Panaderías',
+      'computacion': 'Computación', 'informatica': 'Computación',
+      'vivero': 'Viveros', 'viveros': 'Viveros',
+      'farmacia': 'Farmacias', 'farmacias': 'Farmacias',
+      'mecanico': 'Mecánicos', 'mecanicos': 'Mecánicos',
+      'bar': 'Bares', 'bares': 'Bares',
+      'peluqueria': 'Peluquería', 'peluquerias': 'Peluquería',
+      'mascota': 'Mascotas', 'mascotas': 'Mascotas',
+      'vulcanizacion': 'Vulcanización', 'vulcanizaciones': 'Vulcanización',
+      'tienda': 'Tiendas', 'tiendas': 'Tiendas',
+      'servicio': 'Servicios', 'servicios': 'Servicios',
+      'oficio': 'Servicios', 'oficios': 'Servicios',
+      'profesiones': 'Servicios', 'oficios y profesiones': 'Servicios'
+    };
+    return equivalencias[this.claveCatalogo(valor)] ?? String(valor ?? '').trim() as Negocio['categoria'];
+  }
+
+  private comunaCanonica(valor: unknown): string {
+    const clave = this.claveCatalogo(valor);
+    return this.comunas.find(c => this.claveCatalogo(c) === clave) ?? String(valor ?? '').trim();
+  }
+
+  private normalizarNegocio(n: Negocio): Negocio {
+    return { ...n, categoria: this.categoriaCanonica(n.categoria),
+      comuna: this.comunaCanonica(n.comuna) };
+  }
+
   private aplicarRutaPublica(): void {
     if (typeof window === 'undefined') return;
     const segmentos = window.location.pathname.split('/').filter(Boolean);
@@ -831,7 +870,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         typeof n.descripcion === 'string' && typeof n.foto === 'string' &&
         n.publicado !== false);
       if (!this.apiDisponible && validos.length) {
-        this.negocios = validos;
+        this.negocios = validos.map(n => this.normalizarNegocio(n));
         this.catalogoRespaldoActivo = true;
         this.apiError = 'Mostrando una copia pública del catálogo. Puede estar desactualizada: las ediciones, métricas y opiniones requieren conexión al servidor.';
         this.abrirNegocioDesdeRuta();
@@ -844,10 +883,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     try {
       // La API y PostgreSQL tienen prioridad sobre el catálogo público de respaldo.
       const negocios=await this.api<Negocio[]>('/negocios');
-      this.negocios=negocios.map(n=>({ ...n,
-        comuna: n.comuna === 'Nunoa' ? 'Ñuñoa' : n.comuna,
-        categoria: (String(n.categoria) === 'Cafeterías' ? 'Cafés' : n.categoria) as Negocio['categoria']
-      }));
+      if (!Array.isArray(negocios)) throw Error('El servidor devolvió un catálogo inválido.');
+      this.negocios = negocios.map(n => this.normalizarNegocio(n));
       this.catalogoRespaldoActivo=false;
       this.apiDisponible=true;this.apiError='';
       this.abrirNegocioDesdeRuta();
@@ -889,7 +926,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.api<any>('/admin/resumen?periodo='+this.periodoTablero+'&comuna='+encodeURIComponent(this.comunaTablero)+'&categoria='+encodeURIComponent(this.categoriaTablero)),
         this.api<Record<string,ProgramacionCampana>>('/admin/campanas'),
         this.api<typeof this.suscriptoresAdmin>('/admin/suscriptores')]);
-      this.negocios=negocios;this.eventos=eventos;this.opinionesCerca=opiniones;
+      this.negocios=negocios.map(n => this.normalizarNegocio(n));
+      this.eventos=eventos;this.opinionesCerca=opiniones;
       this.resumenGlobal=resumen;
       this.suscriptoresAdmin=suscriptores;
       for(const f of this.frecuenciasCampana){if(campanas[f]&&this.programacionValida(campanas[f],f))this.configuracionCampanas[f]=campanas[f];}
@@ -1492,7 +1530,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.errorFormulario = '';
     const n = { ...this.anuncioEditor };
     n.nombre = (n.nombre || '').trim();
-    n.comuna = (n.comuna || '').trim();
+    n.comuna = this.comunaCanonica(n.comuna);
+    n.categoria = this.categoriaCanonica(n.categoria);
     n.descripcion = (n.descripcion || '').trim();
     n.direccion = (n.direccion || '').trim();
     n.foto = (n.foto || '').trim() || this.fotoPorCategoria(n.categoria);
@@ -1727,7 +1766,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     if (typeof n.calidadFicha === 'number') return n.calidadFicha;
     let puntos = 0;
     if ((n.nombre || '').trim().length >= 2) puntos++;
-    if ((n.categoria || '').trim().length >= 2) puntos++;
+    if (this.categorias.some(c => c.nombre === this.categoriaCanonica(n.categoria))) puntos++;
     if ((n.comuna || '').trim().length >= 2) puntos++;
     if ((n.descripcion || '').trim().length >= 80 && !/local incluido desde las capturas|fotograf[ií]a gen[eé]rica representativa|texto de ejemplo|descripci[oó]n pendiente/i.test(n.descripcion || '')) puntos++;
     if ((n.direccion || '').trim().length >= 5) puntos++;
@@ -1739,16 +1778,21 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   get negociosFiltrados(): Negocio[] {
-    const texto = this.busqueda.trim().toLocaleLowerCase('es');
+    const texto = this.claveCatalogo(this.busqueda);
     return this.negocios.filter((negocio) => {
       if (negocio.publicado === false) return false;
-      const coincideCategoria = this.categoriasIntencion ? this.categoriasIntencion.includes(negocio.categoria) : (this.categoriaActiva === 'Todos' || negocio.categoria === this.categoriaActiva);
+      const categoria = this.categoriaCanonica(negocio.categoria);
+      const coincideCategoria = this.categoriasIntencion
+        ? this.categoriasIntencion.includes(categoria)
+        : (this.categoriaActiva === 'Todos' || categoria === this.categoriaActiva);
       const coincideOficio = !this.oficioSeleccionado || this.negocioDeOficio(negocio, this.oficioSeleccionado);
-      const coincideComuna = negocio.comuna === this.comuna;
+      const coincideComuna = this.claveCatalogo(negocio.comuna) === this.claveCatalogo(this.comuna);
       const km = this.distanciaReal(negocio);
       const coincideDistancia = this.distanciaMaxima === 999 || km === null || km <= this.distanciaMaxima;
-      const coincideTexto = [negocio.nombre, negocio.categoria, negocio.descripcion, negocio.comuna, negocio.direccion || '']
-        .join(' ').toLocaleLowerCase('es').includes(texto);
+      const coincideTexto = this.claveCatalogo([
+        negocio.nombre, negocio.categoria, negocio.descripcion, negocio.comuna,
+        negocio.direccion || ''
+      ].join(' ')).includes(texto);
       const coincideFavorito = !this.mostrarSoloFavoritos || this.favoritos.has(negocio.id);
       return coincideCategoria && coincideOficio && coincideComuna && coincideDistancia && coincideTexto && coincideFavorito;
     }).sort((a, b) => {
@@ -1834,6 +1878,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.errorEntrada = '';
     this.consultaActiva = texto;
     this.categoriaActiva = 'Todos';
+    this.oficioSeleccionado = null; // Evita que el filtro anterior oculte la búsqueda nueva.
+    this.mostrarPanelOficios = false;
     this.mostrarSoloFavoritos = false;
     const rubros = this.rubrosParaIntencion(texto);
     this.categoriasIntencion = rubros.length ? rubros : null;
