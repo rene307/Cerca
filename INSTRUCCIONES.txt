@@ -1,0 +1,24 @@
+CERCA.cl – Reparacion minima de compilacion
+
+Esta correccion resuelve solamente los errores del log aportado:
+- TS2367 en app.component.ts, comparacion 'Cafeterías' con categoria tipada.
+- 4 importaciones @ionic/angular/css/* ausentes de las dependencias.
+
+No modifica el diseño, PostgreSQL, la API, los negocios ni la configuracion Netlify.
+
+1. Descomprime el ZIP en Descargas (NO reemplaces ninguna carpeta frontend).
+2. En PowerShell de VS Code, desde cualquier carpeta:
+   cd "$env:USERPROFILE\Downloads\Cerca_Fase1.5"
+   node "$env:USERPROFILE\Downloads\CERCA_FIX_FINAL_COMPILACION\CORREGIR_CERCA.cjs" "$PWD"
+3. Compila y verifica:
+   cd frontend
+   npm run build
+   Test-Path .\dist\cerca\browser\index.html
+4. SOLO si compilo sin errores y Test-Path dice True:
+   cd ..
+   git add frontend/src/app/app.component.ts frontend/src/global.scss
+   git commit -m "Corregir TypeScript e imports Ionic en build"
+   git push origin main
+
+Si el ZIP esta en otra carpeta, ajusta la ruta del .cjs.
+No publiques ni adjuntes backend/.env. El parche crea un respaldo antes de cambiar nada.
