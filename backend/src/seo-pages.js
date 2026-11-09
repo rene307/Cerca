@@ -12,16 +12,25 @@ const cleanOrigin = () => (process.env.SITE_URL || 'http://localhost:4200').repl
 const abs = path => cleanOrigin() + path;
 const fullUrl = (n, lista) => abs(rutaNegocio(n, lista));
 const isValidSlug = slugRutaValido;
+const corta = (t = '', max = 160) => {
+  const x = String(t).replace(/\s+/g, ' ').trim();
+  if (x.length <= max) return x;
+  const c = x.slice(0, max - 1);
+  return c.slice(0, Math.max(c.lastIndexOf(' '), 60)).replace(/[\s,.;:–-]+$/, '') + '…';
+};
+const absImg = f => !f ? '' : /^https?:\/\//.test(f) ? f : f.startsWith('/') ? abs(f) : '';
+const ES_BOT = /bot|crawl|spider|slurp|bing|facebookexternalhit|preview|monitor/i;
 
-function shell({title,description,canonical,robots='index,follow',body,schema=[]}) {
+function shell({title,description,canonical,robots='index,follow',body,schema=[],image=''}) {
+  const desc = corta(description, 160);
   const structured = schema.map(entry=>`<script type="application/ld+json">${json(entry)}</script>`).join('\n');
   return `<!doctype html><html lang="es-CL"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><meta name="description" content="${esc(description.slice(0,165))}">
+<title>${esc(title)}</title><meta name="description" content="${esc(desc)}">
 <meta name="robots" content="${robots}"><link rel="canonical" href="${esc(canonical)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="CERCA">
-<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description.slice(0,165))}"><meta property="og:url" content="${esc(canonical)}">
-<link rel="icon" href="/assets/cerca-favicon.png" type="image/png"><link rel="stylesheet" href="/seo-pages.css">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${esc(canonical)}"><meta property="og:locale" content="es_CL">${image?`<meta property="og:image" content="${esc(image)}"><meta name="twitter:image" content="${esc(image)}">`:''}<meta name="twitter:card" content="${image?'summary_large_image':'summary'}"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}">
+<link rel="icon" href="/assets/cerca-favicon.png" type="image/png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"><link rel="stylesheet" href="/seo-pages.css">
 ${structured}</head><body><header class="top"><div class="wrap bar"><a href="/" class="logo" aria-label="CERCA, ir al inicio"><img src="/assets/cerca-logo-horizontal.png" alt="CERCA" width="184" height="50"></a><nav class="main-nav" aria-label="Navegación principal"><a href="/#explorar">Explorar</a><a href="/#categorias">Categorías</a><a href="/#mapa">Mapa</a><a href="/#negocios">Para negocios</a></nav><div class="top-actions"><span class="nav-city">⌖ Santiago, Chile</span><a href="/#explorar" class="heart" aria-label="Explorar negocios">♡</a><a href="/?publicar=1#negocios" class="publish-button">Publica tu negocio <span aria-hidden="true">↗</span></a></div></div></header>
 <main id="contenido" class="wrap">${body}</main><footer><div class="wrap footer-content"><a href="/" class="footer-logo"><img src="/assets/cerca-logo-horizontal.png" alt="CERCA" width="150" height="42"></a><span>Tu barrio más cerca · Negocios y profesionales de tu comuna.</span></div></footer></body></html>`;
 }
@@ -52,8 +61,8 @@ const introPorRubro = {
   'Farmacias':'Encuentra farmacias registradas en la comuna. Confirma horarios, existencias y atención directamente con cada establecimiento.'
 };
 async function publicos(db) {
-  const {rows}=await db.query("SELECT id,datos FROM negocios WHERE jsonb_typeof(datos) = 'object' AND COALESCE(datos->>'publicado','true') <> 'false' ORDER BY id");
-  return negociosPublicos(rows.map(r => ({...r.datos,id:Number(r.id)})));
+  const {rows}=await db.query("SELECT id,datos,actualizado_en FROM negocios WHERE jsonb_typeof(datos) = 'object' AND COALESCE(datos->>'publicado','true') <> 'false' ORDER BY id");
+  return negociosPublicos(rows.map(r => ({...r.datos,id:Number(r.id),_actualizado:r.actualizado_en})));
 }
 function listarComuna(comuna, lista) {
   const items = lista.filter(x=>x.comuna===comuna);
@@ -91,32 +100,39 @@ function detalle(n,lista) {
     const business={'@context':'https://schema.org','@type':tipo,name:n.nombre,description:n.descripcion,url:abs(ruta),areaServed:{'@type':'AdministrativeArea',name:n.comuna}};
     if(n.direccion)business.address={'@type':'PostalAddress',streetAddress:n.direccion,addressLocality:n.comuna,addressRegion:'Región Metropolitana',addressCountry:'CL'};
     if(n.telefono)business.telephone=n.telefono;
+    if(absImg(n.foto))business.image=absImg(n.foto);
     if(n.sitioWeb&&/^https:\/\//.test(n.sitioWeb))business.sameAs=[n.sitioWeb];
     schema.push(business);
   }
-  return {title,description,canonical:abs(ruta),robots:verificada?'index,follow':'noindex,follow',body,schema};
+  return {title,description,canonical:abs(ruta),robots:verificada?'index,follow':'noindex,follow',body,schema,image:absImg(n.foto)};
 }
 export function registerSeoPages(app,db){
-  // Permite ver el diseño SSR desde el backend en desarrollo y en producción.
-  app.use('/assets',express.static(resolve(FRONT_PUBLIC,'assets')));
-  app.get('/seo-pages.css',(_req,res)=>res.sendFile(resolve(FRONT_PUBLIC,'seo-pages.css')));
-  app.use(express.static(FRONT_PUBLIC));
-  app.use(express.static(FRONT_BUILD));
-  app.get('/robots.txt',(_req,res)=>res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /panel-admin.html\nSitemap: ${abs('/sitemap.xml')}\n`));
+  if(!process.env.SITE_URL)console.warn('CERCA SEO: falta SITE_URL en backend/.env; canonical, sitemap y robots usan http://localhost:4200. Define SITE_URL=https://tu-dominio.cl antes de publicar.');
+  // Nunca servir respaldos ni archivos ocultos de /frontend/public.
+  app.use((req,res,next)=>/(\.bak|\.anterior|respaldo|\.map$)/i.test(req.path)?res.sendStatus(404):next());
+  app.use('/assets',express.static(resolve(FRONT_PUBLIC,'assets'),{index:false,dotfiles:'deny',maxAge:'7d'}));
+  app.get('/seo-pages.css',(_req,res)=>res.set('Cache-Control','public, max-age=3600').sendFile(resolve(FRONT_PUBLIC,'seo-pages.css')));
+  app.use(express.static(FRONT_PUBLIC,{index:false,dotfiles:'deny'}));
+  app.use(express.static(FRONT_BUILD,{index:false,dotfiles:'deny'}));
+  app.get('/robots.txt',(_req,res)=>res.type('text/plain').send(
+    `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /seo/contacto/\nDisallow: /panel-admin.html\nDisallow: /admin.js\n\nSitemap: ${abs('/sitemap.xml')}\n`));
   app.get('/sitemap.xml',async(req,res,next)=>{
     try {
       const lista=await publicos(db);
-      const rutas=new Set(['/']);
+      const rutas=new Map([['/',null]]);
+      const marca=(r,f)=>{if(!r)return;const a=rutas.get(r);if(!(a instanceof Date)||(f&&f>a))rutas.set(r,f||a||null);};
       for(const n of lista.filter(fichaIndexable)){
-        rutas.add(rutaComuna(n.comuna));rutas.add(rutaRubro(n.comuna,n.categoria));rutas.add(rutaNegocio(n,lista));
+        const f=n._actualizado?new Date(n._actualizado):null;
+        marca(rutaComuna(n.comuna),f);marca(rutaRubro(n.comuna,n.categoria),f);marca(rutaNegocio(n,lista),f);
       }
-      const items=[...rutas].filter(Boolean);
+      const items=[...rutas].map(([r,f])=>`<url><loc>${esc(abs(r))}</loc>${f&&!isNaN(f)?`<lastmod>${f.toISOString().slice(0,10)}</lastmod>`:''}</url>`).join('');
       res.set('Cache-Control','public, max-age=300').type('application/xml')
-        .send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${items.map(r=>`<url><loc>${esc(abs(r))}</loc></url>`).join('')}</urlset>`);
+        .send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${items}</urlset>`);
     }catch(e){next(e);}
   });
   app.get('/seo/contacto/:tipo/:id',async(req,res,next)=>{
     try {
+      res.set('X-Robots-Tag','noindex, nofollow');
       const id=Number(req.params.id),tipo=req.params.tipo;
       if(!Number.isSafeInteger(id)||id<1||!['whatsapp','telefono','web','mapa'].includes(tipo))return res.sendStatus(404);
       const {rows}=await db.query("SELECT datos FROM negocios WHERE id=$1 AND COALESCE(datos->>'publicado','true') <> 'false'",[id]);
@@ -137,32 +153,38 @@ export function registerSeoPages(app,db){
         const terms=[n.nombre,n.direccion,n.comuna,'Santiago Chile'].filter(Boolean).join(' ');
         destino='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(terms);evento='ruta';
       }
-      // Métricas agregadas: no se registra el dato personal del visitante.
-      await db.query('INSERT INTO eventos(tipo,negocio_id,comuna,categoria) VALUES ($1,$2,$3,$4)',[evento,id,n.comuna,n.categoria]);
+      // Los robots no cuentan como contactos: así las métricas no se inflan.
+      if(!ES_BOT.test(req.get('user-agent')||''))
+        await db.query('INSERT INTO eventos(tipo,negocio_id,comuna,categoria) VALUES ($1,$2,$3,$4)',[evento,id,n.comuna,n.categoria]);
       return res.redirect(302,destino);
     }catch(e){next(e)}
   });
   app.get('/:comunaSlug/:rubroSlug?/:negocioSlug?',async(req,res,next)=>{
     try{
-      const {comunaSlug,rubroSlug,negocioSlug}=req.params;
-      if(![comunaSlug,rubroSlug,negocioSlug].filter(Boolean).every(isValidSlug))return res.sendStatus(404);
+      const partes=[req.params.comunaSlug,req.params.rubroSlug,req.params.negocioSlug].filter(Boolean).map(x=>x.toLowerCase());
+      if(!partes.every(isValidSlug))return res.sendStatus(404);
+      const [comunaSlug,rubroSlug,negocioSlug]=partes;
       const lista=await publicos(db);
       const comuna=comunaPorSlug(comunaSlug,lista);
       if(!comuna)return res.sendStatus(404);
-      let page;
+      let page,esperada=rutaComuna(comuna);
       if(!rubroSlug){page=listarComuna(comuna,lista);}
       else {
         const rubro=rubroPorSlug(rubroSlug,lista);
         if(!rubro)return res.sendStatus(404);
+        esperada=rutaRubro(comuna,rubro[0]);
         if(!negocioSlug){page=listarRubro(comuna,rubro,lista);}
         else{
           const posibles=lista.filter(x=>x.comuna===comuna && mismoRubro(x,rubro[0]));
           const negocio=posibles.find(n=>rutaNegocio(n,lista)?.endsWith('/'+negocioSlug));
           if(!negocio)return res.sendStatus(404);
+          esperada=rutaNegocio(negocio,lista);
           page=detalle(negocio,lista);
         }
       }
       if(!page)return res.sendStatus(404);
+      // Una sola URL por contenido: mayúsculas, barra final o alias antiguos (/servicios) redirigen con 301.
+      if(req.path.replace(/\/+$/,'')!==esperada)return res.redirect(301,esperada);
       res.set('Cache-Control','public, max-age=30').status(200).type('html').send(shell(page));
     }catch(e){next(e)}
   });

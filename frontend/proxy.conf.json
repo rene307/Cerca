@@ -1,3 +1,116 @@
 {
-  "/api": {"target":"http://127.0.0.1:3000","secure":false,"changeOrigin":true,"logLevel":"warn"}
+  "/api/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/la-florida/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/penalolen/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/macul/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/puente-alto/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/nunoa/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/providencia/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/santiago/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/la-florida": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/penalolen": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/macul": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/puente-alto": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/nunoa": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/providencia": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/santiago": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/seo/contacto/**": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/seo-pages.css": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/sitemap.xml": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  },
+  "/robots.txt": {
+    "target": "http://127.0.0.1:3100",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "warn"
+  }
 }

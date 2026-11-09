@@ -11,11 +11,11 @@ test('panel servido por backend mismo origen y sin script inline',()=>{
  assert.doesNotMatch(html,/<script>/);
 });
 test('endpoint OTP existe y obliga a correo único',()=>{
- assert.match(code,/app\.post\('\/api\/admin\/solicitar-codigo'/);
- assert.match(code,/ADMIN_CORREO_UNICO='renerivaslabarca@gmail.com'/);
+ assert.match(code,/app\.post\(\s*'\/api\/admin\/solicitar-codigo'/);
+ assert.match(code,/ADMIN_EMAIL/);
+ assert.doesNotMatch(code,/[\w.]+@gmail\.com/,'no dejar correos fijos en el código');
  assert.match(code,/DURACION_CODIGO_SEGUNDOS/);
 });
 test('cliente consulta API mismo origen con path relativo',()=>{
  assert.match(client,/fetch\('\/api'\+path/);
- assert.match(client,/CERCA_ADMIN_OTP_V3/);
 });

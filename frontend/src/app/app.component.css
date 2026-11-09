@@ -790,3 +790,59 @@ body:has(.cerca-acceso-bloqueo) { overflow: hidden !important; }
   .results-controls .distance-control { max-width:100%; }
   .results-controls .distance-control select { max-width:calc(100vw - 155px); }
 }
+
+/* CERCA - Subcategorías de Restaurantes; conserva los estilos originales. */
+.cerca-restaurantes-subcategorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 12px 0;
+}
+.cerca-restaurantes-subcategorias .hero-category { min-width: 90px; }
+
+/* CERCA: menú Restaurantes visible dentro de la sección explorar. */
+.cerca-restaurantes-panel-resultado {
+  box-sizing: border-box;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  width: calc(100% - 32px);
+  max-width: 1180px;
+  margin: 20px auto 24px;
+  padding: 16px 20px;
+  border: 1px solid #f4d9c9;
+  border-radius: 16px;
+  background: #fff9f5;
+  color: #202832;
+}
+.cerca-restaurantes-panel-resultado .cerca-restaurantes-label {
+  width: 100%; flex-basis: 100%; margin: 0;
+  font-weight: 750; font-size: 15px; color: #202832;
+}
+.cerca-restaurantes-panel-resultado .hero-category,
+.cerca-restaurantes-panel-resultado .category-label { color: #202832 !important; }
+.cerca-restaurantes-panel-resultado .category-circle {
+  background: #fff; color: #202832; border: 1px solid #eed9cc;
+}
+.cerca-restaurantes-panel-resultado .hero-category { min-width: 100px; }
+
+/* CERCA_RESTAURANTES_V3_DESPLEGABLE — menú dentro de la portada como Oficios. */
+.hero-categories.cerca-restaurantes-ocultar { display: none !important; }
+.cerca-restaurantes-como-oficios { width: 100%; margin-top: 23px; color: #fff; }
+.cerca-restaurantes-cabecera { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.cerca-restaurantes-cabecera strong { color: #fff; font-size: 14px; font-weight: 800; }
+.cerca-restaurantes-volver { background: transparent; border: 1px solid rgba(255,255,255,.65); color: #fff;
+  border-radius: 28px; padding: 11px 17px; font-weight: 800; font-size: 12px; cursor: pointer; }
+.cerca-restaurantes-volver:hover { background: rgba(255,255,255,.12); }
+.cerca-restaurantes-circulos { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 18px; }
+.cerca-restaurantes-circulos .hero-category { flex: 0 0 92px; width: 92px; color: #fff; min-width: 0; }
+.cerca-restaurantes-circulos .category-circle { width: 55px; height: 55px; background: rgba(43,45,47,.93);
+  border: 1px solid #686a6b; color: #fff; }
+.cerca-restaurantes-circulos .category-label { color: #fff; white-space: normal; text-align: center; }
+.cerca-restaurantes-circulos .hero-category.selected .category-circle,
+.cerca-restaurantes-circulos .hero-category:hover .category-circle { background: #ff6525; border-color: #ff6525; }
+@media(max-width:720px) { .cerca-restaurantes-cabecera { gap: 10px; } .cerca-restaurantes-circulos { gap: 12px; } }

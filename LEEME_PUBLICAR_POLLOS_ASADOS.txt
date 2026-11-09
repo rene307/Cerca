@@ -1,0 +1,40 @@
+CERCA.cl — SOLUCIÓN: pollos asados empadronados pero invisibles
+==============================================================
+
+PROBLEMA
+En tu PowerShell se ve: 20 ya registrados, 0 nuevos y 0 publicados.
+No es un problema del diseño de las tarjetas. Están en PostgreSQL como borradores.
+
+QUÉ HACE ESTE SCRIPT
+- Identifica SOLO los registros originales ID 112 a 131 por ID, nombre, comuna y subcategoría.
+- Revisa la base de datos 'cerca' y confirma que los datos están en negocios.datos JSONB.
+- Crea un respaldo local completo antes de publicar: respaldos_cerca\pollos_asados_20_antes_publicar_*.json
+- Cambia SOLO datos.publicado de false a true en los registros identificados.
+- No altera el HTML, CSS, TypeScript, API, imágenes, evaluaciones, direcciones ni fotos.
+- No inserta nuevas fichas, no duplica sucursales, no cambia datosVerificados.
+- Tras publicar, consulta la API local en 127.0.0.1:PUERTO/api/negocios para diagnosticar la carga.
+
+PASOS
+1) Descomprime CERCA_PUBLICAR_20_POLLOS_ASADOS.cjs en la raíz Cerca_Fase1.5
+   (la misma carpeta que contiene frontend/ y backend/).
+2) Abre PowerShell allí y REVISA sin tocar nada:
+      node .\CERCA_PUBLICAR_20_POLLOS_ASADOS.cjs
+3) IMPORTANTE: las fichas están pendientes de verificar y sin fotografía.
+   Revisa sus direcciones y contactos antes de publicarlas al público.
+4) Para publicar explícitamente:
+      node .\CERCA_PUBLICAR_20_POLLOS_ASADOS.cjs --publicar
+5) Abre http://localhost:4200, Restaurantes > Pollo asado, selecciona La Florida,
+   y Ctrl + F5. Esperado: 16 tarjetas de La Florida; 4 de otras comunas.
+
+SI AÚN VES 0
+- Verifica que backend esté levantado en el puerto configurado (normalmente 3000).
+- Abre http://localhost:3000/api/negocios y busca "El Sabrosón".
+- Si aparece en API pero no en Angular, no vuelvas a empadronar: el problema restante
+  está en negociosFiltrados / filtros del frontend. Comparte app.component.ts actual.
+- El script NO fabrica imágenes; una foto ausente podría verse como imagen vacía hasta
+  que agregues la fotografía verificada en el administrador.
+
+SEGURIDAD
+La opción sin argumentos no escribe nada. --publicar cambia la visibilidad,
+que puede mostrar datos todavía no verificados. La decisión es del administrador.
+No se ha ejecutado contra tu base de datos local; compara el resultado de PowerShell.

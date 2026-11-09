@@ -1,29 +1,54 @@
-CERCA.cl - ÑUÑOA | 20 cafeterías investigadas + Casa Miga ya existente
-ACTUALIZACIÓN 29-10-2026
+CERCA.cl — UNA FOTO POR FICHA (panel administrativo)
+===================================================
 
-CONTENIDO
-- 20 cafeterías con dirección, teléfonos públicos donde había, fuente, descripción original SEO de 200-300 palabras y una reseña breve para tarjeta.
-- Incluye ilustraciones para las 20 fichas. NO son fotos reales de los locales.
-- No crea números WhatsApp no comprobados.
-- No incorpora reseñas ni calificaciones Google a las evaluaciones CERCA.
-- Conserva la ficha Casa Miga y las existentes, con sus evaluaciones y datos verificados.
-- Las fichas NO están verificadas por propietarios y siguen pendientes de fotografía real, WhatsApp y horarios.
-- Reparación de carga: las fallas del servicio de reseñas ya no ocultan los negocios que entrega la API.
-- Reparación de calidad: una ilustración generada ya no cuenta como foto real en la métrica.
+OBJETIVO
+• Mantener el panel actual y todos sus otros controles.
+• Reemplazar SOLO el campo «URL de fotografía» por «Subir / cambiar foto», «Eliminar foto» y vista previa.
+• Máximo una imagen por negocio (JPG, PNG o WEBP; 5 MB).
+• Guardar la dirección final en el campo `foto` EXISTENTE (sin migrar las fichas a `fotos[]`).
 
-COMO INSTALAR (WINDOWS)
-1. Haz una copia de la carpeta Cerca_Fase1.5 y de la base PostgreSQL 'cerca'.
-2. Copia los 3 archivos .cjs / .bat de este ZIP a la carpeta principal Cerca_Fase1.5, donde están backend y frontend.
-3. Ejecuta INSTALAR_CAFETERIAS_NUNOA.bat.
-4. El programa usa exclusivamente la base local configurada en backend/.env, comprueba que la base activa se llame 'cerca', e imprime el recuento.
-5. Detén el servidor anterior, abre INICIAR_CERCA_SEO.bat y haz Ctrl+F5 en http://localhost:4200/nunoa/cafes
-6. La prueba definitiva es ver 21 cafeterías, si Casa Miga permanece publicada. Comprueba también /api/negocios y cada página /nunoa/cafes/slug.
+PARA TU PANEL ACTUAL (RECOMENDADO)
+1. Busca el archivo panel-admin.html dentro de tu proyecto Angular (por ejemplo public/ o src/assets/).
+   Es el archivo que sirve en localhost:4200/panel-admin.html.
+2. Haz respaldo de tu archivo.
+3. En PowerShell, dentro de la carpeta de este paquete, ejecuta:
+   python APLICAR_FOTO_UNICA.py "C:/ruta-real/de-tu/proyecto/public/panel-admin.html"
+   Se creará al lado panel-admin_FOTO1.html. NO sobrescribe el original.
+   Si la versión de tu panel no coincide con el patrón esperado, se detiene sin modificarlo.
+4. Inspecciona y comprueba ese archivo con el navegador. Cuando estés conforme, cambia el nombre
+   del panel anterior a panel-admin_BACKUP.html y renombra panel-admin_FOTO1.html como panel-admin.html.
+5. Vuelve a ejecutar Angular y recarga con Ctrl + Shift + R.
 
-COMPROBACION SIN MODIFICAR NADA
-node CONECTAR_NUNOA_A_CERCA.cjs --verificar-paquete
+NOTA: El archivo frontend/panel-admin_FOTO1_REFERENCIA.html se generó a partir de un panel anterior
+recuperado. NO lo uses para reemplazar a ciegas tu panel actual: tu captura muestra mejoras
+nuevas (por ejemplo, el aviso de completitud del 67%) que podrían no estar en esa referencia.
 
-IMPORTANTE
-Este paquete NO ejecuta cambios por sí solo en tu computador ni realiza un despliegue en cerca.cl.
-No borra ni reemplaza la portada, los filtros, la sección de oficios o los demás rubros.
-El instalador puede no coincidir con una versión posterior del proyecto: si advierte incompatibilidad, revisa el mensaje antes de seguir.
-Ninguna ficha se debe presentar como verificada por el propietario mientras falten datos.
+BACKEND PARA HACER PERSISTENTE EL ARCHIVO (Node / Express / PostgreSQL)
+6. Si ya tenías instalado el endpoint POST /api/admin/imagenes, úsalo tal cual; el editor es compatible.
+   Si no existe, el código está en backend/rutas-imagenes.mjs y depende de express, multer y sharp.
+   npm install multer sharp
+7. Asegúrate de tener el middleware de autorización ADMIN ya existente. Monta los routers:
+     import { crearRutasImagenesAdmin, crearRutasImagenesPublicas } from './rutas-imagenes.mjs';
+     app.use('/api', crearRutasImagenesPublicas(pool));
+     app.use('/api/admin', verificarJWTAdmin, crearRutasImagenesAdmin(pool));
+   Sustituye `verificarJWTAdmin` por el middleware autenticado/autorizado existente.
+   Nunca expongas POST /api/admin/imagenes sin autenticación de administrador.
+8. Ejecuta base_de_datos/01_guardado_foto_unica.sql en PostgreSQL para crear el almacén de imágenes.
+   El código utiliza negocios.foto (TEXT) que ya existía en el panel. Comprueba que tu API conserva
+   esta propiedad en POST/PUT /api/admin/negocios y la devuelve en GET.
+9. El backend guarda los bytes en la tabla cerca_imagenes y devuelve /api/imagenes/<uuid>.
+   El frontend guarda ese enlace en negocio.foto. El sitio público puede seguir usando negocio.foto.
+
+PRUEBAS
+• Abrir una ficha; subir foto, ver la vista previa, pulsar «Guardar negocio».
+• Recargar, volver a editar: debe seguir la foto.
+• Cambiarla por otra y repetir.
+• Eliminarla y guardar: debe quedar sin imagen.
+• Probar tamaño > 5 MB y un archivo que no sea imagen: deben rechazarse.
+• Probar desde otro navegador para confirmar persistencia real.
+
+LIMITACIONES
+• No se ha tocado tu localhost, GitHub ni base de datos en producción.
+• Si tu backend es Spring Boot, el ejemplo Node/Express NO se puede conectar sin adaptación.
+• Si la API no tiene el endpoint /api/admin/imagenes, la vista previa funciona pero el guardado
+  del archivo mostrará error en vez de fingir que lo guardó.

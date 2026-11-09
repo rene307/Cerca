@@ -1,1 +1,23 @@
-/* /index.html 200
+# CERCA.cl - Netlify. Reemplaza TU-API-CERCA.example.com por el dominio donde corre el backend Node.
+# Las reglas con proxy (200) van ANTES de la regla comodín: así Google recibe el HTML real de cada página
+# y no el index.html vacío del SPA. Si agregas una comuna nueva, copia sus dos líneas.
+/api/*                https://TU-API-CERCA.example.com/api/:splat           200
+/sitemap.xml          https://TU-API-CERCA.example.com/sitemap.xml          200
+/robots.txt           https://TU-API-CERCA.example.com/robots.txt           200
+/seo-pages.css        https://TU-API-CERCA.example.com/seo-pages.css        200
+/seo/contacto/*       https://TU-API-CERCA.example.com/seo/contacto/:splat  200
+/la-florida            https://TU-API-CERCA.example.com/la-florida            200
+/la-florida/*          https://TU-API-CERCA.example.com/la-florida/:splat      200
+/penalolen            https://TU-API-CERCA.example.com/penalolen            200
+/penalolen/*          https://TU-API-CERCA.example.com/penalolen/:splat      200
+/macul            https://TU-API-CERCA.example.com/macul            200
+/macul/*          https://TU-API-CERCA.example.com/macul/:splat      200
+/puente-alto            https://TU-API-CERCA.example.com/puente-alto            200
+/puente-alto/*          https://TU-API-CERCA.example.com/puente-alto/:splat      200
+/nunoa            https://TU-API-CERCA.example.com/nunoa            200
+/nunoa/*          https://TU-API-CERCA.example.com/nunoa/:splat      200
+/providencia            https://TU-API-CERCA.example.com/providencia            200
+/providencia/*          https://TU-API-CERCA.example.com/providencia/:splat      200
+/santiago            https://TU-API-CERCA.example.com/santiago            200
+/santiago/*          https://TU-API-CERCA.example.com/santiago/:splat      200
+/*  /index.html  200

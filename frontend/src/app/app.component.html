@@ -53,9 +53,9 @@
 
         <!-- Portada original: todos los círculos intactos y uno adicional. -->
         <div id="categorias" class="cerca-oficios-seccion">
-          <div *ngIf="!mostrarPanelOficios" class="hero-categories" aria-label="Filtrar por categoría">
+          <div *ngIf="!mostrarPanelOficios" class="hero-categories" aria-label="Filtrar por categoría" [class.cerca-restaurantes-ocultar]="mostrarPanelRestaurantes">
             <button *ngFor="let item of categorias" type="button" class="hero-category"
-                    [class.selected]="categoriaActiva === item.nombre"
+                    [class.selected]="categoriaActiva === item.nombre && !tipoRestauranteActivo"
                     (click)="seleccionarCategoria(item.nombre)">
               <span class="category-circle" aria-hidden="true">{{ item.icono }}</span>
               <span class="category-label">{{ item.nombre }}</span>
@@ -65,7 +65,43 @@
               <span class="category-circle" aria-hidden="true"><img src="assets/oficios-profesiones.svg" alt=""></span>
               <span class="category-label">Oficios y Profesiones</span>
             </button>
+          
+          <!-- Nueva categoría principal: Restaurantes -->
+          <button type="button" class="hero-category"
+                  (click)="abrirPanelRestaurantes()"
+                  [class.selected]="mostrarPanelRestaurantes || tipoRestauranteActivo !== null"
+                  [attr.aria-expanded]="mostrarPanelRestaurantes"
+                  aria-controls="cerca-restaurantes-subcategorias">
+            <span class="category-circle" aria-hidden="true">🍽️</span>
+            <span class="category-label">Restaurantes</span>
+          </button>
+        </div>
+        <!-- CERCA_RESTAURANTES_V3_DESPLEGABLE: equivalente a Oficios y Profesiones -->
+        <div *ngIf="mostrarPanelRestaurantes" id="cerca-restaurantes-subcategorias"
+             class="cerca-restaurantes-como-oficios" aria-label="Especialidades de restaurantes">
+          <div class="cerca-restaurantes-cabecera">
+            <button type="button" class="cerca-restaurantes-volver"
+                    (click)="cerrarPanelRestaurantes()">← Volver a categorías</button>
+            <strong>Restaurantes</strong>
           </div>
+          <div class="cerca-restaurantes-circulos">
+            <button type="button" class="hero-category"
+                    (click)="filtrarRestaurante('Pizzerías')"
+                    [class.selected]="tipoRestauranteActivo === 'Pizzerías'">
+              <span class="category-circle" aria-hidden="true">🍕</span>
+              <span class="category-label">Pizzerías</span>
+            </button>
+            <button type="button" class="hero-category"
+                    (click)="filtrarRestaurante('Pollo asado')"
+                    [class.selected]="tipoRestauranteActivo === 'Pollo asado'">
+              <span class="category-circle" aria-hidden="true">🍗</span>
+              <span class="category-label">Pollo asado</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subcategorías de Restaurantes -->
+        
 
           <!-- Solo los círculos son sustituidos, sin alterar el resto de la portada. -->
           <div *ngIf="mostrarPanelOficios" class="cerca-oficios-panel">
@@ -89,6 +125,9 @@
   </section>
 
   <section class="results-section" id="explorar">
+    
+    
+
     <p *ngIf="!apiDisponible" class="cerca-api-aviso" role="status">{{apiError}}<span *ngIf="!catalogoRespaldoActivo"> · Para mostrar los negocios se necesita la API CERCA.</span></p>
     <div class="layout">
       <div class="results-header">

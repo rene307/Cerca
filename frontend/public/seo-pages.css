@@ -1,6 +1,5 @@
 /* CERCA: paginas SEO con la misma identidad del frontend Angular.
    No modifica la portada, solo /comuna/rubro/negocio. */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 :root{--orange:#ff601e;--ink:#13151b;--muted:#827b78;--paper:#f8f5f0;color-scheme:light}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}

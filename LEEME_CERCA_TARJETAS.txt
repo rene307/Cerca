@@ -1,0 +1,45 @@
+CERCA.cl - ARREGLO PUNTUAL DE TARJETAS (25 PIZZERÍAS)
+===================================================
+
+QUÉ SE RESPETA
+- Misma tarjeta que usa Panaderías, con tres columnas en escritorio.
+- Sin modificaciones del HTML ni CSS, portada, buscador, botones, mapa.
+- Sin crear negocios, duplicar pizzerías, reempadronar o tocar las otras fichas.
+- Sin inventar fotos, valoraciones ni horarios y sin modificar datosVerificados.
+
+QUÉ HACE
+- Comprueba que las tarjetas business-card y el menú Restaurantes existan.
+- Revisa el filtro Angular negociosFiltrados/coincideRestaurante.
+- Solo si falta, enlaza el filtro y prioriza la subcategoría de PostgreSQL.
+- Consulta los IDs 87 a 111 y exige que todos sean Restaurantes / Pizzerías.
+- Muestra comunas, publicados, borradores y fichas sin fotos/verificar.
+- Al aplicar, respalda los 25 JSON originales y el TS (solo si se modifica).
+- Publica solo los borradores de ese lote. No modifica ningún otro negocio.
+
+INSTRUCCIONES
+1) Copiar CERCA_ARREGLAR_TARJETAS_PIZZERIAS.cjs a la carpeta Cerca_Fase1.5
+   (donde están frontend y backend).
+2) Abrir PowerShell en Cerca_Fase1.5.
+3) Revisión que NO modifica nada:
+   node .\CERCA_ARREGLAR_TARJETAS_PIZZERIAS.cjs
+4) Revisar datos de los locales: la importación original incluye fichas sin
+   verificación y sin fotografía. Corregir los datos pendientes antes de publicar.
+5) Cuando estés conforme, aplicar:
+   node .\CERCA_ARREGLAR_TARJETAS_PIZZERIAS.cjs --aplicar
+6) Comprobar estado:
+   node .\CERCA_VERIFICAR_25_PIZZERIAS.cjs
+7) En CERCA, http://localhost:4200 > Restaurantes > Pizzerías y Ctrl+F5.
+   En La Florida deberían aparecer 3 fichas, si la API las entrega al frontend.
+
+RESPALDOS
+- Cerca_Fase1.5\respaldos_cerca\pizzerias25_tarjetas_antes_*.json
+- Cerca_Fase1.5\frontend\src\app\app.component.ts.bak-tarjetas-*
+
+IMPORTANTE
+- El script no añade fotos reales. Las 25 fichas originales tienen foto
+  vacía; hay que asociarles sus fotografías verificadas por separado.
+- Si avisa que la estructura de Angular cambió, NO hace modificaciones.
+  En ese caso comparte los archivos actuales app.component.ts y
+  app.component.html para hacer una corrección exacta sin afectar otras partes.
+- No prueba el servidor backend ni garantiza la carga en un proyecto que
+  haya cambiado desde las capturas. Comprueba que /api/negocios esté activo.

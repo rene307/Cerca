@@ -1,0 +1,126 @@
+{
+  "fecha": "2026-11-06T23:26:46.821Z",
+  "base": "cerca",
+  "insertados": [
+    {
+      "id": "112",
+      "nombre": "El Sabrosón, pollo a las brasas",
+      "comuna": "La Florida",
+      "direccion": "Santa Delia 7508 A, La Florida"
+    },
+    {
+      "id": "113",
+      "nombre": "Maxi pollo",
+      "comuna": "La Florida",
+      "direccion": "Marcela Paz 3411, La Florida"
+    },
+    {
+      "id": "114",
+      "nombre": "Pollos Asados",
+      "comuna": "La Florida",
+      "direccion": "Rojas Magallanes 877, La Florida"
+    },
+    {
+      "id": "115",
+      "nombre": "Pollería Loret's Sucursal La Florida",
+      "comuna": "La Florida",
+      "direccion": "Walker Martínez 1900, La Florida"
+    },
+    {
+      "id": "116",
+      "nombre": "Chicken Factory",
+      "comuna": "La Florida",
+      "direccion": "Froilán Roa 580, Local 11, La Florida"
+    },
+    {
+      "id": "117",
+      "nombre": "Chicken Factory",
+      "comuna": "La Florida",
+      "direccion": "Av. La Florida 9073, Local 2, La Florida"
+    },
+    {
+      "id": "118",
+      "nombre": "Pollos asados La Rueda",
+      "comuna": "La Florida",
+      "direccion": "Av. Vicuña Mackenna 10978, La Florida"
+    },
+    {
+      "id": "119",
+      "nombre": "El Gallo de las papas",
+      "comuna": "La Florida",
+      "direccion": "Av. La Florida 8435, Local A, La Florida"
+    },
+    {
+      "id": "120",
+      "nombre": "Pollos El 18",
+      "comuna": "La Florida",
+      "direccion": "Av. La Florida 9173, Local 2, La Florida"
+    },
+    {
+      "id": "121",
+      "nombre": "El Pollo Caballo Av. La Florida",
+      "comuna": "La Florida",
+      "direccion": "Av. La Florida 10425, La Florida"
+    },
+    {
+      "id": "122",
+      "nombre": "Katta Pollo & Burger",
+      "comuna": "La Florida",
+      "direccion": "Av. La Florida 8220, Local 5, La Florida"
+    },
+    {
+      "id": "123",
+      "nombre": "Torito Pollo",
+      "comuna": "La Florida",
+      "direccion": "Perú 8680, La Florida"
+    },
+    {
+      "id": "124",
+      "nombre": "Oh My Chicken Pollos a las Brasas",
+      "comuna": "La Florida",
+      "direccion": "Los Copihues 406, Local 2, La Florida"
+    },
+    {
+      "id": "125",
+      "nombre": "Brasa brava",
+      "comuna": "La Florida",
+      "direccion": "Enrique Olivares 1300, La Florida"
+    },
+    {
+      "id": "126",
+      "nombre": "El Pisco Perú",
+      "comuna": "La Florida",
+      "direccion": "Walker Martínez 1346, La Florida"
+    },
+    {
+      "id": "127",
+      "nombre": "Pollos asados Tía Marisol",
+      "comuna": "La Florida",
+      "direccion": "El Mármol 10383, La Florida"
+    },
+    {
+      "id": "128",
+      "nombre": "Vamos Donde Carlito",
+      "comuna": "Peñalolén",
+      "direccion": "Av. Tobalaba 15239, Peñalolén"
+    },
+    {
+      "id": "129",
+      "nombre": "Pollos Asados Monumental",
+      "comuna": "Macul",
+      "direccion": "Av. Departamental, Macul"
+    },
+    {
+      "id": "130",
+      "nombre": "El Pollo del Ocho",
+      "comuna": "San Joaquín",
+      "direccion": "Av. Vicuña Mackenna 5581, San Joaquín"
+    },
+    {
+      "id": "131",
+      "nombre": "Pollos asados a las brasas Quifer",
+      "comuna": "Peñalolén",
+      "direccion": "Av. Tobalaba 13893, Peñalolén"
+    }
+  ]
+}

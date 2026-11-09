@@ -1,1 +1,21 @@
-{"compilerOptions":{"target":"ES2022","useDefineForClassFields":false,"module":"ES2022","lib":["ES2022","DOM"],"moduleResolution":"bundler","strict":true,"skipLibCheck":true,"esModuleInterop":true,"experimentalDecorators":true,"noImplicitOverride":true,"outDir":"./dist/out-tsc","types":[]},"angularCompilerOptions":{"strictTemplates":true}}
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": false,
+    "module": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "bundler",
+    "rootDir": "./src",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "noImplicitOverride": true,
+    "outDir": "./dist/out-tsc",
+    "types": []
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true
+  }
+}

@@ -2,29 +2,20 @@
 const $=id=>document.getElementById(id);const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const demo=location.protocol==='file:';let token='',email='',expireAt=0,tab='tablero',busy=false,period='mes';
 let data={negocios:[],eventos:[],resumen:null,campanas:{},suscriptores:[],opiniones:[],solicitudes:[],solicitudesHabilitadas:false};
-let businessSearch='',subscriberQuery='',subscriberStatus='',frequency='semanal',editing=null,formOpen=false,toastHandle=null;let filterComuna='Todas',filterCategoria='Todas';
+let businessSearch='',soloIncompletos=false,subscriberQuery='',subscriberStatus='',frequency='semanal',editing=null,formOpen=false,toastHandle=null;let filterComuna='Todas',filterCategoria='Todas';
 const asNum=v=>Number(v)||0;const fmt=v=>Number(v||0).toLocaleString('es-CL');const today=d=>{try{return new Date(d).toLocaleDateString('es-CL')}catch{return '—'}};
 const toast=msg=>{const node=$('toast');node.textContent=msg;node.classList.add('show');clearTimeout(toastHandle);toastHandle=setTimeout(()=>node.classList.remove('show'),5000)};
 const safeParam=s=>encodeURIComponent(String(s));
 function auth(){return {'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})}}
 async function api(path,options={}){
- let r;try{r=await fetch('/api'+path,{...options,headers:{...auth(),...(options.headers||{})},cache:'no-store'})}catch{throw Error('No se pudo conectar con el servidor CERCA. Ejecuta INICIAR_PANEL_CERCA.bat.')}const tipo=r.headers.get('content-type')||'';let body=tipo.includes('application/json')?await r.json().catch(()=>({})):{};
- if(!r.ok){if(r.status===401&&token){logout(false)}if(r.status===404&&(body.error==='Ruta no encontrada.'||!tipo.includes('application/json')))throw Error('Estás conectado a una API antigua o al servidor incorrecto. Abre el panel correcto en http://127.0.0.1:3215/panel-admin.html. Inicia INICIAR_PANEL_CERCA.bat.');throw Error(body.error||'Error '+r.status)}return body;
+ let r;try{r=await fetch('/api'+path,{...options,headers:{...auth(),...(options.headers||{})},cache:'no-store'})}catch{throw Error('No se pudo conectar con el backend. Comprueba que esté encendido en el puerto 3000.')}let body=await r.json().catch(()=>({}));if(!r.ok){
+  if(r.status===401&&token){logout(false)}
+  if(r.status===404 && (path==='/admin/solicitar-codigo'||path==='/admin/verificar-codigo')){
+    throw Error('El backend que está activo no tiene el acceso por correo. Cierra el servidor anterior y enciende el backend de este ZIP (puerto 3000).');
+  }
+  throw Error(body.error||'Error '+r.status)
+}return body;
 }
-async function checkServer(){
- const box=$('serverStatus'),button=$('requestBtn');if(demo)return;
- box.textContent='Comprobando la API actualizada...';box.style.color='#6e6068';button.disabled=true;
- try{
-   const r=await fetch('/api/admin/estado',{cache:'no-store'});
-   const info=await r.json().catch(()=>({}));
-   if(!r.ok||info.servicio!=='CERCA_ADMIN_OTP_V3')throw Error('La página está conectada a un backend anterior. Usa el backend actualizado del ZIP y reinicia también Angular.');
-   if(!info.correoConfigurado)throw Error(info.mensaje || 'Falta configurar Gmail en backend/.env.');
-   box.textContent='✓ Servidor CERCA activo. PostgreSQL y correo deben estar disponibles para enviar el código.';box.style.color='#16835b';
- }catch(error){box.textContent='⚠ '+error.message;box.style.color='#bc3735';}
- finally{button.disabled=false;}
-}
-$('retryConnection').onclick=checkServer;
-checkServer();
 function logout(show=true){token='';$('signin').classList.remove('hidden');$('application').classList.add('hidden');$('requestForm').classList.remove('hidden');$('verifyForm').classList.add('hidden');$('code').value='';expireAt=0;if(show)toast('Sesión cerrada.')}
 $('logoutTop').onclick=()=>demo?toast('En la vista previa no hay sesión activa.'):logout();$('logoutSide').onclick=$('logoutTop').onclick;
 async function requestCode(ev){if(ev)ev.preventDefault();if(busy)return;busy=true;const btn=$('requestBtn');btn.disabled=true;$('resendBtn').disabled=true;clearLoginError();email=$('email').value.trim();try{const r=await api('/admin/solicitar-codigo',{method:'POST',body:JSON.stringify({email})});$('requestInfo').textContent=r.mensaje||'Revisa tu correo';expireAt=Date.now()+asNum(r.duracionSegundos||360)*1000;$('requestForm').classList.add('hidden');$('verifyForm').classList.remove('hidden');$('code').value='';$('code').focus();tick()}catch(e){loginError(e.message)}finally{busy=false;btn.disabled=false;$('resendBtn').disabled=false}}
@@ -52,32 +43,54 @@ function showTab(next){tab=next;formOpen=false;editing=null;document.querySelect
 const names={tablero:'Resumen del negocio',negocios:'Administración de fichas',destacados:'Publicidad destacada',campanas:'Programación y segmentación',solicitudes:'Demanda de los vecinos',suscriptores:'Base de contactos',reclamos:'Reputación local',comercial:'Modelo comercial'};$('topSubtitle').textContent=names[tab];const fn={tablero:dashboard,negocios:businesses,destacados:featured,campanas:campaigns,solicitudes:requests,suscriptores:subscribers,reclamos:reviews,comercial:commercial}[tab];if(fn)fn();}
 function header(tag,title,desc,right=''){return `<div class="viewhead flex"><div><span class="tag">${tag}</span><h1 style="margin-top:9px">${title}</h1><p>${desc}</p></div>${right}</div>`}
 function stat(name,value,hint){return `<div class="card stat"><div class="name">${name}</div><strong>${fmt(value)}</strong><div class="hint">${hint}</div></div>`}
+// Los puntajes vienen del servidor; la vista previa calcula faltantes básicos.
+function calidad(n){
+ if(Array.isArray(n.camposFaltantes) && Number.isFinite(Number(n.calidadFicha)))
+   return {puntos:Number(n.calidadFicha),faltantes:n.camposFaltantes};
+ const f=[];
+ const add=(ok,label)=>{if(!ok)f.push(label)};
+ const desc=String(n.descripcion||'').trim();
+ add(String(n.nombre||'').trim().length>=2,'Nombre');
+ add(String(n.categoria||'').trim().length>=2,'Categoría');
+ add(String(n.comuna||'').trim().length>=2,'Comuna');
+ add(desc.length>=80&&!/local incluido desde las capturas|fotograf[ií]a gen[eé]rica representativa|texto de ejemplo|descripci[oó]n pendiente/i.test(desc),'Descripción original (mínimo 80 caracteres)');
+ add(String(n.direccion||'').trim().length>=5,'Dirección o referencia');
+ add(!!n.foto&&!/images\.unsplash\.com|source\.unsplash\.com|picsum\.photos|placehold\.co|placeholder/i.test(n.foto),'Foto real del local');
+ add(String(n.horario||'').trim().length>=5&&!/por confirmar|\(publicado; confirmar\)|horario pendiente|sin confirmar/i.test(n.horario),'Horario confirmado');
+ add(/^\+?56\s*9(?:[\s-]?\d){8}$/.test(String(n.whatsapp||'').trim()),'WhatsApp +569');
+ add(/^https:\/\/[^\s.]+\.[^\s]+/i.test(n.sitioWeb||'')||n.sitioWebEstado==='no posee','Web HTTPS o marcar «No posee»');
+ return {puntos:Math.round(100*(9-f.length)/9),faltantes:f};
+}
+function negociosConFaltas(){return data.negocios.filter(n=>calidad(n).faltantes.length>0).sort((a,b)=>calidad(a).puntos-calidad(b).puntos||a.id-b.id)}
+function negociosFiltradosCalidad(){return data.negocios.filter(n=>(filterComuna==='Todas'||n.comuna===filterComuna)&&(filterCategoria==='Todas'||n.categoria===filterCategoria))}
 function dashboard(){const r=data.resumen||{},ev=r.eventos||{},subs=r.suscripciones||{},rep=r.reputacion||{},total=asNum(r.negocios)||data.negocios.length;
 let activity=[['Visitas','visita'],['Búsquedas','busqueda'],['Fichas abiertas','ficha'],['WhatsApp','whatsapp'],['Categorías','categoria']];let max=Math.max(1,...activity.map(x=>asNum(ev[x[1]])));
 $('content').innerHTML=header('VISIÓN GENERAL','Tablero general','Tráfico, negocios y contactos obtenidos del servidor.',`<div class="filters" style="margin:0"><div class="switches" id="periodBtns">${['hoy','semana','mes','anio'].map(p=>`<button data-period="${p}" class="${period===p?'active':''}">${{hoy:'Hoy',semana:'7 días',mes:'30 días',anio:'Año'}[p]}</button>`).join('')}</div><label>Comuna<select id="dashComuna">${['Todas',...new Set(data.negocios.map(n=>n.comuna).filter(Boolean))].map(c=>`<option ${filterComuna===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label><label>Categoría<select id="dashCategoria">${['Todas',...new Set(data.negocios.map(n=>n.categoria).filter(Boolean))].map(c=>`<option ${filterCategoria===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label></div>`)+
-`<section class="stats">${stat('Negocios registrados',total,'Fichas en la base')}${stat('Visitas registradas',ev.visita,'Período seleccionado')}${stat('Contactos WhatsApp',ev.whatsapp,'Clics medidos')}${stat('Suscriptores',Object.values(subs).reduce((a,v)=>a+asNum(v),0),'No todos están confirmados')}</section>`+
+`<section class="stats">${stat('Negocios registrados',total,'Fichas en la base')}${stat('Visitas registradas',ev.visita,'Período seleccionado')}${stat('Contactos WhatsApp',ev.whatsapp,'Clics medidos')}${stat('Suscriptores',Object.values(subs).reduce((a,v)=>a+asNum(v),0),'No todos están confirmados')}${stat('Fichas incompletas',negociosFiltradosCalidad().filter(n=>calidad(n).faltantes.length).length,'Afectan la posición pública')}</section>`+
 `<div class="two"><section class="card panel"><div class="flex"><h2>Actividad de visitantes</h2><span class="pill">Conteos reales de eventos</span></div>${activity.map(x=>`<div class="barrow"><span class="small">${x[0]}</span><div class="bar"><i style="width:${Math.round(asNum(ev[x[1]])/max*100)}%"></i></div><b>${fmt(ev[x[1]])}</b></div>`).join('')}</section>
 <section class="card panel"><h2>Estado de la plataforma</h2><div class="gap"><div class="flex"><span class="muted">Publicados</span><strong>${data.negocios.filter(x=>x.publicado!==false).length}</strong></div><div class="flex"><span class="muted">Destacados</span><strong>${data.negocios.filter(x=>x.destacado).length}</strong></div><div class="flex"><span class="muted">Pendientes de confirmar</span><strong>${fmt(subs.pendiente_verificacion)}</strong></div><div class="flex"><span class="muted">Opiniones con reclamos pendientes</span><strong>${fmt(rep.pendientes)}</strong></div><div class="flex"><span class="muted">Campañas guardadas</span><strong>${Object.keys(data.campanas||{}).length}</strong></div></div><p class="muted small" style="margin-top:23px">Las campañas guardadas aún no realizan envíos de correo ni WhatsApp.</p></section></div>
+<div class="card panel" style="margin-top:16px"><div class="flex"><div><h2>Calidad de las fichas</h2><p class="muted small">Cada campo faltante reduce la posición del negocio en los resultados públicos, incluso si es destacado.</p></div><button class="btn primary" id="revisarIncompletos">Revisar y corregir →</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Negocio</th><th>Calidad</th><th>Falta corregir</th></tr></thead><tbody>${negociosFiltradosCalidad().filter(n=>calidad(n).faltantes.length).sort((a,b)=>calidad(a).puntos-calidad(b).puntos).slice(0,10).map(n=>`<tr><td>${esc(n.nombre)}</td><td><span class="pill warn">${calidad(n).puntos}%</span></td><td>${esc(calidad(n).faltantes.join(' · '))}</td></tr>`).join('')||'<tr><td colspan="3">No hay negocios incompletos para estos filtros.</td></tr>'}</tbody></table></div></div>
 <div class="card panel" style="margin-top:16px"><div class="flex"><div><h2>Acciones rápidas</h2><p class="muted small">Administra desde una sola plataforma.</p></div></div><div class="spaced"><button class="btn" data-jump="negocios">+ Agregar negocio</button><button class="btn" data-jump="campanas">Preparar campaña</button><button class="btn" data-jump="suscriptores">Ver suscriptores</button><button class="btn" data-jump="reclamos">Revisar reclamos</button><button class="btn" data-jump="solicitudes">Ver necesidades</button><button class="btn" data-jump="comercial">Revisar ingresos</button></div></div>`;
+$('revisarIncompletos').onclick=()=>{soloIncompletos=true;showTab('negocios')};
 document.querySelectorAll('[data-period]').forEach(b=>b.onclick=async()=>{period=b.dataset.period;if(demo){dashboard();return}try{data.resumen=await api(resumenUrl());dashboard()}catch(e){toast(e.message)}});for(const [id,field] of [['dashComuna','comuna'],['dashCategoria','categoria']]){$(id).onchange=async e=>{if(field==='comuna')filterComuna=e.target.value;else filterCategoria=e.target.value;if(demo){dashboard();return}try{data.resumen=await api(resumenUrl());dashboard()}catch(err){toast(err.message)}};}document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>showTab(b.dataset.jump));}
 const labels=['Todos','Cafés','Restaurantes','Panaderías','Farmacias','Viveros','Oficios y Profesiones','Bares','Veterinarias'];
-function businesses(){const rows=data.negocios.filter(n=>[n.nombre,n.categoria,n.comuna].join(' ').toLowerCase().includes(businessSearch.toLowerCase()));
+function businesses(){const rows=data.negocios.filter(n=>[n.nombre,n.categoria,n.comuna].join(' ').toLowerCase().includes(businessSearch.toLowerCase())&&(!soloIncompletos||calidad(n).faltantes.length)).sort((a,b)=>calidad(a).puntos-calidad(b).puntos||a.id-b.id);
 $('content').innerHTML=header('DIRECTORIO','Negocios, oficios y profesiones','Crea, edita, publica y destaca fichas de negocios y trabajadores independientes.',`<button id="newBusiness" class="btn primary">+ Nuevo anuncio</button>`)+
-`<section class="stats">${stat('Total de fichas',data.negocios.length,'Registradas')}${stat('Visibles',data.negocios.filter(x=>x.publicado!==false).length,'Publicadas')}${stat('Ocultas',data.negocios.filter(x=>x.publicado===false).length,'Borradores')}${stat('Destacados',data.negocios.filter(x=>x.destacado).length,'Por comuna')}</section><section class="card panel"><div class="flex"><h2>Listado de negocios</h2><input id="searchBiz" aria-label="Buscar negocio" style="max-width:310px" value="${esc(businessSearch)}" placeholder="Buscar por nombre, rubro o comuna"></div><div class="table-wrap"><table class="table"><thead><tr><th>Negocio</th><th>Comuna</th><th>Estado</th><th>Destacado</th><th>Acciones</th></tr></thead><tbody>${rows.map(n=>`<tr><td><span class="item-thumb">${esc(n.icono||'▣')}</span><strong>${esc(n.nombre)}</strong><div class="sub">${esc(n.categoria||'Sin categoría')}</div></td><td>${esc(n.comuna)}</td><td><span class="pill ${n.publicado===false?'warn':'ok'}">${n.publicado===false?'Oculto':'Visible'}</span></td><td><span class="pill ${n.destacado?'warn':''}">${n.destacado?'★ Destacado':'Normal'}</span></td><td><div class="spaced"><button class="btn xs" data-edit="${n.id}">Editar</button><button class="btn xs" data-feature="${n.id}">${n.destacado?'Quitar ★':'Destacar'}</button><button class="btn xs danger" data-delete="${n.id}">Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No hay resultados.</td></tr>'}</tbody></table></div></section><div id="businessEditor"></div>`;
-$('newBusiness').onclick=()=>businessForm(null);$('searchBiz').oninput=e=>{businessSearch=e.target.value;businesses();const i=$('searchBiz');i.focus();i.setSelectionRange(businessSearch.length,businessSearch.length)};
+`<section class="stats">${stat('Total de fichas',data.negocios.length,'Registradas')}${stat('Visibles',data.negocios.filter(x=>x.publicado!==false).length,'Publicadas')}${stat('Ocultas',data.negocios.filter(x=>x.publicado===false).length,'Borradores')}${stat('Incompletas',negociosConFaltas().length,'Bajan en el buscador')}</section><section class="card panel"><div class="flex"><h2>Listado de negocios</h2><div class="spaced"><label class="small"><input type="checkbox" id="soloIncompletos" ${soloIncompletos?'checked':''}> Solo incompletos</label><input id="searchBiz" aria-label="Buscar negocio" style="max-width:310px" value="${esc(businessSearch)}" placeholder="Buscar por nombre, rubro o comuna"></div></div><div class="info-rule" style="margin-top:12px">La posición pública prioriza primero calidad de información, y después destacados y cercanía. Aquí ves primero los negocios que más correcciones necesitan.</div><div class="table-wrap"><table class="table"><thead><tr><th>Negocio</th><th>Comuna</th><th>Calidad / faltantes</th><th>Estado</th><th>Destacado</th><th>Acciones</th></tr></thead><tbody>${rows.map(n=>`<tr><td><span class="item-thumb">${esc(n.icono||'▣')}</span><strong>${esc(n.nombre)}</strong><div class="sub">${esc(n.categoria||'Sin categoría')}</div></td><td>${esc(n.comuna)}</td><td><span class="pill ${calidad(n).faltantes.length?'warn':'ok'}">${calidad(n).puntos}% · ${calidad(n).faltantes.length?'Incompleta':'Completa'}</span><div class="sub" style="max-width:300px">${calidad(n).faltantes.length?esc(calidad(n).faltantes.join(' · ')):'Sin datos pendientes'}</div></td><td><span class="pill ${n.publicado===false?'warn':'ok'}">${n.publicado===false?'Oculto':'Visible'}</span></td><td><span class="pill ${n.destacado?'warn':''}">${n.destacado?'★ Destacado':'Normal'}</span></td><td><div class="spaced"><button class="btn xs" data-edit="${n.id}">Editar</button><button class="btn xs" data-feature="${n.id}">${n.destacado?'Quitar ★':'Destacar'}</button><button class="btn xs danger" data-delete="${n.id}">Eliminar</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No hay resultados.</td></tr>'}</tbody></table></div></section><div id="businessEditor"></div>`;
+$('soloIncompletos').onchange=e=>{soloIncompletos=e.target.checked;businesses()};$('newBusiness').onclick=()=>businessForm(null);$('searchBiz').oninput=e=>{businessSearch=e.target.value;businesses();const i=$('searchBiz');i.focus();i.setSelectionRange(businessSearch.length,businessSearch.length)};
 document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>businessForm(data.negocios.find(n=>n.id==b.dataset.edit)));
 document.querySelectorAll('[data-feature]').forEach(b=>b.onclick=()=>feature(+b.dataset.feature));document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>remove(+b.dataset.delete));}
 function businessForm(n){let d=n?{...n}:{nombre:'',categoria:'Oficios y Profesiones',comuna:'La Florida',direccion:'',telefono:'',whatsapp:'',sitioWeb:'',horario:'',descripcion:'',foto:'',publicado:true,destacado:false,prioridadDestacado:100,datosVerificados:false};
-$('businessEditor').innerHTML=`<section class="sheet"><div class="flex"><h2>${n?'Editar ficha':'Nueva ficha'}</h2><button id="cancelEditor" class="btn xs">Cerrar ×</button></div><form id="businessForm" class="formgrid">
+$('businessEditor').innerHTML=`<section class="sheet">${n?`<div class="info-rule"><strong>Calidad actual: ${calidad(n).puntos}%.</strong> ${calidad(n).faltantes.length?'Pendiente: '+esc(calidad(n).faltantes.join(' · ')):'Ficha completa.'}</div>`:''}<div class="flex"><h2>${n?'Editar ficha':'Nueva ficha'}</h2><button id="cancelEditor" class="btn xs">Cerrar ×</button></div><form id="businessForm" class="formgrid">
 <label>Nombre del negocio o profesional *<input name="nombre" value="${esc(d.nombre)}" maxlength="140" required></label><label>Rubro *<select name="categoria">${[...new Set([...labels,...data.negocios.map(n=>n.categoria).filter(Boolean)])].filter(x=>x!=='Todos').map(x=>`<option ${d.categoria===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>
 <label>Comuna *<input name="comuna" value="${esc(d.comuna)}" required maxlength="90"></label><label>Dirección<input name="direccion" value="${esc(d.direccion||'')}"></label>
 <label>Teléfono<input name="telefono" value="${esc(d.telefono||'')}"></label><label>WhatsApp<input name="whatsapp" value="${esc(d.whatsapp||'')}"></label>
-<label>Sitio web (HTTPS)<input name="sitioWeb" value="${esc(d.sitioWeb||'')}" placeholder="https://"></label><label>Horario<input name="horario" value="${esc(d.horario||'')}"></label>
+<label>Sitio web (HTTPS)<input name="sitioWeb" value="${esc(d.sitioWeb||'')}" placeholder="https://"></label><label class="check"><input name="sinSitioWeb" type="checkbox" ${d.sitioWebEstado==='no posee'?'checked':''}> El negocio no tiene sitio web</label><label>Horario<input name="horario" value="${esc(d.horario||'')}"></label>
 <label class="full">Descripción<textarea name="descripcion" rows="3" maxlength="700">${esc(d.descripcion||'')}</textarea></label><label class="full">URL de fotografía<input name="foto" value="${esc(d.foto||'')}" placeholder="https://"></label>
 <label class="check"><input name="publicado" type="checkbox" ${d.publicado!==false?'checked':''}> Publicado</label><label class="check"><input name="destacado" type="checkbox" ${d.destacado?'checked':''}> Negocio destacado</label>
 <label>Prioridad de destacado<input type="number" min="1" max="999" name="prioridadDestacado" value="${asNum(d.prioridadDestacado)||100}"></label><label class="check"><input type="checkbox" name="datosVerificados" ${d.datosVerificados?'checked':''}> Datos verificados</label>
 <div class="full form-actions"><button class="btn" id="cancelBusiness" type="button">Cancelar</button><button class="btn primary" type="submit">Guardar negocio</button></div></form></section>`;
-$('cancelEditor').onclick=$('cancelBusiness').onclick=()=>{$('businessEditor').innerHTML=''};$('businessForm').onsubmit=async e=>{e.preventDefault();if(demo)return toast('Vista previa: no se guardan cambios.');const f=e.currentTarget;const raw=Object.fromEntries(new FormData(f));const o={...d};for(const k of ['nombre','categoria','comuna','direccion','telefono','whatsapp','sitioWeb','horario','descripcion','foto'])o[k]=String(raw[k]||'').trim();o.publicado=f.elements.publicado.checked;o.destacado=f.elements.destacado.checked;o.datosVerificados=f.elements.datosVerificados.checked;o.prioridadDestacado=Math.max(1,Math.min(999,asNum(raw.prioridadDestacado)||100));if(!o.nombre||!o.comuna)return toast('Completa nombre y comuna.');try{await api(n?'/admin/negocios/'+n.id:'/admin/negocios',{method:n?'PUT':'POST',body:JSON.stringify(o)});toast('Negocio guardado en PostgreSQL.');await loadData()}catch(err){toast(err.message)}};
+$('cancelEditor').onclick=$('cancelBusiness').onclick=()=>{$('businessEditor').innerHTML=''};$('businessForm').onsubmit=async e=>{e.preventDefault();if(demo)return toast('Vista previa: no se guardan cambios.');const f=e.currentTarget;const raw=Object.fromEntries(new FormData(f));const o={...d};for(const k of ['nombre','categoria','comuna','direccion','telefono','whatsapp','sitioWeb','horario','descripcion','foto'])o[k]=String(raw[k]||'').trim();o.sitioWebEstado=f.elements.sinSitioWeb.checked?'no posee':undefined;if(o.sitioWebEstado)o.sitioWeb='';o.publicado=f.elements.publicado.checked;o.destacado=f.elements.destacado.checked;o.datosVerificados=f.elements.datosVerificados.checked;o.prioridadDestacado=Math.max(1,Math.min(999,asNum(raw.prioridadDestacado)||100));if(!o.nombre||!o.comuna)return toast('Completa nombre y comuna.');try{await api(n?'/admin/negocios/'+n.id:'/admin/negocios',{method:n?'PUT':'POST',body:JSON.stringify(o)});toast('Negocio guardado en PostgreSQL.');await loadData()}catch(err){toast(err.message)}};
 $('businessEditor').scrollIntoView({behavior:'smooth',block:'start'});}
 async function feature(id){if(demo)return toast('Vista previa: no se guardan cambios.');let n=data.negocios.find(n=>n.id===id);if(!n)return;try{await api('/admin/negocios/'+id,{method:'PUT',body:JSON.stringify({...n,destacado:!n.destacado,prioridadDestacado:n.prioridadDestacado||100})});toast('Destacado actualizado.');await loadData()}catch(e){toast(e.message)}}
 async function remove(id){if(demo)return toast('Vista previa: no se guardan cambios.');const n=data.negocios.find(n=>n.id===id);if(!n||!confirm('¿Eliminar definitivamente "'+n.nombre+'"?'))return;try{await api('/admin/negocios/'+id,{method:'DELETE'});toast('Negocio eliminado.');await loadData()}catch(e){toast(e.message)}}
@@ -148,5 +161,228 @@ $('searchSubs').oninput=e=>{subscriberQuery=e.target.value;subscribers();$('sear
 function reviews(){const bad=data.opiniones.filter(r=>asNum(r.estrellas)<=2);const pending=bad.filter(r=>r.estado!=='resuelto');$('content').innerHTML=header('REPUTACIÓN','Opiniones y reclamos','Revisa evaluaciones y responde los reclamos de los vecinos.')+
 `<section class="stats">${stat('Opiniones',data.opiniones.length,'Registradas')}${stat('Reclamos',bad.length,'1 y 2 estrellas')}${stat('Pendientes',pending.length,'Requieren revisión')}${stat('Resueltos',bad.length-pending.length,'Con seguimiento')}</section><section class="card panel"><h2>Últimas opiniones</h2><div class="gap">${data.opiniones.slice(0,35).map(r=>{let b=data.negocios.find(n=>+n.id===+r.negocioId);return `<div style="border-bottom:1px solid var(--line);padding:10px 0"><div class="flex"><div><strong>${esc(b?.nombre||'Negocio eliminado')}</strong> <span class="pill ${r.estrellas<=2?'bad':'ok'}">${'★'.repeat(Math.max(0,Math.min(5,+r.estrellas)))} ${r.estrellas}/5</span><div class="small muted">${esc((r.motivos||[]).join(' · '))} · ${today(r.fecha)}</div></div><span class="pill ${r.estado==='resuelto'?'ok':'warn'}">${esc(r.estado||'registrada')}</span></div><p style="margin:10px 0">${esc(r.comentario||'Sin comentario')}</p>${+r.estrellas<=2?`<label>Respuesta<input data-response="${r.id}" maxlength="400" value="${esc(r.respuesta||'')}"></label><div class="spaced" style="margin-top:10px"><button class="btn xs" data-resolve="${r.id}" data-state="${r.estado==='resuelto'?'pendiente':'resuelto'}">${r.estado==='resuelto'?'Reabrir':'Marcar resuelto'}</button></div>`:''}</div>`}).join('')||'<div class="empty">Aún no hay opiniones registradas.</div>'}</div></section>`;
 document.querySelectorAll('[data-resolve]').forEach(b=>b.onclick=async()=>{if(demo)return toast('Vista previa: no se guardan respuestas.');let r=data.opiniones.find(x=>String(x.id)===b.dataset.resolve),inp=document.querySelector('[data-response="'+b.dataset.resolve+'"]');if(!r)return;try{await api('/admin/opiniones/'+r.id,{method:'PUT',body:JSON.stringify({estado:b.dataset.state,respuesta:inp?.value||''})});toast('Reclamo actualizado.');await loadData()}catch(e){toast(e.message)}});}
-if(demo)initDemo();else{$('signin').classList.remove('hidden');$('application').classList.add('hidden')}
+async function comprobarServidor(){
+  try {
+    const r=await fetch('/api/admin/estado',{cache:'no-store'});
+    const tipo=r.headers.get('content-type')||'';
+    const estado=tipo.includes('json')?await r.json():null;
+    if(!r.ok||estado?.servicio!=='CERCA_ADMIN_OTP_V1') {
+      loginError('Tienes una versión anterior del servidor CERCA. Detén el backend anterior y ejecuta el backend de este ZIP desde su carpeta.');
+    } else if(!estado.correoConfigurado){
+      loginError('El panel ya está conectado, pero falta configurar ADMIN_EMAIL, SMTP_* y JWT_SECRET en backend/.env para recibir la clave de 6 minutos.');
+    } else {clearLoginError()}
+  } catch(_e){loginError('El backend no está disponible. Abre backend en PowerShell y ejecuta npm start (puerto 3000).')}
+}
+if(demo)initDemo();else{$('signin').classList.remove('hidden');$('application').classList.add('hidden');comprobarServidor()}
+
+/* CERCA_FOTO_CHAT_V1 */
+(function () {
+  const css = document.createElement('style');
+  css.textContent = `
+    .cerca-foto-caja {
+      grid-column: 1/-1;
+      padding: 16px;
+      background: #fffaf6;
+      border: 1px solid #f4d4c6;
+      border-radius: 12px;
+    }
+    .cerca-foto-caja strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .cerca-foto-caja p {
+      font-size: 12px;
+      color: #756b6f;
+    }
+    .cerca-foto-fila {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .cerca-foto-previa {
+      width: 170px;
+      height: 118px;
+      object-fit: cover;
+      background: #f0eeec;
+      border-radius: 9px;
+    }
+    .cerca-foto-caja button { margin: 5px; }
+    .cerca-foto-caja .aviso { color: #b3392d; }
+  `;
+  document.head.appendChild(css);
+
+  function preparar(form) {
+    if (form._cercaFoto) return;
+
+    const anterior = form.querySelector('input[name="foto"]');
+    const etiqueta = anterior?.closest('label');
+
+    if (!anterior || !etiqueta ||
+        !/foto|fotograf/i.test(etiqueta.textContent)) return;
+
+    const caja = document.createElement('div');
+    caja.className = 'cerca-foto-caja';
+
+    caja.innerHTML = `
+      <strong>Fotografía del negocio</strong>
+      <p>Una foto · JPG, PNG o WEBP · Máximo 5 MB</p>
+      <div class="cerca-foto-fila">
+        <img class="cerca-foto-previa"
+             alt="Vista previa" hidden>
+        <div>
+          <button type="button" class="btn primary"
+                  data-subir>Subir / cambiar foto</button>
+          <button type="button" class="btn"
+                  data-borrar>Eliminar foto</button>
+        </div>
+      </div>
+      <input type="file"
+             accept="image/jpeg,image/png,image/webp"
+             hidden data-archivo>
+      <p class="aviso" role="status"></p>
+    `;
+
+    etiqueta.replaceWith(caja);
+
+    anterior.type = 'hidden';
+    anterior.removeAttribute('placeholder');
+    caja.appendChild(anterior);
+
+    const input = caja.querySelector('[data-archivo]');
+    const img = caja.querySelector('img');
+    const mensaje = caja.querySelector('.aviso');
+    const boton = caja.querySelector('[data-subir]');
+    const borrar = caja.querySelector('[data-borrar]');
+
+    const estado = {
+      archivo: null,
+      temporal: null,
+      anterior, input, img, mensaje, boton, borrar,
+      guardando: false
+    };
+
+    form._cercaFoto = estado;
+
+    const previa = url => {
+      img.hidden = !url;
+      if (url) img.src = url;
+      else img.removeAttribute('src');
+    };
+
+    const liberar = () => {
+      if (estado.temporal)
+        URL.revokeObjectURL(estado.temporal);
+      estado.temporal = null;
+    };
+
+    previa(anterior.value);
+
+    boton.onclick = () => input.click();
+
+    borrar.onclick = () => {
+      liberar();
+      estado.archivo = null;
+      input.value = '';
+      anterior.value = '';
+      mensaje.textContent = '';
+      previa('');
+    };
+
+    input.onchange = () => {
+      const archivo = input.files?.[0];
+      if (!archivo) return;
+
+      if (
+        !['image/jpeg','image/png','image/webp']
+          .includes(archivo.type) ||
+        archivo.size > 5 * 1024 * 1024 ||
+        archivo.size === 0
+      ) {
+        mensaje.textContent =
+          'Selecciona JPG, PNG o WEBP de hasta 5 MB.';
+        input.value = '';
+        return;
+      }
+
+      liberar();
+      estado.archivo = archivo;
+      estado.temporal = URL.createObjectURL(archivo);
+      mensaje.textContent = '';
+      previa(estado.temporal);
+    };
+
+    estado.liberar = liberar;
+    estado.previa = previa;
+  }
+
+  const actualizar = () =>
+    document.querySelectorAll('form').forEach(preparar);
+
+  new MutationObserver(actualizar).observe(
+    document.body, { childList: true, subtree: true }
+  );
+
+  actualizar();
+
+  document.addEventListener('submit', async evento => {
+    const formulario = evento.target;
+    const s = formulario?._cercaFoto;
+
+    if (!s?.archivo) return;
+
+    evento.preventDefault();
+    evento.stopImmediatePropagation();
+
+    if (s.guardando) return;
+    s.guardando = true;
+
+    const guardar = evento.submitter ||
+      formulario.querySelector('[type="submit"]');
+
+    s.boton.disabled = true;
+    s.borrar.disabled = true;
+    s.mensaje.textContent = 'Subiendo fotografía...';
+
+    try {
+      const fd = new FormData();
+      fd.append('imagen', s.archivo, s.archivo.name);
+
+      const respuesta = await fetch('/api/admin/imagenes', {
+        method: 'POST',
+        headers: token
+          ? { Authorization: 'Bearer ' + token }
+          : {},
+        body: fd
+      });
+
+      const datos = await respuesta.json().catch(() => ({}));
+
+      if (!respuesta.ok || !datos.url) {
+        throw Error(datos.error ||
+          'La API de imágenes respondió ' + respuesta.status);
+      }
+
+      s.anterior.value = datos.url;
+      s.archivo = null;
+      s.input.value = '';
+
+      s.liberar();
+      s.previa(datos.url);
+
+      s.mensaje.textContent =
+        'Fotografía subida. Guardando ficha...';
+
+      formulario.requestSubmit(guardar || undefined);
+    } catch (error) {
+      s.mensaje.textContent =
+        error.message +
+        '. Comprueba la API de imágenes del backend.';
+    } finally {
+      s.guardando = false;
+      s.boton.disabled = false;
+      s.borrar.disabled = false;
+    }
+  }, true);
+})();
 })();

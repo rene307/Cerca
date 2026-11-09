@@ -1,0 +1,7 @@
+{
+  "descripcion": "Editar SOLO para sistemas propios o con autorizacion documentada. Se admiten origenes HTTP/S exactos, no rutas.",
+  "allowedOrigins": [
+    "http://127.0.0.1:3417",
+    "http://127.0.0.1:3000"
+  ]
+}

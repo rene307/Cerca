@@ -1,0 +1,39 @@
+CERCA.cl | EMPADRONAMIENTO POLLOS ASADOS | 06-11-2026
+
+Este paquete respeta el molde de tarjetas que ya tienes para panaderias y pizzerias.
+No modifica HTML, CSS, Angular ni backend.
+
+CONTENIDO
+- CERCA_EMPADRONAR_20_POLLOS_ASADOS.cjs
+- CERCA_POLLOS_ASADOS_20_DATOS.json
+- CERCA_VERIFICAR_POLLOS_ASADOS.cjs
+
+20 NEGOCIOS EN LAS CAPTURAS
+- La Florida: 16 (incluye dos sucursales diferentes de Chicken Factory)
+- Peñalolén: 2
+- Macul: 1
+- San Joaquín: 1
+
+INSTRUCCIONES
+1. Extrae los TRES archivos dentro de Cerca_Fase1.5 (junto a backend y frontend).
+2. Abre PowerShell en esa carpeta.
+3. VISTA PREVIA (no modifica la base):
+   node .\CERCA_EMPADRONAR_20_POLLOS_ASADOS.cjs
+4. Comprueba las coincidencias y nuevos.
+5. PARA EMPADRONAR COMO BORRADORES:
+   node .\CERCA_EMPADRONAR_20_POLLOS_ASADOS.cjs --aplicar
+6. VERIFICAR:
+   node .\CERCA_VERIFICAR_POLLOS_ASADOS.cjs
+
+IMPORTANTE
+- No se publican las fichas (publicado=false); primero se debe verificar su vigencia,
+  domicilio, horarios, telefonos y fotos autorizadas.
+- Algunas direcciones necesitan confirmacion, como Pollos Asados Monumental,
+  El Pollo del Ocho y Tia Marisol.
+- Los links de Google son referencias; NO se copiaron imágenes de Google Maps
+  ni estrellas / reseñas externas a la reputacion propia de CERCA.
+- El script detecta direcciones ya ocupadas y no repite inserciones en ejecuciones sucesivas.
+- La subcategoria escrita es exactamente: Pollo asado.
+- El boton de CERCA.cl debe filtrar por ese valor almacenado en PostgreSQL.
+- Los negocios de otras comunas no deben figurar al seleccionar La Florida.
+- La carpeta del proyecto local no es accesible por ChatGPT; probar en tu equipo.

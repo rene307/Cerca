@@ -112,6 +112,10 @@ interface BarraMetrica { etiqueta: string; valor: number; alto: number; }
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
+  // CERCA - Menú de restaurantes.
+  mostrarPanelRestaurantes = false;
+  tipoRestauranteActivo: 'Pizzerías' | 'Pollo asado' | null = null;
+
   readonly categorias: { nombre: Categoria; icono: string }[] = [
     { nombre: 'Todos', icono: '✦' },
     { nombre: 'Cafés', icono: '☕' },
@@ -159,7 +163,62 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     { nombre: 'Cuidadores', icono: '🤝', palabras: ['cuidador', 'cuidado domiciliario'] }
   ];
 
+  // Abre/cierra Restaurantes sin modificar otros botones ni datos.
+  abrirPanelRestaurantes(): void {
+    this.mostrarPanelRestaurantes = !this.mostrarPanelRestaurantes;
+    if (this.mostrarPanelRestaurantes) {
+      this.mostrarPanelOficios = false;
+      this.oficioSeleccionado = null;
+    } else {
+      this.tipoRestauranteActivo = null;
+    }
+  }
+
+  cerrarPanelRestaurantes(): void {
+    this.mostrarPanelRestaurantes = false;
+    this.tipoRestauranteActivo = null;
+    this.categoriaActiva = 'Todos';
+    this.categoriasIntencion = null;
+    this.busqueda = '';
+  }
+
+
+  filtrarRestaurante(tipo: 'Pizzerías' | 'Pollo asado'): void {
+    this.tipoRestauranteActivo = tipo;
+    this.mostrarPanelRestaurantes = true;
+    this.mostrarPanelOficios = false;
+    this.oficioSeleccionado = null;
+    this.categoriaActiva = 'Todos';
+    this.categoriasIntencion = null;
+    this.consultaActiva = '';
+    this.busqueda = '';
+    this.mostrarSoloFavoritos = false;
+    this.registrarEvento('categoria');
+    this.irA('explorar');
+  }
+
+  // Coincidencia por contenido de la ficha; no inventa negocios.
+  // Para más precisión, después puede añadirse 'subcategoria' a PostgreSQL.
+  private coincideRestaurante(n: Negocio): boolean {
+    if (!this.tipoRestauranteActivo) return true;
+    
+    // Priorizar la subcategoría real registrada en PostgreSQL (datos JSONB).
+    const subcategoria = String((n as Negocio & { subcategoria?: string }).subcategoria || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (subcategoria === 'pizzerias') return this.tipoRestauranteActivo === 'Pizzerías';
+    if (subcategoria === 'pollo asado') return this.tipoRestauranteActivo === 'Pollo asado';
+    const texto = [n.nombre, n.categoria, n.descripcion]
+      .filter(Boolean).join(' ').normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (this.tipoRestauranteActivo === 'Pizzerías') {
+      return /\bpizzerias?\b|\bpizzas?\b/.test(texto);
+    }
+    return /\bpollos?\s+(?:a\s+la\s+)?(?:asados?|rostizados?|a\s+las?\s+brasas?|a\s+las?\s+parrillas?)\b|\bpollerias?\b|\brotiserias?\b/.test(texto);
+  }
+
   abrirPanelOficios(): void {
+    this.tipoRestauranteActivo = null;
+    this.mostrarPanelRestaurantes = false;
     this.mostrarPanelOficios = true;
     this.oficioSeleccionado = null;
   }
@@ -170,6 +229,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   filtrarOficio(nombre: string): void {
+    this.tipoRestauranteActivo = null;
+    this.mostrarPanelRestaurantes = false;
     this.oficioSeleccionado = nombre;
     this.categoriaActiva = 'Todos';
     this.categoriasIntencion = null;
@@ -195,7 +256,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     'Puente Alto',
     'Ñuñoa',
     'Providencia',
-    'Santiago'
+    'Santiago',
+    "Las Condes",
+    "Vitacura",
+    "Maipú",
+    "San Miguel"
   ];
 
   // Lectura de URLs directas: /nunoa/cafes, /la-florida/panaderias,
@@ -1780,6 +1845,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   get negociosFiltrados(): Negocio[] {
     const texto = this.claveCatalogo(this.busqueda);
     return this.negocios.filter((negocio) => {
+      if (!this.coincideRestaurante(negocio)) return false;
       if (negocio.publicado === false) return false;
       const categoria = this.categoriaCanonica(negocio.categoria);
       const coincideCategoria = this.categoriasIntencion
@@ -1893,6 +1959,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   buscar(): void {
+    this.tipoRestauranteActivo = null;
+    this.mostrarPanelRestaurantes = false;
     this.oficioSeleccionado = null;
     this.categoriasIntencion = null;
     this.consultaActiva = '';
@@ -1901,6 +1969,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   seleccionarCategoria(categoria: Categoria): void {
+    this.tipoRestauranteActivo = null;
+    this.mostrarPanelRestaurantes = false;
     this.cerrarPanelOficios();
     this.categoriasIntencion = null;
     this.consultaActiva = '';

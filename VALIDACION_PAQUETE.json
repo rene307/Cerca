@@ -1,0 +1,27 @@
+{
+  "total": 25,
+  "comunas": {
+    "Providencia": 4,
+    "Las Condes": 2,
+    "Vitacura": 2,
+    "Ñuñoa": 6,
+    "Santiago Centro": 1,
+    "La Florida": 3,
+    "Puente Alto": 2,
+    "Peñalolén": 1,
+    "Maipú": 1,
+    "San Miguel": 2,
+    "Macul": 1
+  },
+  "con_telefono": 24,
+  "con_web_oficial": 12,
+  "no_publicadas": 25,
+  "ticket_estimado": true,
+  "foto_generica_no_verdadera": true,
+  "seo_palabras_min": 181,
+  "seo_palabras_max": 210,
+  "compatibilidad_revisar": [
+    "validacion backend de categoría Pizzerías",
+    "filtro frontend Pizzerías"
+  ]
+}

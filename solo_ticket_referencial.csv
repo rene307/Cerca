@@ -1,0 +1,26 @@
+﻿nombre,comuna,ticket_min_clp,ticket_max_clp,ticket_referencial_clp,tipo_precio
+Pizzería Allería,Providencia,17000,23000,20000,estimacion_por_persona_no_ticket_real
+La Excelente Pizzería,Providencia,14000,18000,16000,estimacion_por_persona_no_ticket_real
+Pizzería Da Bruno,Providencia,7000,12000,9500,estimacion_por_persona_no_ticket_real
+Pizzas Azzis,Providencia,10000,15000,12500,estimacion_por_persona_no_ticket_real
+Raffaella Cucina,Las Condes,18000,28000,23000,estimacion_por_persona_no_ticket_real
+Tiramisú,Las Condes,18000,25000,21500,estimacion_por_persona_no_ticket_real
+Segreta Pizzeria,Vitacura,18000,28000,23000,estimacion_por_persona_no_ticket_real
+"Sicily Pizza, Gelato e Caffè",Vitacura,18000,28000,23000,estimacion_por_persona_no_ticket_real
+Davvero Pizzeria,Ñuñoa,12000,20000,16000,estimacion_por_persona_no_ticket_real
+Fina Pizza,Ñuñoa,7000,13000,10000,estimacion_por_persona_no_ticket_real
+La Rústica Pizzería,Ñuñoa,10000,16000,13000,estimacion_por_persona_no_ticket_real
+La Finestra,Ñuñoa,20000,30000,25000,estimacion_por_persona_no_ticket_real
+Pizzería Da Gigi,Ñuñoa,8000,15000,11500,estimacion_por_persona_no_ticket_real
+Golfo di Napoli,Ñuñoa,9000,14000,11500,estimacion_por_persona_no_ticket_real
+Verace Pizza & Gelato,Santiago Centro,10000,15000,12500,estimacion_por_persona_no_ticket_real
+"Sanarte, Pizzas & Buena Comida",La Florida,10000,15000,12500,estimacion_por_persona_no_ticket_real
+La Sua Pizza Napoletana,La Florida,8000,15000,11500,estimacion_por_persona_no_ticket_real
+Pizzas Petit Chef,La Florida,6000,12000,9000,estimacion_por_persona_no_ticket_real
+Pizzería La Triada,Puente Alto,5000,10000,7500,estimacion_por_persona_no_ticket_real
+Pizza da Italia,Puente Alto,5000,10000,7500,estimacion_por_persona_no_ticket_real
+Locura Pizzería (ex Chelenko),Peñalolén,10000,15000,12500,estimacion_por_persona_no_ticket_real
+Più Pizzeria,Maipú,13000,20000,16500,estimacion_por_persona_no_ticket_real
+Agostini Pizzería,San Miguel,8000,13000,10500,estimacion_por_persona_no_ticket_real
+Pícara Pájara Pizzería,San Miguel,10000,15000,12500,estimacion_por_persona_no_ticket_real
+Fior di Latte Pizzeria,Macul,5000,12000,8500,estimacion_por_persona_no_ticket_real
